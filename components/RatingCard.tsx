@@ -17,15 +17,47 @@ type PlatformMeta = {
   // Si el rating natural es 0-100 (RT, Metacritic) mostramos /100,
   // si es 0-10 (IMDb, TMDB, Letterboxd, Filmaffinity) mostramos /10.
   unit: "/10" | "/100";
+  // Mensaje cuando la fuente no devolvió rating (con onda, en vez de "No disponible").
+  emptyMessage: string;
 };
 
 const PLATFORM_META: Record<Platform, PlatformMeta> = {
-  imdb: { name: "IMDb", accent: "text-yellow-400", unit: "/10" },
-  rt: { name: "Rotten Tomatoes", accent: "text-red-400", unit: "/100" },
-  metacritic: { name: "Metacritic", accent: "text-emerald-400", unit: "/100" },
-  tmdb: { name: "TMDB", accent: "text-sky-400", unit: "/10" },
-  letterboxd: { name: "Letterboxd", accent: "text-orange-400", unit: "/10" },
-  filmaffinity: { name: "Filmaffinity", accent: "text-blue-400", unit: "/10" },
+  imdb: {
+    name: "IMDb",
+    accent: "text-yellow-400",
+    unit: "/10",
+    emptyMessage: "Sin estrellas todavía",
+  },
+  rt: {
+    name: "Rotten Tomatoes",
+    accent: "text-red-400",
+    unit: "/100",
+    emptyMessage: "El tomate no maduró",
+  },
+  metacritic: {
+    name: "Metacritic",
+    accent: "text-emerald-400",
+    unit: "/100",
+    emptyMessage: "Metacritic se tomó el día",
+  },
+  tmdb: {
+    name: "TMDB",
+    accent: "text-sky-400",
+    unit: "/10",
+    emptyMessage: "Sin puntaje aún",
+  },
+  letterboxd: {
+    name: "Letterboxd",
+    accent: "text-orange-400",
+    unit: "/10",
+    emptyMessage: "Letterboxd no respondió",
+  },
+  filmaffinity: {
+    name: "Filmaffinity",
+    accent: "text-blue-400",
+    unit: "/10",
+    emptyMessage: "Filmaffinity nos baneó (no es joda)",
+  },
 };
 
 function formatNumber(n: number, decimals: number): string {
@@ -62,7 +94,9 @@ export function RatingCard({
           {meta.name}
         </div>
         <div className="flex-1 flex items-center">
-          <span className="text-sm text-muted-foreground">No disponible</span>
+          <span className="text-sm text-muted-foreground italic">
+            {meta.emptyMessage}
+          </span>
         </div>
       </Card>
     );

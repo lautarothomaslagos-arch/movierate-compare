@@ -2,6 +2,7 @@ import { Film } from "lucide-react";
 import Link from "next/link";
 
 import { LoginButton } from "@/components/LoginButton";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu, type UserInfo } from "@/components/UserMenu";
 import { createClient } from "@/lib/supabase/server";
 
@@ -41,7 +42,10 @@ export async function Header() {
           </span>
         </Link>
 
-        <div>{userInfo ? <UserMenu user={userInfo} /> : <LoginButton />}</div>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          {userInfo ? <UserMenu user={userInfo} /> : <LoginButton />}
+        </div>
       </div>
     </header>
   );
