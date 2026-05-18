@@ -68,7 +68,7 @@ export function HistoryItemCard({
         onClick={handleDelete}
         disabled={isPending}
         aria-label={`Eliminar ${title} del historial`}
-        className="text-muted-foreground hover:text-destructive opacity-60 group-hover:opacity-100"
+        className="text-muted-foreground hover:text-destructive sm:opacity-60 group-hover:opacity-100"
       >
         <Trash2 className="size-4" />
       </Button>

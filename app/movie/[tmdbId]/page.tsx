@@ -232,7 +232,7 @@ export default async function MoviePage({ params }: Props) {
         {topCast.length > 0 && (
           <section className="mb-10">
             <h2 className="text-lg font-semibold mb-3">Elenco principal</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
               {topCast.map((actor) => {
                 const profile = actor.profile_path
                   ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
@@ -245,7 +245,7 @@ export default async function MoviePage({ params }: Props) {
                           src={profile}
                           alt={actor.name}
                           fill
-                          sizes="(min-width: 768px) 120px, 33vw"
+                          sizes="(min-width: 768px) 120px, 25vw"
                           className="object-cover"
                         />
                       ) : (

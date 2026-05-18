@@ -64,11 +64,12 @@ export function MovieGrid({ movies }: { movies: GridMovie[] }) {
 
   return (
     <div className="relative group">
-      {/* Gradient fade — izquierda (visible si hay scroll pendiente a la izq) */}
+      {/* Gradient fade — izquierda. Solo desktop (md+) para no tapar contenido
+          en mobile donde el "hay más" es obvio por el swipe natural. */}
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-y-0 left-0 w-12 z-10",
+          "pointer-events-none hidden md:block absolute inset-y-0 left-0 w-12 z-10",
           "bg-gradient-to-r from-background to-transparent",
           "transition-opacity duration-200",
           atStart ? "opacity-0" : "opacity-100"
@@ -79,7 +80,7 @@ export function MovieGrid({ movies }: { movies: GridMovie[] }) {
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-y-0 right-0 w-12 z-10",
+          "pointer-events-none hidden md:block absolute inset-y-0 right-0 w-12 z-10",
           "bg-gradient-to-l from-background to-transparent",
           "transition-opacity duration-200",
           atEnd ? "opacity-0" : "opacity-100"
@@ -119,8 +120,11 @@ export function MovieGrid({ movies }: { movies: GridMovie[] }) {
       <ul
         ref={scrollerRef}
         className={cn(
-          "flex gap-3 snap-x snap-mandatory overflow-x-auto pb-2",
-          "scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent",
+          // snap-proximity (no mandatory) en mobile para no "secuestrar" el
+          // scroll. En desktop mantenemos snap-x normal porque las flechas
+          // ya empujan a posiciones discretas.
+          "flex gap-3 snap-x overflow-x-auto pb-2",
+          "[scroll-snap-type:x_proximity] md:[scroll-snap-type:x_mandatory]",
           "scroll-smooth -mx-4 sm:mx-0 px-4 sm:px-0"
         )}
         style={{
