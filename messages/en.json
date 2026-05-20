@@ -1,0 +1,219 @@
+{
+  "common": {
+    "back": "Back",
+    "backToSearch": "Back to search",
+    "backToHome": "Go home",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "year": "Year",
+    "years": "years",
+    "votes": "votes",
+    "minutes": "min",
+    "hours": "h",
+    "verMas": "Show more",
+    "verMenos": "Show less"
+  },
+  "header": {
+    "title": "MovieRate",
+    "subtitle": "Compare",
+    "genres": "Genres"
+  },
+  "footer": {
+    "disclaimer": "Data from IMDb, Rotten Tomatoes and Metacritic via OMDb. Letterboxd and Filmaffinity have no public API — data may be temporarily unavailable. Movie information by TMDB."
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signingIn": "Connecting...",
+    "signOut": "Sign out",
+    "myHistory": "My history",
+    "userMenu": "User menu",
+    "sessionClosed": "Signed out",
+    "signInError": "Sign in failed: {error}",
+    "signOutError": "Sign out failed: {error}",
+    "unexpectedError": "Unexpected error during sign in.",
+    "callbackFailed": "Sign in could not be completed. Try again."
+  },
+  "theme": {
+    "toLight": "Switch to light mode",
+    "toDark": "Switch to dark mode",
+    "change": "Change theme"
+  },
+  "locale": {
+    "label": "Language",
+    "es": "Español",
+    "en": "English"
+  },
+  "home": {
+    "trendingChip": "Trending today: {title}",
+    "title": "MovieRate",
+    "titleSecondary": "Compare",
+    "tagline": "Compare ratings from IMDb, Rotten Tomatoes, Metacritic, TMDB, Letterboxd and Filmaffinity in one search.",
+    "searchHint": "Search movies or TV shows · at least 2 characters",
+    "trendingHeading": "Trending today",
+    "trendingSubtitle": "Top picks on TMDB right now",
+    "trendingFailed": "Could not load trending content.",
+    "featuredGenresHeading": "Genres to get started",
+    "viewAllGenres": "View all genres"
+  },
+  "search": {
+    "placeholder": "Search a movie...",
+    "ariaLabel": "Search movie",
+    "failed": "Search failed. Try again.",
+    "noResults": "No results found.",
+    "searching": "Searching...",
+    "minChars": "Type at least 2 characters",
+    "badgeMovie": "Movie",
+    "badgeTv": "TV"
+  },
+  "movie": {
+    "directorOne": "Director: ",
+    "directorMany": "Directors: ",
+    "cast": "Top cast",
+    "ratings": "Compared ratings",
+    "whereToWatch": "Where to watch",
+    "similar": "Similar",
+    "noSimilar": "No recommendations for this movie.",
+    "notFoundTitle": "We couldn't find that movie",
+    "notFoundBody": "The ID doesn't exist in TMDB or there was an issue loading the data."
+  },
+  "tv": {
+    "badge": "TV",
+    "status": {
+      "Returning Series": "On air",
+      "Ended": "Ended",
+      "Canceled": "Canceled",
+      "In Production": "In production",
+      "Planned": "Planned",
+      "Pilot": "Pilot"
+    },
+    "seasonsOne": "{count} season",
+    "seasonsOther": "{count} seasons",
+    "episodesShort": "{count} eps",
+    "episodeRuntime": "{value} min/ep",
+    "episodeRuntimeHours": "{h}h/ep",
+    "episodeRuntimeFull": "{h}h {m}min/ep",
+    "creatorOne": "Created by: ",
+    "creatorMany": "Creators: ",
+    "letterboxdNoTv": "Letterboxd doesn't index TV shows.",
+    "notFoundTitle": "We couldn't find that show",
+    "notFoundBody": "The ID doesn't exist in TMDB or there was an issue loading the data.",
+    "yearsToPresent": "{startYear} – present",
+    "yearsRange": "{startYear} – {endYear}",
+    "noSimilar": "No recommendations for this show."
+  },
+  "person": {
+    "filmographyHeading": "Filmography",
+    "noBio": "No biography available for this person.",
+    "noFilmography": "No filmography on record for this person.",
+    "ageLiving": "({age} years old)",
+    "ageDeceased": "({age} years old, passed away)",
+    "notFoundTitle": "We couldn't find that person",
+    "notFoundBody": "The ID doesn't exist in TMDB."
+  },
+  "genres": {
+    "heading": "Genres",
+    "subtitle": "Pick a genre and discover what to watch.",
+    "loadFailed": "Could not load genres. Try refreshing the page.",
+    "noPlatformItems": "No {plural} found on this page.",
+    "mismatchTitle": "This genre doesn't exist in this catalog",
+    "mismatchBody": "The genres for {currentType} and {otherType} are not the same. Try picking one from the list.",
+    "viewMoviesGenres": "Movie genres",
+    "viewTvGenres": "TV genres",
+    "viewOther": "View {other} genres",
+    "pageOfTotal": "Page {page} of {total} · {sort} · {plural}",
+    "previous": "Previous",
+    "next": "Next",
+    "allGenres": "All genres",
+    "moviesPlural": "movies",
+    "tvPlural": "shows",
+    "moviesSingular": "movies",
+    "tvSingular": "shows",
+    "sort": {
+      "popular": "popular",
+      "top": "top rated",
+      "recent": "most recent",
+      "popularLabel": "Popular",
+      "topLabel": "Top rated",
+      "recentLabel": "Most recent"
+    },
+    "mediaToggle": {
+      "movie": "Movies",
+      "tv": "TV",
+      "ariaLabel": "Content type"
+    }
+  },
+  "history": {
+    "heading": "My history",
+    "empty": "Your history is empty",
+    "emptyBody": "Anything you open will show up here.",
+    "anonymousNote": "You're browsing without an account. Sign in with Google to save your history in the cloud.",
+    "countOne": "{count} title",
+    "countOther": "{count} titles",
+    "savedInBrowser": "saved in this browser",
+    "clearAll": "Clear all",
+    "clearConfirm": "Clear all history? This can't be undone.",
+    "cleared": "History cleared.",
+    "deleteError": "Could not delete.",
+    "clearError": "Could not clear history.",
+    "deleteAriaLabel": "Remove {title} from history"
+  },
+  "ratings": {
+    "imdb": "IMDb",
+    "rt": "Rotten Tomatoes",
+    "metacritic": "Metacritic",
+    "tmdb": "TMDB",
+    "letterboxd": "Letterboxd",
+    "filmaffinity": "Filmaffinity",
+    "empty": {
+      "imdb": "No stars yet",
+      "rt": "The tomato isn't ripe",
+      "metacritic": "Metacritic took the day off",
+      "tmdb": "No score yet",
+      "letterboxd": "Letterboxd didn't respond",
+      "filmaffinity": "Filmaffinity blocked us (for real)"
+    },
+    "votesMillions": "{count}M votes",
+    "votesThousands": "{count}k votes",
+    "votesCount": "{count} votes"
+  },
+  "whereToWatch": {
+    "subscription": "With subscription",
+    "free": "Free",
+    "rent": "Rent",
+    "buy": "Buy",
+    "availableIn": "Available in {country}",
+    "source": "(data from JustWatch via TMDB · click → opens in provider)",
+    "noProviders": "Not available for streaming in {country} right now.",
+    "noRegionData": "No streaming info for {country} at the moment."
+  },
+  "countries": {
+    "AR": "Argentina",
+    "MX": "Mexico",
+    "ES": "Spain",
+    "US": "United States",
+    "CL": "Chile",
+    "CO": "Colombia",
+    "PE": "Peru",
+    "UY": "Uruguay",
+    "BR": "Brazil",
+    "EC": "Ecuador",
+    "BO": "Bolivia",
+    "PY": "Paraguay",
+    "VE": "Venezuela",
+    "GT": "Guatemala",
+    "CR": "Costa Rica",
+    "PA": "Panama",
+    "DO": "Dominican Republic"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "We had trouble loading this page. Try refreshing; if it persists, go home."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The URL doesn't exist. Try the search."
+  }
+}

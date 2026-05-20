@@ -1,7 +1,7 @@
 "use client";
 
 import { History, LogOut } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

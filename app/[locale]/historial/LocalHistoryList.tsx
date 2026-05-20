@@ -4,7 +4,7 @@ import { Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { HistoryItemCard } from "@/app/historial/HistoryItemCard";
+import { HistoryItemCard } from "@/app/[locale]/historial/HistoryItemCard";
 import { Button } from "@/components/ui/button";
 import {
   clearLocalHistory,

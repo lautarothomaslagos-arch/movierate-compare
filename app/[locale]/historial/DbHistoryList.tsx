@@ -4,7 +4,7 @@ import { Trash } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-import { HistoryItemCard } from "@/app/historial/HistoryItemCard";
+import { HistoryItemCard } from "@/app/[locale]/historial/HistoryItemCard";
 import {
   clearAllHistory,
   deleteHistoryItem,

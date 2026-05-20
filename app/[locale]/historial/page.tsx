@@ -1,10 +1,10 @@
-import { DbHistoryList } from "@/app/historial/DbHistoryList";
-import { LocalHistoryList } from "@/app/historial/LocalHistoryList";
+﻿import { DbHistoryList } from "@/app/[locale]/historial/DbHistoryList";
+import { LocalHistoryList } from "@/app/[locale]/historial/LocalHistoryList";
 import { getHistoryFromDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Mi historial — MovieRate Compare",
+  title: "Mi historial â€” MovieRate Compare",
 };
 
 export default async function HistorialPage() {

@@ -1,0 +1,219 @@
+{
+  "common": {
+    "back": "Volver",
+    "backToSearch": "Volver al buscador",
+    "backToHome": "Ir al inicio",
+    "loading": "Cargando...",
+    "retry": "Reintentar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "year": "Año",
+    "years": "años",
+    "votes": "votos",
+    "minutes": "min",
+    "hours": "h",
+    "verMas": "Ver más",
+    "verMenos": "Ver menos"
+  },
+  "header": {
+    "title": "MovieRate",
+    "subtitle": "Compare",
+    "genres": "Géneros"
+  },
+  "footer": {
+    "disclaimer": "Datos de IMDb, Rotten Tomatoes y Metacritic vía OMDb. Letterboxd y Filmaffinity no proveen API pública — los datos pueden no estar disponibles temporalmente. Información de películas por TMDB."
+  },
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "signingIn": "Conectando...",
+    "signOut": "Cerrar sesión",
+    "myHistory": "Mi historial",
+    "userMenu": "Menú de usuario",
+    "sessionClosed": "Sesión cerrada",
+    "signInError": "No se pudo iniciar sesión: {error}",
+    "signOutError": "No se pudo cerrar sesión: {error}",
+    "unexpectedError": "Error inesperado en el login.",
+    "callbackFailed": "No se pudo completar el inicio de sesión. Probá de nuevo."
+  },
+  "theme": {
+    "toLight": "Cambiar a modo claro",
+    "toDark": "Cambiar a modo oscuro",
+    "change": "Cambiar tema"
+  },
+  "locale": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "English"
+  },
+  "home": {
+    "trendingChip": "Hoy tendencia: {title}",
+    "title": "MovieRate",
+    "titleSecondary": "Compare",
+    "tagline": "Compará ratings de IMDb, Rotten Tomatoes, Metacritic, TMDB, Letterboxd y Filmaffinity de una sola búsqueda.",
+    "searchHint": "Buscá películas o series · al menos 2 caracteres",
+    "trendingHeading": "Tendencias de hoy",
+    "trendingSubtitle": "Lo que más se está viendo en TMDB",
+    "trendingFailed": "No se pudieron cargar las tendencias.",
+    "featuredGenresHeading": "Géneros para arrancar",
+    "viewAllGenres": "Ver todos los géneros"
+  },
+  "search": {
+    "placeholder": "Buscá una película...",
+    "ariaLabel": "Buscar película",
+    "failed": "Falló la búsqueda. Probá de nuevo.",
+    "noResults": "No encontramos nada.",
+    "searching": "Buscando...",
+    "minChars": "Tipeá al menos 2 caracteres",
+    "badgeMovie": "Peli",
+    "badgeTv": "Serie"
+  },
+  "movie": {
+    "directorOne": "Dirección: ",
+    "directorMany": "Dirección: ",
+    "cast": "Elenco principal",
+    "ratings": "Ratings comparados",
+    "whereToWatch": "Dónde verla",
+    "similar": "Similares",
+    "noSimilar": "Sin recomendaciones para esta película.",
+    "notFoundTitle": "No encontramos esa película",
+    "notFoundBody": "El ID que buscaste no existe en TMDB o hubo un problema cargando los datos."
+  },
+  "tv": {
+    "badge": "Serie",
+    "status": {
+      "Returning Series": "En emisión",
+      "Ended": "Terminada",
+      "Canceled": "Cancelada",
+      "In Production": "En producción",
+      "Planned": "Planeada",
+      "Pilot": "Piloto"
+    },
+    "seasonsOne": "{count} temporada",
+    "seasonsOther": "{count} temporadas",
+    "episodesShort": "{count} eps",
+    "episodeRuntime": "{value} min/ep",
+    "episodeRuntimeHours": "{h}h/ep",
+    "episodeRuntimeFull": "{h}h {m}min/ep",
+    "creatorOne": "Creada por: ",
+    "creatorMany": "Creadores: ",
+    "letterboxdNoTv": "Letterboxd no indexa series.",
+    "notFoundTitle": "No encontramos esta serie",
+    "notFoundBody": "El ID que buscaste no existe en TMDB o hubo un problema cargando los datos.",
+    "yearsToPresent": "{startYear} – presente",
+    "yearsRange": "{startYear} – {endYear}",
+    "noSimilar": "Sin recomendaciones para esta serie."
+  },
+  "person": {
+    "filmographyHeading": "Filmografía",
+    "noBio": "Sin biografía disponible para esta persona.",
+    "noFilmography": "No tenemos filmografía registrada para esta persona.",
+    "ageLiving": "({age} años)",
+    "ageDeceased": "({age} años, falleció)",
+    "notFoundTitle": "No encontramos esta persona",
+    "notFoundBody": "El ID que buscaste no existe en TMDB."
+  },
+  "genres": {
+    "heading": "Géneros",
+    "subtitle": "Elegí un género y descubrí qué hay para ver.",
+    "loadFailed": "No se pudieron cargar los géneros. Probá refrescar la página.",
+    "noPlatformItems": "No encontramos {plural} para esta página.",
+    "mismatchTitle": "Ese género no existe en este catálogo",
+    "mismatchBody": "Los géneros de {currentType} y {otherType} no son los mismos. Probá elegir uno de la lista.",
+    "viewMoviesGenres": "Géneros de películas",
+    "viewTvGenres": "Géneros de series",
+    "viewOther": "Ver géneros de {other}",
+    "pageOfTotal": "Página {page} de {total} · {sort} · {plural}",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "allGenres": "Todos los géneros",
+    "moviesPlural": "películas",
+    "tvPlural": "series",
+    "moviesSingular": "películas",
+    "tvSingular": "series",
+    "sort": {
+      "popular": "populares",
+      "top": "mejor puntuadas",
+      "recent": "más recientes",
+      "popularLabel": "Populares",
+      "topLabel": "Mejor puntuadas",
+      "recentLabel": "Más recientes"
+    },
+    "mediaToggle": {
+      "movie": "Películas",
+      "tv": "Series",
+      "ariaLabel": "Tipo de contenido"
+    }
+  },
+  "history": {
+    "heading": "Mi historial",
+    "empty": "Tu historial está vacío",
+    "emptyBody": "Las películas que abras van a aparecer acá.",
+    "anonymousNote": "Estás navegando sin sesión. Si iniciás sesión con Google, tu historial se guarda en la nube.",
+    "countOne": "{count} título",
+    "countOther": "{count} títulos",
+    "savedInBrowser": "guardadas en este navegador",
+    "clearAll": "Limpiar todo",
+    "clearConfirm": "¿Borrar todo el historial? No se puede deshacer.",
+    "cleared": "Historial limpiado.",
+    "deleteError": "No se pudo eliminar.",
+    "clearError": "No se pudo limpiar el historial.",
+    "deleteAriaLabel": "Eliminar {title} del historial"
+  },
+  "ratings": {
+    "imdb": "IMDb",
+    "rt": "Rotten Tomatoes",
+    "metacritic": "Metacritic",
+    "tmdb": "TMDB",
+    "letterboxd": "Letterboxd",
+    "filmaffinity": "Filmaffinity",
+    "empty": {
+      "imdb": "Sin estrellas todavía",
+      "rt": "El tomate no maduró",
+      "metacritic": "Metacritic se tomó el día",
+      "tmdb": "Sin puntaje aún",
+      "letterboxd": "Letterboxd no respondió",
+      "filmaffinity": "Filmaffinity nos baneó (no es joda)"
+    },
+    "votesMillions": "{count}M votos",
+    "votesThousands": "{count}k votos",
+    "votesCount": "{count} votos"
+  },
+  "whereToWatch": {
+    "subscription": "Con suscripción",
+    "free": "Gratis",
+    "rent": "Alquilar",
+    "buy": "Comprar",
+    "availableIn": "Disponible en {country}",
+    "source": "(datos de JustWatch via TMDB · click → abre en el proveedor)",
+    "noProviders": "No está disponible en streaming en {country} por ahora.",
+    "noRegionData": "Sin información de streaming en {country} por el momento."
+  },
+  "countries": {
+    "AR": "Argentina",
+    "MX": "México",
+    "ES": "España",
+    "US": "Estados Unidos",
+    "CL": "Chile",
+    "CO": "Colombia",
+    "PE": "Perú",
+    "UY": "Uruguay",
+    "BR": "Brasil",
+    "EC": "Ecuador",
+    "BO": "Bolivia",
+    "PY": "Paraguay",
+    "VE": "Venezuela",
+    "GT": "Guatemala",
+    "CR": "Costa Rica",
+    "PA": "Panamá",
+    "DO": "República Dominicana"
+  },
+  "error": {
+    "title": "Algo salió mal",
+    "body": "Hubo un problema cargando esta página. Probá refrescar; si persiste, volvé al inicio."
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "body": "La URL que buscaste no existe. Probá desde el buscador."
+  }
+}

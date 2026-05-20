@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
-import { ThemedToaster } from "@/components/ThemedToaster";
-import { Providers } from "./providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,31 +13,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Metadata global (sobreescrita por cada page con generateMetadata)
 export const metadata: Metadata = {
   title: "MovieRate Compare",
-  description: "Compará ratings de películas en IMDb, Rotten Tomatoes, Metacritic, TMDB, Letterboxd y Filmaffinity en un solo lugar.",
+  description: "Compará ratings de películas y series en IMDb, Rotten Tomatoes, Metacritic, TMDB, Letterboxd y Filmaffinity.",
 };
 
+// Root layout minimalista. El layout "real" (con providers, header, footer
+// y NextIntlClientProvider) está en app/[locale]/layout.tsx — necesita
+// vivir adentro del segmento [locale] para que next-intl pueda leer el
+// locale del request.
+//
+// Acá solo configuramos el <html> y las fuentes, comunes a todas las rutas
+// (incluyendo /api y /auth/callback que están fuera del [locale]).
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    // suppressHydrationWarning porque next-themes setea la clase del theme
-    // (dark/light) en el cliente y eso causaría mismatch sin esto.
     <html
-      lang="es-AR"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Providers>
-          <Header />
-          {children}
-          <Footer />
-          <ThemedToaster />
-        </Providers>
+        {children}
       </body>
     </html>
   );

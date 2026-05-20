@@ -2,7 +2,7 @@
 
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
