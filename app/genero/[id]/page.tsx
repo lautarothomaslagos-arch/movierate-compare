@@ -1,4 +1,10 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, Film } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Film,
+  PartyPopper,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -15,6 +21,7 @@ import {
   posterUrl,
   type DiscoverSort,
 } from "@/lib/tmdb";
+import type { TmdbGenre } from "@/types/movie";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -35,6 +42,41 @@ const SORT_LABELS: Record<GenreSort, string> = {
   top: "mejor puntuadas",
   recent: "más recientes",
 };
+
+// Normaliza un nombre de género para matching: lowercase, sin acentos,
+// sin "and"/"y" y palabras genéricas, sin espacios duplicados.
+function normalizeGenreName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Busca el género equivalente en el otro tipo por nombre normalizado.
+// Si los nombres no matchean exactamente, intentamos matching parcial
+// (por ejemplo "accion" matchea "accion y aventura").
+function findEquivalentGenre(
+  source: TmdbGenre,
+  targetList: TmdbGenre[]
+): TmdbGenre | null {
+  const sourceNorm = normalizeGenreName(source.name);
+
+  // Match exacto
+  const exact = targetList.find(
+    (g) => normalizeGenreName(g.name) === sourceNorm
+  );
+  if (exact) return exact;
+
+  // Match parcial: el nombre normalizado de uno está contenido en el otro
+  const partial = targetList.find((g) => {
+    const targetNorm = normalizeGenreName(g.name);
+    return targetNorm.includes(sourceNorm) || sourceNorm.includes(targetNorm);
+  });
+  return partial ?? null;
+}
 
 export async function generateMetadata({ params, searchParams }: Props) {
   const { id } = await params;
@@ -72,8 +114,88 @@ export default async function GeneroPage({ params, searchParams }: Props) {
   const sort = parseSort(sortParam);
   const mediaType = parseType(typeParam);
 
-  // Fetch en paralelo del género (para el título) + items de la página
-  let genreName = "Género";
+  // Traemos AMBOS conjuntos de géneros: el activo (para resolver el id actual
+  // y validar) y el del otro tipo (para calcular el href del toggle).
+  let activeGenres: TmdbGenre[];
+  let otherGenres: TmdbGenre[];
+  try {
+    [activeGenres, otherGenres] = await Promise.all(
+      mediaType === "tv"
+        ? [
+            getTvGenres().then((d) => d.genres),
+            getGenres().then((d) => d.genres),
+          ]
+        : [
+            getGenres().then((d) => d.genres),
+            getTvGenres().then((d) => d.genres),
+          ]
+    );
+  } catch {
+    notFound();
+  }
+
+  const currentGenre = activeGenres.find((g) => g.id === genreId);
+
+  // CASO: el ID no existe en este media_type. Mostramos fallback amigable
+  // en vez de 404 — esto pasa cuando alguien comparte una URL imposible o
+  // hace algún parseo manual.
+  if (!currentGenre) {
+    const otherNoun = mediaType === "tv" ? "películas" : "series";
+    const altType: MediaType = mediaType === "tv" ? "movie" : "tv";
+    const altHref =
+      altType === "tv" ? "/generos?type=tv" : "/generos";
+    return (
+      <main className="px-4 sm:px-6 py-16 max-w-2xl mx-auto w-full text-center">
+        <PartyPopper className="size-12 text-muted-foreground mx-auto mb-4" />
+        <h1 className="text-xl sm:text-2xl font-bold">
+          Ese género no existe en este catálogo
+        </h1>
+        <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+          Los géneros de {mediaType === "tv" ? "series" : "películas"} y{" "}
+          {otherNoun} no son los mismos. Probá elegir uno de la lista.
+        </p>
+        <div className="mt-6 flex flex-col sm:flex-row gap-2 justify-center">
+          <Button asChild>
+            <Link
+              href={
+                mediaType === "tv" ? "/generos?type=tv" : "/generos"
+              }
+            >
+              Géneros de {mediaType === "tv" ? "series" : "películas"}
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={altHref}>
+              Ver géneros de {otherNoun}
+            </Link>
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  // Calculamos el href del toggle al otro tipo:
+  // - Si hay un género equivalente por nombre → URL específica con su ID
+  // - Si no, llevamos a la lista de géneros del otro tipo
+  const equivalent = findEquivalentGenre(currentGenre, otherGenres);
+  const otherTypeHref = (() => {
+    if (mediaType === "tv") {
+      // El toggle apunta a movie
+      if (equivalent) return `/genero/${equivalent.id}`;
+      return "/generos";
+    } else {
+      // El toggle apunta a tv
+      if (equivalent) return `/genero/${equivalent.id}?type=tv`;
+      return "/generos?type=tv";
+    }
+  })();
+
+  const toggleHrefs: Record<MediaType, string> = {
+    movie: mediaType === "movie" ? `/genero/${genreId}` : otherTypeHref,
+    tv: mediaType === "tv" ? `/genero/${genreId}?type=tv` : otherTypeHref,
+  };
+
+  // Fetch del listado paginado
   let items: Array<{
     id: number;
     title: string;
@@ -83,13 +205,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
   let totalPages = 1;
   try {
     if (mediaType === "tv") {
-      const [genresData, discover] = await Promise.all([
-        getTvGenres(),
-        discoverTvByGenre(genreId, page, sort),
-      ]);
-      const found = genresData.genres.find((g) => g.id === genreId);
-      if (!found) notFound();
-      genreName = found.name;
+      const discover = await discoverTvByGenre(genreId, page, sort);
       items = discover.results.map((t) => ({
         id: t.id,
         title: t.name,
@@ -98,13 +214,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
       }));
       totalPages = Math.min(discover.total_pages, 500);
     } else {
-      const [genresData, discover] = await Promise.all([
-        getGenres(),
-        discoverByGenre(genreId, page, sort),
-      ]);
-      const found = genresData.genres.find((g) => g.id === genreId);
-      if (!found) notFound();
-      genreName = found.name;
+      const discover = await discoverByGenre(genreId, page, sort);
       items = discover.results.map((m) => ({
         id: m.id,
         title: m.title,
@@ -146,16 +256,16 @@ export default async function GeneroPage({ params, searchParams }: Props) {
       <header className="mb-4 flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">{genreName}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">
+              {currentGenre.name}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Página {page} de {totalPages.toLocaleString("es-AR")} · {SORT_LABELS[sort]} · {nounPlural}
+              Página {page} de {totalPages.toLocaleString("es-AR")} ·{" "}
+              {SORT_LABELS[sort]} · {nounPlural}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <MediaTypeToggle
-              basePath={`/genero/${genreId}`}
-              active={mediaType}
-            />
+            <MediaTypeToggle hrefs={toggleHrefs} active={mediaType} />
             <GenreSortSelect
               genreId={genreId}
               active={sort}

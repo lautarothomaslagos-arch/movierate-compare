@@ -16,15 +16,27 @@ const OPTIONS: Array<{
   { value: "tv", label: "Series", icon: Tv },
 ];
 
-// Toggle entre películas y series. Pasale el path base (sin querystring)
-// — el toggle agrega/quita ?type=tv según corresponde.
-export function MediaTypeToggle({
-  basePath,
-  active,
-}: {
-  basePath: string;
-  active: MediaType;
-}) {
+// Toggle entre películas y series. Acepta dos formas:
+// - `basePath`: URL base (la toggle agrega/quita ?type=tv).
+// - `hrefs`: URLs explícitas por tipo (útil cuando navegando entre tipos
+//   no es solo cambiar el query string — ej en /genero/[id] donde el ID
+//   cambia entre tipos).
+export function MediaTypeToggle(
+  props: {
+    active: MediaType;
+  } & (
+    | { basePath: string; hrefs?: never }
+    | { hrefs: Record<MediaType, string>; basePath?: never }
+  )
+) {
+  const { active } = props;
+
+  function computeHref(value: MediaType): string {
+    if ("hrefs" in props && props.hrefs) return props.hrefs[value];
+    const basePath = "basePath" in props ? props.basePath! : "/";
+    return value === "movie" ? basePath : `${basePath}?type=tv`;
+  }
+
   return (
     <div
       role="tablist"
@@ -33,11 +45,10 @@ export function MediaTypeToggle({
     >
       {OPTIONS.map(({ value, label, icon: Icon }) => {
         const isActive = value === active;
-        const href = value === "movie" ? basePath : `${basePath}?type=tv`;
         return (
           <Link
             key={value}
-            href={href}
+            href={computeHref(value)}
             role="tab"
             aria-selected={isActive}
             prefetch={false}
