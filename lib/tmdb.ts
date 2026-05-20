@@ -1,10 +1,20 @@
 import {
+  tmdbDiscoverResponseSchema,
+  tmdbGenresResponseSchema,
   tmdbMovieDetailsSchema,
+  tmdbPersonMovieCreditsSchema,
+  tmdbPersonSchema,
   tmdbRecommendationsResponseSchema,
   tmdbSearchResponseSchema,
+  tmdbWatchProvidersResponseSchema,
+  type TmdbDiscoverResponse,
+  type TmdbGenresResponse,
   type TmdbMovieDetails,
+  type TmdbPerson,
+  type TmdbPersonMovieCredits,
   type TmdbRecommendationsResponse,
   type TmdbSearchResponse,
+  type TmdbWatchProvidersResponse,
 } from "@/types/movie";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
@@ -84,6 +94,67 @@ export function getRecommendations(
     {},
     tmdbRecommendationsResponseSchema
   );
+}
+
+// ----- Personas (actores/crew) -----
+
+export function getPersonDetails(personId: number): Promise<TmdbPerson> {
+  return tmdbFetch(`/person/${personId}`, {}, tmdbPersonSchema);
+}
+
+export function getPersonMovieCredits(
+  personId: number
+): Promise<TmdbPersonMovieCredits> {
+  return tmdbFetch(
+    `/person/${personId}/movie_credits`,
+    {},
+    tmdbPersonMovieCreditsSchema
+  );
+}
+
+// ----- Géneros y discover -----
+
+export function getGenres(): Promise<TmdbGenresResponse> {
+  return tmdbFetch("/genre/movie/list", {}, tmdbGenresResponseSchema);
+}
+
+export function discoverByGenre(
+  genreId: number,
+  page: number = 1
+): Promise<TmdbDiscoverResponse> {
+  return tmdbFetch(
+    "/discover/movie",
+    {
+      with_genres: genreId,
+      sort_by: "popularity.desc",
+      page,
+      include_adult: "false",
+    },
+    tmdbDiscoverResponseSchema
+  );
+}
+
+// ----- Watch providers (JustWatch via TMDB) -----
+
+export function getWatchProviders(
+  movieId: number
+): Promise<TmdbWatchProvidersResponse> {
+  // El endpoint NO acepta language; devuelve TODOS los países en `results`.
+  // Filtramos por región en el consumer.
+  return tmdbFetch(
+    `/movie/${movieId}/watch/providers`,
+    {},
+    tmdbWatchProvidersResponseSchema
+  );
+}
+
+// Helper para perfiles de personas (la imagen del actor).
+export function profileUrl(
+  profilePath: string | null | undefined,
+  size: "w45" | "w185" | "h632" | "original" = "w185"
+): string | null {
+  if (!profilePath) return null;
+  return `${TMDB_IMG_BASE}/${size}${profilePath}`;
 }
 
 // Helpers de URL para los assets de TMDB

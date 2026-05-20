@@ -13,6 +13,7 @@ export const tmdbSearchMovieSchema = z.object({
   original_title: z.string().nullable().optional(),
   release_date: z.string().nullable().optional(),
   poster_path: z.string().nullable().optional(),
+  backdrop_path: z.string().nullable().optional(),
   overview: z.string().nullable().optional(),
   vote_average: z.number().nullable().optional(),
 });
@@ -72,6 +73,103 @@ export type TmdbSearchResponse = z.infer<typeof tmdbSearchResponseSchema>;
 export type TmdbMovieDetails = z.infer<typeof tmdbMovieDetailsSchema>;
 export type TmdbRecommendationsResponse = z.infer<
   typeof tmdbRecommendationsResponseSchema
+>;
+
+// =============================================================================
+// TMDB: Person (actor/actress/crew)
+// =============================================================================
+
+export const tmdbPersonSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  biography: z.string().nullable().optional(),
+  birthday: z.string().nullable().optional(),
+  deathday: z.string().nullable().optional(),
+  place_of_birth: z.string().nullable().optional(),
+  profile_path: z.string().nullable().optional(),
+  known_for_department: z.string().nullable().optional(),
+  popularity: z.number().nullable().optional(),
+});
+
+// Cada entry en `cast` o `crew` de movie_credits. Es como una peli con
+// algunos extras (character, job, etc).
+export const tmdbPersonMovieCreditSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  original_title: z.string().nullable().optional(),
+  release_date: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  vote_average: z.number().nullable().optional(),
+  character: z.string().nullable().optional(),
+  job: z.string().nullable().optional(),
+  popularity: z.number().nullable().optional(),
+});
+
+export const tmdbPersonMovieCreditsSchema = z.object({
+  id: z.number(),
+  cast: z.array(tmdbPersonMovieCreditSchema).optional(),
+  crew: z.array(tmdbPersonMovieCreditSchema).optional(),
+});
+
+export type TmdbPerson = z.infer<typeof tmdbPersonSchema>;
+export type TmdbPersonMovieCredit = z.infer<typeof tmdbPersonMovieCreditSchema>;
+export type TmdbPersonMovieCredits = z.infer<typeof tmdbPersonMovieCreditsSchema>;
+
+// =============================================================================
+// TMDB: Géneros + Discover
+// =============================================================================
+
+export const tmdbGenreSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+});
+
+export const tmdbGenresResponseSchema = z.object({
+  genres: z.array(tmdbGenreSchema),
+});
+
+export const tmdbDiscoverResponseSchema = z.object({
+  page: z.number(),
+  results: z.array(tmdbSearchMovieSchema),
+  total_results: z.number(),
+  total_pages: z.number(),
+});
+
+export type TmdbGenre = z.infer<typeof tmdbGenreSchema>;
+export type TmdbGenresResponse = z.infer<typeof tmdbGenresResponseSchema>;
+export type TmdbDiscoverResponse = z.infer<typeof tmdbDiscoverResponseSchema>;
+
+// =============================================================================
+// TMDB: Watch Providers (data de JustWatch via TMDB)
+// =============================================================================
+// El endpoint devuelve resultados por país: { results: { AR: {...}, MX: {...}, ... } }
+// Para nuestro uso nos interesa: flatrate (incluido en suscripción), rent y buy.
+
+const tmdbProviderSchema = z.object({
+  provider_id: z.number(),
+  provider_name: z.string(),
+  logo_path: z.string().nullable().optional(),
+  display_priority: z.number().nullable().optional(),
+});
+
+const tmdbWatchRegionSchema = z.object({
+  link: z.string().optional(),
+  flatrate: z.array(tmdbProviderSchema).optional(),
+  rent: z.array(tmdbProviderSchema).optional(),
+  buy: z.array(tmdbProviderSchema).optional(),
+  free: z.array(tmdbProviderSchema).optional(),
+  ads: z.array(tmdbProviderSchema).optional(),
+});
+
+export const tmdbWatchProvidersResponseSchema = z.object({
+  id: z.number(),
+  results: z.record(z.string(), tmdbWatchRegionSchema),
+});
+
+export type TmdbProvider = z.infer<typeof tmdbProviderSchema>;
+export type TmdbWatchRegion = z.infer<typeof tmdbWatchRegionSchema>;
+export type TmdbWatchProvidersResponse = z.infer<
+  typeof tmdbWatchProvidersResponseSchema
 >;
 
 // =============================================================================

@@ -11,6 +11,10 @@ import {
 } from "@/components/RatingsSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
 import { TrackVisit } from "@/components/TrackVisit";
+import {
+  WhereToWatch,
+  WhereToWatchSkeleton,
+} from "@/components/WhereToWatch";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getMovieDetails, getYear, posterUrl } from "@/lib/tmdb";
@@ -238,8 +242,13 @@ export default async function MoviePage({ params }: Props) {
                   ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
                   : null;
                 return (
-                  <div key={actor.id} className="text-center">
-                    <div className="relative aspect-[2/3] bg-muted rounded-md overflow-hidden mb-1.5">
+                  <Link
+                    key={actor.id}
+                    href={`/actor/${actor.id}`}
+                    className="text-center group block"
+                    prefetch={false}
+                  >
+                    <div className="relative aspect-[2/3] bg-muted rounded-md overflow-hidden mb-1.5 ring-1 ring-border transition-all group-hover:-translate-y-0.5 group-hover:ring-2 group-hover:ring-primary/60">
                       {profile ? (
                         <Image
                           src={profile}
@@ -254,7 +263,7 @@ export default async function MoviePage({ params }: Props) {
                         </div>
                       )}
                     </div>
-                    <div className="text-xs font-medium truncate">
+                    <div className="text-xs font-medium truncate group-hover:text-primary transition-colors">
                       {actor.name}
                     </div>
                     {actor.character && (
@@ -262,12 +271,22 @@ export default async function MoviePage({ params }: Props) {
                         {actor.character}
                       </div>
                     )}
-                  </div>
+                  </Link>
                 );
               })}
             </div>
           </section>
         )}
+
+        {/* Dónde verla — streaming providers via TMDB (datos JustWatch).
+            Detecta región desde el header x-vercel-ip-country (Vercel) o
+            fallback a AR. */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">Dónde verla</h2>
+          <Suspense fallback={<WhereToWatchSkeleton />}>
+            <WhereToWatch tmdbId={movie.id} />
+          </Suspense>
+        </section>
 
         {/* Ratings comparados — las 6 plataformas en paralelo con Promise.allSettled.
             Envuelto en Suspense para streamear: la peli renderiza ya,
