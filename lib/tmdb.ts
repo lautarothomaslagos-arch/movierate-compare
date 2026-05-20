@@ -8,6 +8,7 @@ import {
   tmdbPersonTvCreditsSchema,
   tmdbRecommendationsResponseSchema,
   tmdbSearchResponseSchema,
+  tmdbTrendingResponseSchema,
   tmdbTvDetailsSchema,
   tmdbTvDiscoverResponseSchema,
   tmdbTvRecommendationsResponseSchema,
@@ -21,6 +22,7 @@ import {
   type TmdbPersonTvCredits,
   type TmdbRecommendationsResponse,
   type TmdbSearchResponse,
+  type TmdbTrendingResponse,
   type TmdbTvDetails,
   type TmdbTvDiscoverResponse,
   type TmdbTvRecommendationsResponse,
@@ -253,6 +255,18 @@ export function getPersonTvCredits(
     `/person/${personId}/tv_credits`,
     {},
     tmdbPersonTvCreditsSchema
+  );
+}
+
+// ----- Trending -----
+
+export function getTrending(
+  timeWindow: "day" | "week" = "day"
+): Promise<TmdbTrendingResponse> {
+  return tmdbFetch(
+    `/trending/all/${timeWindow}`,
+    {},
+    tmdbTrendingResponseSchema
   );
 }
 

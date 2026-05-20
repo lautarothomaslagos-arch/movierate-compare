@@ -1,32 +1,54 @@
 import { Suspense } from "react";
 
 import { AuthErrorToast } from "@/components/AuthErrorToast";
-import { SearchBar } from "@/components/SearchBar";
+import {
+  FeaturedGenresSection,
+  FeaturedGenresSkeleton,
+} from "@/components/FeaturedGenresSection";
+import { HeroSection, HeroSectionSkeleton } from "@/components/HeroSection";
+import {
+  TrendingSection,
+  TrendingSectionSkeleton,
+} from "@/components/TrendingSection";
 
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 sm:py-24">
-      {/* Suspense porque useSearchParams es client-only y requiere boundary */}
+    <main className="flex flex-1 flex-col">
+      {/* Suspense porque useSearchParams es client-only */}
       <Suspense fallback={null}>
         <AuthErrorToast />
       </Suspense>
 
-      <div className="w-full max-w-2xl flex flex-col items-center gap-8 text-center">
-        <div className="space-y-3">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            MovieRate <span className="text-muted-foreground">Compare</span>
-          </h1>
-          <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto">
-            Compará el rating de una peli en IMDb, Rotten Tomatoes, Metacritic, TMDB, Letterboxd y Filmaffinity de una sola búsqueda.
-          </p>
-        </div>
+      {/* Hero con backdrop dinámico + buscador */}
+      <Suspense fallback={<HeroSectionSkeleton />}>
+        <HeroSection />
+      </Suspense>
 
-        <div className="w-full">
-          <SearchBar />
-          <p className="text-xs text-muted-foreground mt-2">
-            Tipeá al menos 2 caracteres
-          </p>
-        </div>
+      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-10 sm:py-14 space-y-12">
+        {/* Tendencias del día */}
+        <section>
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+              Tendencias de hoy
+            </h2>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              Lo que más se está viendo en TMDB
+            </p>
+          </div>
+          <Suspense fallback={<TrendingSectionSkeleton />}>
+            <TrendingSection limit={12} />
+          </Suspense>
+        </section>
+
+        {/* Géneros destacados */}
+        <section>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-3">
+            Géneros para arrancar
+          </h2>
+          <Suspense fallback={<FeaturedGenresSkeleton />}>
+            <FeaturedGenresSection />
+          </Suspense>
+        </section>
       </div>
     </main>
   );

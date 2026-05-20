@@ -303,6 +303,40 @@ export type TmdbPersonTvCredits = z.infer<typeof tmdbPersonTvCreditsSchema>;
 export type TmdbMultiResponse = z.infer<typeof tmdbMultiResponseSchema>;
 
 // =============================================================================
+// TMDB: Trending
+// =============================================================================
+// /trending/all/{time_window} devuelve mezcla de movies + tv + people.
+// Filtramos people en el consumer.
+
+const tmdbTrendingMovieSchema = tmdbSearchMovieSchema.extend({
+  media_type: z.literal("movie"),
+});
+const tmdbTrendingTvSchema = tmdbTvSearchSchema.extend({
+  media_type: z.literal("tv"),
+});
+const tmdbTrendingPersonSchema = z.object({
+  id: z.number(),
+  media_type: z.literal("person"),
+  name: z.string(),
+  profile_path: z.string().nullable().optional(),
+});
+
+export const tmdbTrendingResponseSchema = z.object({
+  page: z.number(),
+  results: z.array(
+    z.union([
+      tmdbTrendingMovieSchema,
+      tmdbTrendingTvSchema,
+      tmdbTrendingPersonSchema,
+    ])
+  ),
+  total_results: z.number(),
+  total_pages: z.number(),
+});
+
+export type TmdbTrendingResponse = z.infer<typeof tmdbTrendingResponseSchema>;
+
+// =============================================================================
 // OMDb
 // =============================================================================
 // OMDb devuelve TODO como string ("imdbRating": "7.8") así que parseamos a
