@@ -22,9 +22,13 @@ export function LocalHistoryList() {
     setItems(getLocalHistory());
   }, []);
 
-  function handleDelete(id: number) {
-    removeLocalItem(id);
-    setItems((prev) => (prev ? prev.filter((x) => x.tmdb_id !== id) : prev));
+  function handleDelete(id: number, mediaType: "movie" | "tv") {
+    removeLocalItem(id, mediaType);
+    setItems((prev) =>
+      prev
+        ? prev.filter((x) => !(x.tmdb_id === id && x.media_type === mediaType))
+        : prev
+    );
   }
 
   function handleClearAll() {
@@ -70,14 +74,15 @@ export function LocalHistoryList() {
       </div>
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.tmdb_id}>
+          <li key={`${item.media_type}-${item.tmdb_id}`}>
             <HistoryItemCard
               tmdb_id={item.tmdb_id}
+              media_type={item.media_type}
               title={item.title}
               year={item.year}
               poster_path={item.poster_path}
-              onDelete={(id) => {
-                handleDelete(id);
+              onDelete={(id, mediaType) => {
+                handleDelete(id, mediaType);
                 return Promise.resolve({ ok: true });
               }}
             />

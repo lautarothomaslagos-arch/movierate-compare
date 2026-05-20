@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 type SearchResult = {
   id: number;
+  media_type: "movie" | "tv";
   title: string;
   year: number | null;
   poster_path: string | null;
@@ -64,10 +65,10 @@ export function SearchBar() {
   const showDropdown =
     open && debouncedQuery.length >= 2 && (isFetching || queryFinished || isError);
 
-  function selectMovie(id: number) {
+  function selectItem(id: number, mediaType: "movie" | "tv") {
     setOpen(false);
     setQuery("");
-    router.push(`/movie/${id}`);
+    router.push(mediaType === "tv" ? `/serie/${id}` : `/movie/${id}`);
   }
 
   return (
@@ -110,9 +111,9 @@ export function SearchBar() {
 
           {results.map((m) => (
             <button
-              key={m.id}
+              key={`${m.media_type}-${m.id}`}
               type="button"
-              onClick={() => selectMovie(m.id)}
+              onClick={() => selectItem(m.id, m.media_type)}
               className="w-full flex items-center gap-3 p-2 text-left hover:bg-accent hover:text-accent-foreground transition-colors"
             >
               <div className="relative shrink-0 w-10 h-14 bg-muted rounded-sm overflow-hidden">
@@ -127,7 +128,19 @@ export function SearchBar() {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium truncate">{m.title}</div>
+                <div className="text-sm font-medium truncate flex items-center gap-1.5">
+                  <span className="truncate">{m.title}</span>
+                  <span
+                    className={cn(
+                      "shrink-0 inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide",
+                      m.media_type === "tv"
+                        ? "bg-purple-500/15 text-purple-400"
+                        : "bg-blue-500/15 text-blue-400"
+                    )}
+                  >
+                    {m.media_type === "tv" ? "Serie" : "Peli"}
+                  </span>
+                </div>
                 {m.year !== null && (
                   <div className="text-xs text-muted-foreground">{m.year}</div>
                 )}

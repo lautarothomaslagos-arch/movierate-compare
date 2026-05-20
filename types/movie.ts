@@ -173,6 +173,136 @@ export type TmdbWatchProvidersResponse = z.infer<
 >;
 
 // =============================================================================
+// TMDB: TV (series)
+// =============================================================================
+// Las series tienen estructura similar a pelis pero con campos únicos:
+// - `name` en vez de `title`
+// - `first_air_date` en vez de `release_date`
+// - `number_of_seasons`, `number_of_episodes`, `status` ("Ended", "Returning Series")
+// - `created_by` en vez de director (crew)
+
+export const tmdbTvSearchSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  original_name: z.string().nullable().optional(),
+  first_air_date: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  backdrop_path: z.string().nullable().optional(),
+  overview: z.string().nullable().optional(),
+  vote_average: z.number().nullable().optional(),
+});
+
+const tvCreatorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  profile_path: z.string().nullable().optional(),
+});
+
+export const tmdbTvDetailsSchema = z.object({
+  id: z.number(),
+  external_ids: z
+    .object({
+      imdb_id: z.string().nullable().optional(),
+    })
+    .optional(),
+  name: z.string(),
+  original_name: z.string().nullable().optional(),
+  first_air_date: z.string().nullable().optional(),
+  last_air_date: z.string().nullable().optional(),
+  overview: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  backdrop_path: z.string().nullable().optional(),
+  number_of_seasons: z.number().nullable().optional(),
+  number_of_episodes: z.number().nullable().optional(),
+  episode_run_time: z.array(z.number()).optional(),
+  status: z.string().nullable().optional(),
+  in_production: z.boolean().nullable().optional(),
+  vote_average: z.number().nullable().optional(),
+  vote_count: z.number().nullable().optional(),
+  genres: z.array(z.object({ id: z.number(), name: z.string() })).optional(),
+  created_by: z.array(tvCreatorSchema).optional(),
+  credits: z
+    .object({
+      cast: z
+        .array(
+          z.object({
+            id: z.number(),
+            name: z.string(),
+            character: z.string().nullable().optional(),
+            profile_path: z.string().nullable().optional(),
+            order: z.number().nullable().optional(),
+          })
+        )
+        .optional(),
+    })
+    .optional(),
+});
+
+export const tmdbTvDiscoverResponseSchema = z.object({
+  page: z.number(),
+  results: z.array(tmdbTvSearchSchema),
+  total_results: z.number(),
+  total_pages: z.number(),
+});
+
+export const tmdbTvRecommendationsResponseSchema = z.object({
+  page: z.number(),
+  results: z.array(tmdbTvSearchSchema),
+  total_results: z.number(),
+  total_pages: z.number(),
+});
+
+// Para filmografía de TV (similar a movie credits pero con campos de TV)
+export const tmdbPersonTvCreditSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  original_name: z.string().nullable().optional(),
+  first_air_date: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  character: z.string().nullable().optional(),
+  episode_count: z.number().nullable().optional(),
+  popularity: z.number().nullable().optional(),
+});
+
+export const tmdbPersonTvCreditsSchema = z.object({
+  id: z.number(),
+  cast: z.array(tmdbPersonTvCreditSchema).optional(),
+});
+
+// /search/multi devuelve mezcla de movies, tv y people. Cada item tiene media_type.
+const tmdbMultiMovieSchema = tmdbSearchMovieSchema.extend({
+  media_type: z.literal("movie"),
+});
+const tmdbMultiTvSchema = tmdbTvSearchSchema.extend({
+  media_type: z.literal("tv"),
+});
+const tmdbMultiPersonSchema = z.object({
+  id: z.number(),
+  media_type: z.literal("person"),
+  name: z.string(),
+  profile_path: z.string().nullable().optional(),
+});
+
+export const tmdbMultiResponseSchema = z.object({
+  page: z.number(),
+  results: z.array(
+    z.union([tmdbMultiMovieSchema, tmdbMultiTvSchema, tmdbMultiPersonSchema])
+  ),
+  total_results: z.number(),
+  total_pages: z.number(),
+});
+
+export type TmdbTvSearch = z.infer<typeof tmdbTvSearchSchema>;
+export type TmdbTvDetails = z.infer<typeof tmdbTvDetailsSchema>;
+export type TmdbTvDiscoverResponse = z.infer<typeof tmdbTvDiscoverResponseSchema>;
+export type TmdbTvRecommendationsResponse = z.infer<
+  typeof tmdbTvRecommendationsResponseSchema
+>;
+export type TmdbPersonTvCredit = z.infer<typeof tmdbPersonTvCreditSchema>;
+export type TmdbPersonTvCredits = z.infer<typeof tmdbPersonTvCreditsSchema>;
+export type TmdbMultiResponse = z.infer<typeof tmdbMultiResponseSchema>;
+
+// =============================================================================
 // OMDb
 // =============================================================================
 // OMDb devuelve TODO como string ("imdbRating": "7.8") así que parseamos a

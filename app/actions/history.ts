@@ -6,7 +6,10 @@ import { createClient } from "@/lib/supabase/server";
 // Server actions para mutar history desde la página /historial.
 // RLS garantiza que cada user solo puede afectar sus propias rows.
 
-export async function deleteHistoryItem(tmdbId: number) {
+export async function deleteHistoryItem(
+  tmdbId: number,
+  mediaType: "movie" | "tv" = "movie"
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,7 +20,8 @@ export async function deleteHistoryItem(tmdbId: number) {
     .from("history")
     .delete()
     .eq("user_id", user.id)
-    .eq("tmdb_id", tmdbId);
+    .eq("tmdb_id", tmdbId)
+    .eq("media_type", mediaType);
 
   if (error) {
     console.warn("[history:delete] error:", error.message);

@@ -52,9 +52,10 @@ export function DbHistoryList({ items }: { items: HistoryItem[] }) {
       </div>
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.tmdb_id}>
+          <li key={`${item.media_type}-${item.tmdb_id}`}>
             <HistoryItemCard
               tmdb_id={item.tmdb_id}
+              media_type={item.media_type}
               title={item.title}
               year={item.year}
               poster_path={item.poster_path}

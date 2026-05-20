@@ -8,29 +8,38 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 // Item visual del historial. El onDelete es genérico — sirve tanto para
 // borrar de DB (server action) como de localStorage (sync).
+// media_type opcional (default 'movie') determina si linkea a /movie/[id]
+// o /serie/[id], y muestra badge correspondiente.
 export function HistoryItemCard({
   tmdb_id,
+  media_type = "movie",
   title,
   year,
   poster_path,
   onDelete,
 }: {
   tmdb_id: number;
+  media_type?: "movie" | "tv";
   title: string;
   year: number | null;
   poster_path: string | null;
-  onDelete: (id: number) => void | Promise<{ error?: string; ok?: true }>;
+  onDelete: (
+    id: number,
+    mediaType: "movie" | "tv"
+  ) => void | Promise<{ error?: string; ok?: true }>;
 }) {
   const [isPending, startTransition] = useTransition();
+  const href = media_type === "tv" ? `/serie/${tmdb_id}` : `/movie/${tmdb_id}`;
 
   function handleDelete(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     startTransition(async () => {
-      const r = await onDelete(tmdb_id);
+      const r = await onDelete(tmdb_id, media_type);
       if (r && "error" in r && r.error) {
         toast.error("No se pudo eliminar.");
       }
@@ -40,7 +49,7 @@ export function HistoryItemCard({
   return (
     <Card className="p-3 flex gap-3 items-center group">
       <Link
-        href={`/movie/${tmdb_id}`}
+        href={href}
         className="relative shrink-0 w-12 h-16 bg-muted rounded overflow-hidden ring-1 ring-border"
       >
         {poster_path && (
@@ -53,11 +62,20 @@ export function HistoryItemCard({
           />
         )}
       </Link>
-      <Link
-        href={`/movie/${tmdb_id}`}
-        className="flex-1 min-w-0 hover:underline"
-      >
-        <div className="text-sm font-medium truncate">{title}</div>
+      <Link href={href} className="flex-1 min-w-0 hover:underline">
+        <div className="text-sm font-medium truncate flex items-center gap-1.5">
+          <span className="truncate">{title}</span>
+          <span
+            className={cn(
+              "shrink-0 inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide",
+              media_type === "tv"
+                ? "bg-purple-500/15 text-purple-400"
+                : "bg-blue-500/15 text-blue-400"
+            )}
+          >
+            {media_type === "tv" ? "Serie" : "Peli"}
+          </span>
+        </div>
         {year !== null && (
           <div className="text-xs text-muted-foreground">{year}</div>
         )}

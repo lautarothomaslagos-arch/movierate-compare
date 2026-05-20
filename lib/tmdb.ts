@@ -2,18 +2,28 @@ import {
   tmdbDiscoverResponseSchema,
   tmdbGenresResponseSchema,
   tmdbMovieDetailsSchema,
+  tmdbMultiResponseSchema,
   tmdbPersonMovieCreditsSchema,
   tmdbPersonSchema,
+  tmdbPersonTvCreditsSchema,
   tmdbRecommendationsResponseSchema,
   tmdbSearchResponseSchema,
+  tmdbTvDetailsSchema,
+  tmdbTvDiscoverResponseSchema,
+  tmdbTvRecommendationsResponseSchema,
   tmdbWatchProvidersResponseSchema,
   type TmdbDiscoverResponse,
   type TmdbGenresResponse,
   type TmdbMovieDetails,
+  type TmdbMultiResponse,
   type TmdbPerson,
   type TmdbPersonMovieCredits,
+  type TmdbPersonTvCredits,
   type TmdbRecommendationsResponse,
   type TmdbSearchResponse,
+  type TmdbTvDetails,
+  type TmdbTvDiscoverResponse,
+  type TmdbTvRecommendationsResponse,
   type TmdbWatchProvidersResponse,
 } from "@/types/movie";
 
@@ -118,20 +128,39 @@ export function getGenres(): Promise<TmdbGenresResponse> {
   return tmdbFetch("/genre/movie/list", {}, tmdbGenresResponseSchema);
 }
 
+export type DiscoverSort = "popular" | "top" | "recent";
+
 export function discoverByGenre(
   genreId: number,
-  page: number = 1
+  page: number = 1,
+  sort: DiscoverSort = "popular"
 ): Promise<TmdbDiscoverResponse> {
-  return tmdbFetch(
-    "/discover/movie",
-    {
-      with_genres: genreId,
-      sort_by: "popularity.desc",
-      page,
-      include_adult: "false",
-    },
-    tmdbDiscoverResponseSchema
-  );
+  const params: Record<string, string | number> = {
+    with_genres: genreId,
+    page,
+    include_adult: "false",
+  };
+
+  switch (sort) {
+    case "top":
+      // Mejor puntuadas con mínimo de votos para excluir rarezas
+      params.sort_by = "vote_average.desc";
+      params["vote_count.gte"] = 500;
+      break;
+    case "recent":
+      // Más nuevas, pero filtrando pelis que ya se estrenaron
+      params.sort_by = "primary_release_date.desc";
+      params["primary_release_date.lte"] = new Date()
+        .toISOString()
+        .slice(0, 10);
+      params["vote_count.gte"] = 5;
+      break;
+    case "popular":
+    default:
+      params.sort_by = "popularity.desc";
+  }
+
+  return tmdbFetch("/discover/movie", params, tmdbDiscoverResponseSchema);
 }
 
 // ----- Watch providers (JustWatch via TMDB) -----
@@ -145,6 +174,85 @@ export function getWatchProviders(
     `/movie/${movieId}/watch/providers`,
     {},
     tmdbWatchProvidersResponseSchema
+  );
+}
+
+// ----- TV / Series -----
+
+export function searchMulti(query: string): Promise<TmdbMultiResponse> {
+  return tmdbFetch(
+    "/search/multi",
+    { query, include_adult: "false", page: 1 },
+    tmdbMultiResponseSchema
+  );
+}
+
+export function getTvDetails(tvId: number): Promise<TmdbTvDetails> {
+  return tmdbFetch(
+    `/tv/${tvId}`,
+    { append_to_response: "credits,external_ids" },
+    tmdbTvDetailsSchema
+  );
+}
+
+export function getTvRecommendations(
+  tvId: number
+): Promise<TmdbTvRecommendationsResponse> {
+  return tmdbFetch(
+    `/tv/${tvId}/recommendations`,
+    {},
+    tmdbTvRecommendationsResponseSchema
+  );
+}
+
+export function getTvGenres(): Promise<TmdbGenresResponse> {
+  return tmdbFetch("/genre/tv/list", {}, tmdbGenresResponseSchema);
+}
+
+export function discoverTvByGenre(
+  genreId: number,
+  page: number = 1,
+  sort: DiscoverSort = "popular"
+): Promise<TmdbTvDiscoverResponse> {
+  const params: Record<string, string | number> = {
+    with_genres: genreId,
+    page,
+    include_adult: "false",
+  };
+  switch (sort) {
+    case "top":
+      params.sort_by = "vote_average.desc";
+      params["vote_count.gte"] = 200; // series tienen menos votos que pelis
+      break;
+    case "recent":
+      params.sort_by = "first_air_date.desc";
+      params["first_air_date.lte"] = new Date().toISOString().slice(0, 10);
+      params["vote_count.gte"] = 5;
+      break;
+    case "popular":
+    default:
+      params.sort_by = "popularity.desc";
+  }
+  return tmdbFetch("/discover/tv", params, tmdbTvDiscoverResponseSchema);
+}
+
+export function getTvWatchProviders(
+  tvId: number
+): Promise<TmdbWatchProvidersResponse> {
+  return tmdbFetch(
+    `/tv/${tvId}/watch/providers`,
+    {},
+    tmdbWatchProvidersResponseSchema
+  );
+}
+
+export function getPersonTvCredits(
+  personId: number
+): Promise<TmdbPersonTvCredits> {
+  return tmdbFetch(
+    `/person/${personId}/tv_credits`,
+    {},
+    tmdbPersonTvCreditsSchema
   );
 }
 

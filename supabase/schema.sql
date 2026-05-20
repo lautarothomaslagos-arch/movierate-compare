@@ -9,15 +9,19 @@
 -- =====================================================================
 
 -- ------------------------------ tabla history ------------------------------
+-- media_type distingue películas ('movie') de series ('tv') porque TMDB
+-- usa namespaces de id distintos (un movie con id 1 y un tv con id 1 son
+-- cosas distintas).
 create table if not exists public.history (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   tmdb_id int not null,
+  media_type text not null default 'movie',
   title text not null,
   year int,
   poster_path text,
   last_viewed_at timestamptz not null default now(),
-  unique(user_id, tmdb_id)
+  unique(user_id, tmdb_id, media_type)
 );
 
 create index if not exists history_user_last_viewed_idx

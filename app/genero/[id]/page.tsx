@@ -3,25 +3,55 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { GenreSortSelect, type GenreSort } from "@/components/GenreSortSelect";
+import { MediaTypeToggle, type MediaType } from "@/components/MediaTypeToggle";
 import { Button } from "@/components/ui/button";
-import { discoverByGenre, getGenres, getYear, posterUrl } from "@/lib/tmdb";
+import {
+  discoverByGenre,
+  discoverTvByGenre,
+  getGenres,
+  getTvGenres,
+  getYear,
+  posterUrl,
+  type DiscoverSort,
+} from "@/lib/tmdb";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; sort?: string; type?: string }>;
 };
 
-export async function generateMetadata({ params }: Props) {
+function parseSort(value: string | undefined): DiscoverSort {
+  if (value === "top" || value === "recent") return value;
+  return "popular";
+}
+
+function parseType(value: string | undefined): MediaType {
+  return value === "tv" ? "tv" : "movie";
+}
+
+const SORT_LABELS: Record<GenreSort, string> = {
+  popular: "populares",
+  top: "mejor puntuadas",
+  recent: "más recientes",
+};
+
+export async function generateMetadata({ params, searchParams }: Props) {
   const { id } = await params;
+  const { type: typeParam } = await searchParams;
   const genreId = parseInt(id, 10);
   if (!Number.isFinite(genreId)) return { title: "MovieRate Compare" };
+  const mediaType = parseType(typeParam);
+
   try {
-    const data = await getGenres();
+    const data =
+      mediaType === "tv" ? await getTvGenres() : await getGenres();
     const genre = data.genres.find((g) => g.id === genreId);
     if (!genre) return { title: "MovieRate Compare" };
+    const noun = mediaType === "tv" ? "Series" : "Películas";
     return {
-      title: `${genre.name} — MovieRate Compare`,
-      description: `Películas del género ${genre.name} ordenadas por popularidad.`,
+      title: `${genre.name} (${noun}) — MovieRate Compare`,
+      description: `${noun} del género ${genre.name} ordenadas por popularidad.`,
     };
   } catch {
     return { title: "MovieRate Compare" };
@@ -30,27 +60,59 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function GeneroPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { page: pageParam } = await searchParams;
+  const {
+    page: pageParam,
+    sort: sortParam,
+    type: typeParam,
+  } = await searchParams;
   const genreId = parseInt(id, 10);
   if (!Number.isFinite(genreId)) notFound();
 
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const sort = parseSort(sortParam);
+  const mediaType = parseType(typeParam);
 
-  // Fetch en paralelo del género (para el título) + las pelis de la página
+  // Fetch en paralelo del género (para el título) + items de la página
   let genreName = "Género";
-  let movies;
+  let items: Array<{
+    id: number;
+    title: string;
+    year: number | null;
+    poster_path: string | null;
+  }> = [];
   let totalPages = 1;
   try {
-    const [genresData, discover] = await Promise.all([
-      getGenres(),
-      discoverByGenre(genreId, page),
-    ]);
-    const found = genresData.genres.find((g) => g.id === genreId);
-    if (!found) notFound();
-    genreName = found.name;
-    movies = discover.results;
-    // TMDB capea total_pages a 500 en discover
-    totalPages = Math.min(discover.total_pages, 500);
+    if (mediaType === "tv") {
+      const [genresData, discover] = await Promise.all([
+        getTvGenres(),
+        discoverTvByGenre(genreId, page, sort),
+      ]);
+      const found = genresData.genres.find((g) => g.id === genreId);
+      if (!found) notFound();
+      genreName = found.name;
+      items = discover.results.map((t) => ({
+        id: t.id,
+        title: t.name,
+        year: getYear(t.first_air_date),
+        poster_path: t.poster_path ?? null,
+      }));
+      totalPages = Math.min(discover.total_pages, 500);
+    } else {
+      const [genresData, discover] = await Promise.all([
+        getGenres(),
+        discoverByGenre(genreId, page, sort),
+      ]);
+      const found = genresData.genres.find((g) => g.id === genreId);
+      if (!found) notFound();
+      genreName = found.name;
+      items = discover.results.map((m) => ({
+        id: m.id,
+        title: m.title,
+        year: getYear(m.release_date),
+        poster_path: m.poster_path ?? null,
+      }));
+      totalPages = Math.min(discover.total_pages, 500);
+    }
   } catch {
     notFound();
   }
@@ -58,36 +120,63 @@ export default async function GeneroPage({ params, searchParams }: Props) {
   const hasPrev = page > 1;
   const hasNext = page < totalPages;
 
+  // Helper para construir URLs de paginación manteniendo sort + type
+  const pageUrl = (p: number) => {
+    const sp = new URLSearchParams();
+    if (p > 1) sp.set("page", String(p));
+    if (sort !== "popular") sp.set("sort", sort);
+    if (mediaType === "tv") sp.set("type", "tv");
+    const qs = sp.toString();
+    return `/genero/${genreId}${qs ? `?${qs}` : ""}`;
+  };
+
+  const itemHrefPrefix = mediaType === "tv" ? "/serie" : "/movie";
+  const nounPlural = mediaType === "tv" ? "series" : "películas";
+
   return (
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
       <Link
-        href="/generos"
+        href={mediaType === "tv" ? "/generos?type=tv" : "/generos"}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-3"
       >
         <ArrowLeft className="size-4" />
         Todos los géneros
       </Link>
 
-      <header className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">{genreName}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Página {page} de {totalPages.toLocaleString("es-AR")} · ordenado por popularidad
-        </p>
+      <header className="mb-4 flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">{genreName}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Página {page} de {totalPages.toLocaleString("es-AR")} · {SORT_LABELS[sort]} · {nounPlural}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <MediaTypeToggle
+              basePath={`/genero/${genreId}`}
+              active={mediaType}
+            />
+            <GenreSortSelect
+              genreId={genreId}
+              active={sort}
+              mediaType={mediaType}
+            />
+          </div>
+        </div>
       </header>
 
-      {movies.length === 0 ? (
+      {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No encontramos películas para esta página.
+          No encontramos {nounPlural} para esta página.
         </p>
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-          {movies.map((m) => {
+          {items.map((m) => {
             const poster = posterUrl(m.poster_path, "w342");
-            const year = getYear(m.release_date);
             return (
               <Link
                 key={m.id}
-                href={`/movie/${m.id}`}
+                href={`${itemHrefPrefix}/${m.id}`}
                 className="group block"
                 prefetch={false}
               >
@@ -109,8 +198,8 @@ export default async function GeneroPage({ params, searchParams }: Props) {
                 <div className="mt-1.5 text-xs font-medium truncate">
                   {m.title}
                 </div>
-                {year !== null && (
-                  <div className="text-xs text-muted-foreground">{year}</div>
+                {m.year !== null && (
+                  <div className="text-xs text-muted-foreground">{m.year}</div>
                 )}
               </Link>
             );
@@ -126,10 +215,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
         >
           <Button asChild variant="outline" size="sm" disabled={!hasPrev}>
             {hasPrev ? (
-              <Link
-                href={`/genero/${genreId}?page=${page - 1}`}
-                prefetch={false}
-              >
+              <Link href={pageUrl(page - 1)} prefetch={false}>
                 <ChevronLeft className="size-4" />
                 Anterior
               </Link>
@@ -147,10 +233,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
 
           <Button asChild variant="outline" size="sm" disabled={!hasNext}>
             {hasNext ? (
-              <Link
-                href={`/genero/${genreId}?page=${page + 1}`}
-                prefetch={false}
-              >
+              <Link href={pageUrl(page + 1)} prefetch={false}>
                 Siguiente
                 <ChevronRight className="size-4" />
               </Link>

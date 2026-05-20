@@ -4,9 +4,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
   getPersonDetails,
   getPersonMovieCredits,
+  getPersonTvCredits,
   getYear,
   posterUrl,
   profileUrl,
@@ -76,13 +78,19 @@ export default async function ActorPage({ params }: Props) {
   if (!Number.isFinite(personId)) notFound();
 
   let person;
-  let credits;
+  let movieCredits;
+  let tvCredits;
   try {
-    // Fetch en paralelo de datos del person + filmografía
-    [person, credits] = await Promise.all([
+    // Fetch en paralelo del person + créditos de pelis + créditos de tv.
+    // Si los créditos de TV fallan no rompe (algunas personas no tienen).
+    const [p, mc, tc] = await Promise.all([
       getPersonDetails(personId),
       getPersonMovieCredits(personId),
+      getPersonTvCredits(personId).catch(() => ({ id: personId, cast: [] })),
     ]);
+    person = p;
+    movieCredits = mc;
+    tvCredits = tc;
   } catch {
     notFound();
   }
@@ -92,10 +100,47 @@ export default async function ActorPage({ params }: Props) {
   const deathFormatted = formatDate(person.deathday);
   const age = calcAge(person.birthday, person.deathday);
 
-  // Filmografía: solo "cast" (acted in), ordenado por popularidad desc, dedupe por id
-  const filmography = (credits.cast ?? [])
-    .filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i)
-    .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
+  // Filmografía unificada (pelis + series), ordenada por popularidad desc.
+  type Credit = {
+    id: number;
+    media_type: "movie" | "tv";
+    title: string;
+    year: number | null;
+    poster_path: string | null;
+    character: string | null | undefined;
+    popularity: number;
+  };
+
+  const movieFilmography: Credit[] = (movieCredits.cast ?? []).map((c) => ({
+    id: c.id,
+    media_type: "movie",
+    title: c.title,
+    year: getYear(c.release_date),
+    poster_path: c.poster_path ?? null,
+    character: c.character,
+    popularity: c.popularity ?? 0,
+  }));
+
+  const tvFilmography: Credit[] = (tvCredits.cast ?? []).map((c) => ({
+    id: c.id,
+    media_type: "tv",
+    title: c.name,
+    year: getYear(c.first_air_date),
+    poster_path: c.poster_path ?? null,
+    character: c.character,
+    popularity: c.popularity ?? 0,
+  }));
+
+  // Dedupe por (id, media_type) — TMDB a veces tiene duplicados
+  const seen = new Set<string>();
+  const filmography: Credit[] = [...movieFilmography, ...tvFilmography]
+    .filter((c) => {
+      const key = `${c.media_type}-${c.id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => b.popularity - a.popularity)
     .slice(0, 24); // top 24
 
   return (
@@ -194,13 +239,16 @@ export default async function ActorPage({ params }: Props) {
             </Card>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-              {filmography.map((movie) => {
-                const poster = posterUrl(movie.poster_path, "w342");
-                const year = getYear(movie.release_date);
+              {filmography.map((item) => {
+                const poster = posterUrl(item.poster_path, "w342");
+                const href =
+                  item.media_type === "tv"
+                    ? `/serie/${item.id}`
+                    : `/movie/${item.id}`;
                 return (
                   <Link
-                    key={movie.id}
-                    href={`/movie/${movie.id}`}
+                    key={`${item.media_type}-${item.id}`}
+                    href={href}
                     className="group block"
                     prefetch={false}
                   >
@@ -208,7 +256,7 @@ export default async function ActorPage({ params }: Props) {
                       {poster ? (
                         <Image
                           src={poster}
-                          alt={`Poster de ${movie.title}`}
+                          alt={`Poster de ${item.title}`}
                           fill
                           sizes="(min-width: 768px) 160px, (min-width: 640px) 144px, 30vw"
                           className="object-cover"
@@ -218,15 +266,25 @@ export default async function ActorPage({ params }: Props) {
                           <Film className="size-8 text-muted-foreground" />
                         </div>
                       )}
+                      <span
+                        className={cn(
+                          "absolute top-1 left-1 inline-block px-1 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide shadow",
+                          item.media_type === "tv"
+                            ? "bg-purple-500/90 text-white"
+                            : "bg-blue-500/90 text-white"
+                        )}
+                      >
+                        {item.media_type === "tv" ? "Serie" : "Peli"}
+                      </span>
                     </div>
                     <div className="mt-1.5 text-xs font-medium truncate">
-                      {movie.title}
+                      {item.title}
                     </div>
-                    {(year !== null || movie.character) && (
+                    {(item.year !== null || item.character) && (
                       <div className="text-xs text-muted-foreground truncate">
-                        {year !== null ? year : ""}
-                        {year !== null && movie.character ? " · " : ""}
-                        {movie.character}
+                        {item.year !== null ? item.year : ""}
+                        {item.year !== null && item.character ? " · " : ""}
+                        {item.character}
                       </div>
                     )}
                   </Link>

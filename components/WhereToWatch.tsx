@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getWatchProviders } from "@/lib/tmdb";
+import { getTvWatchProviders, getWatchProviders } from "@/lib/tmdb";
 import type { TmdbProvider } from "@/types/movie";
 
 // Mapeo de código ISO de país a nombre legible en español.
@@ -92,12 +92,23 @@ function ProviderLogo({
 }
 
 // Server Component async. Lo envolvemos en Suspense desde el page padre.
-export async function WhereToWatch({ tmdbId }: { tmdbId: number }) {
+// Sirve tanto para movies como para tv — el mediaType determina qué endpoint
+// de TMDB se consulta.
+export async function WhereToWatch({
+  tmdbId,
+  mediaType = "movie",
+}: {
+  tmdbId: number;
+  mediaType?: "movie" | "tv";
+}) {
   const region = await detectRegion();
 
   let data;
   try {
-    data = await getWatchProviders(tmdbId);
+    data =
+      mediaType === "tv"
+        ? await getTvWatchProviders(tmdbId)
+        : await getWatchProviders(tmdbId);
   } catch (err) {
     console.warn("[WhereToWatch] failed:", err);
     return null; // si falla, no mostramos nada en absoluto
