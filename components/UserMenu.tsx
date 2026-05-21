@@ -1,6 +1,6 @@
 "use client";
 
-import { History, LogOut } from "lucide-react";
+import { Bookmark, History, LogOut } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -37,6 +37,7 @@ function initials(input: string | null | undefined): string {
 export function UserMenu({ user }: { user: UserInfo }) {
   const router = useRouter();
   const t = useTranslations("auth");
+  const tWatchlist = useTranslations("watchlist");
 
   async function handleLogout() {
     const supabase = createClient();
@@ -81,6 +82,12 @@ export function UserMenu({ user }: { user: UserInfo }) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/watchlist">
+            <Bookmark />
+            {tWatchlist("heading")}
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/historial">
             <History />

@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
@@ -16,16 +17,23 @@ const geistMono = Geist_Mono({
 // Metadata global (sobreescrita por cada page con generateMetadata)
 export const metadata: Metadata = {
   title: "MovieRate Compare",
-  description: "Compará ratings de películas y series en IMDb, Rotten Tomatoes, Metacritic, TMDB, Letterboxd y Filmaffinity.",
+  description:
+    "Compará ratings de películas y series en IMDb, Rotten Tomatoes, Metacritic, TMDB y Letterboxd.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MovieRate",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  colorScheme: "dark light",
 };
 
 // Root layout minimalista. El layout "real" (con providers, header, footer
-// y NextIntlClientProvider) está en app/[locale]/layout.tsx — necesita
-// vivir adentro del segmento [locale] para que next-intl pueda leer el
-// locale del request.
-//
-// Acá solo configuramos el <html> y las fuentes, comunes a todas las rutas
-// (incluyendo /api y /auth/callback que están fuera del [locale]).
+// y NextIntlClientProvider) está en app/[locale]/layout.tsx.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,6 +46,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
+        <Analytics />
       </body>
     </html>
   );

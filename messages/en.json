@@ -22,7 +22,7 @@
     "genres": "Genres"
   },
   "footer": {
-    "disclaimer": "Data from IMDb, Rotten Tomatoes and Metacritic via OMDb. Letterboxd and Filmaffinity have no public API — data may be temporarily unavailable. Movie information by TMDB."
+    "disclaimer": "Data from IMDb, Rotten Tomatoes and Metacritic via OMDb. Letterboxd has no public API — data may be temporarily unavailable. Movie information by TMDB."
   },
   "auth": {
     "signIn": "Sign in",
@@ -74,6 +74,8 @@
     "cast": "Top cast",
     "ratings": "Compared ratings",
     "whereToWatch": "Where to watch",
+    "trailer": "Trailer",
+    "gallery": "Gallery",
     "similar": "Similar",
     "noSimilar": "No recommendations for this movie.",
     "notFoundTitle": "We couldn't find that movie",
@@ -144,6 +146,24 @@
       "tv": "TV",
       "ariaLabel": "Content type"
     }
+  },
+  "share": {
+    "share": "Share",
+    "copied": "Link copied",
+    "failed": "Could not share"
+  },
+  "watchlist": {
+    "heading": "My list",
+    "addToList": "Add to my list",
+    "inList": "In my list",
+    "added": "Added to your list",
+    "removed": "Removed from your list",
+    "addError": "Could not add.",
+    "removeError": "Could not remove.",
+    "empty": "Your list is empty",
+    "emptyBody": "Movies and shows you mark as 'want to watch' will appear here.",
+    "countOne": "{count} title",
+    "countOther": "{count} titles"
   },
   "history": {
     "heading": "My history",

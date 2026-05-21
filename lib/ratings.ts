@@ -1,4 +1,4 @@
-import { getMovieDetails, getYear } from "@/lib/tmdb";
+import { getMovieDetails } from "@/lib/tmdb";
 import {
   findRtScore,
   getOmdbByImdbId,
@@ -7,7 +7,6 @@ import {
   parseMetascore,
 } from "@/lib/omdb";
 import { getLetterboxdRating } from "@/lib/letterboxd";
-import { getFilmaffinityRating } from "@/lib/filmaffinity";
 import { createServiceClient } from "@/lib/supabase/server";
 import type {
   PlatformRating,
@@ -196,7 +195,7 @@ export async function getRatings(tmdbId: number): Promise<RatingsResponse> {
     metacritic: null,
     tmdb: null,
     letterboxd: null,
-    filmaffinity: null,
+    // filmaffinity removida — quedaba bloqueada por Cloudflare
     errors,
   };
 
@@ -209,23 +208,20 @@ export async function getRatings(tmdbId: number): Promise<RatingsResponse> {
     return result; // sin TMDB no podemos seguir, tampoco cacheamos un fail total
   }
 
-  // Disparamos OMDb + Letterboxd + Filmaffinity en paralelo con
-  // Promise.allSettled — cualquier fuente que falle queda en null y las
-  // demás siguen funcionando.
+  // Disparamos OMDb + Letterboxd en paralelo con Promise.allSettled — cualquier
+  // fuente que falle queda en null y las demás siguen funcionando.
+  // Filmaffinity se eliminó del flow porque está bloqueado por Cloudflare.
   const imdbId = tmdbDetails.imdb_id ?? null;
-  const releaseYear = getYear(tmdbDetails.release_date);
 
-  const [omdbSettled, letterboxdSettled, filmaffinitySettled] =
-    await Promise.allSettled([
-      imdbId
-        ? getOmdbByImdbId(imdbId)
-        : Promise.reject(new Error("tmdb-no-imdb-id")),
-      getLetterboxdRating(
-        tmdbDetails.original_title ?? tmdbDetails.title,
-        tmdbDetails.title
-      ),
-      getFilmaffinityRating(tmdbDetails.title, releaseYear),
-    ]);
+  const [omdbSettled, letterboxdSettled] = await Promise.allSettled([
+    imdbId
+      ? getOmdbByImdbId(imdbId)
+      : Promise.reject(new Error("tmdb-no-imdb-id")),
+    getLetterboxdRating(
+      tmdbDetails.original_title ?? tmdbDetails.title,
+      tmdbDetails.title
+    ),
+  ]);
 
   // OMDb → imdb / rt / metacritic
   if (omdbSettled.status === "fulfilled") {
@@ -281,19 +277,6 @@ export async function getRatings(tmdbId: number): Promise<RatingsResponse> {
     };
   } else if (letterboxdSettled.status === "rejected") {
     errors.push("letterboxd: rejected");
-  }
-
-  // Filmaffinity
-  if (
-    filmaffinitySettled.status === "fulfilled" &&
-    filmaffinitySettled.value
-  ) {
-    result.filmaffinity = {
-      ...rate10(filmaffinitySettled.value.score10),
-      url: filmaffinitySettled.value.url,
-    };
-  } else if (filmaffinitySettled.status === "rejected") {
-    errors.push("filmaffinity: rejected");
   }
 
   // 3. Guardamos en cache (await para asegurar que la próxima request lo vea,

@@ -4,13 +4,23 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import {
+  ImageGallery,
+  ImageGallerySkeleton,
+} from "@/components/ImageGallery";
 import { MovieGridSkeleton } from "@/components/MovieGrid";
 import {
   RatingsSection,
   RatingsSkeleton,
 } from "@/components/RatingsSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
+import { ShareButton } from "@/components/ShareButton";
 import { TrackVisit } from "@/components/TrackVisit";
+import { WatchlistButton } from "@/components/WatchlistButton";
+import {
+  TrailerSection,
+  TrailerSkeleton,
+} from "@/components/TrailerSection";
 import {
   WhereToWatch,
   WhereToWatchSkeleton,
@@ -19,6 +29,7 @@ import { Link } from "@/i18n/navigation";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getMovieDetails, getYear, posterUrl } from "@/lib/tmdb";
+import { isInWatchlist } from "@/lib/watchlist";
 
 type Props = {
   params: Promise<{ tmdbId: string; locale: string }>;
@@ -117,6 +128,11 @@ export default async function MoviePage({ params }: Props) {
       poster_path: movie.poster_path ?? null,
     });
   }
+
+  // Chequear si está en watchlist (solo logueado; anónimo lo chequea en cliente)
+  const initiallyInWatchlist = isLogged
+    ? await isInWatchlist(movie.id, "movie")
+    : false;
 
   return (
     <div className="flex flex-col flex-1">
@@ -234,6 +250,25 @@ export default async function MoviePage({ params }: Props) {
                 </span>
               </div>
             )}
+
+            {/* Botones de acción: watchlist + share */}
+            <div className="mt-5 flex flex-wrap gap-2 justify-center md:justify-start">
+              <WatchlistButton
+                isLogged={isLogged}
+                initiallyInList={initiallyInWatchlist}
+                item={{
+                  tmdb_id: movie.id,
+                  media_type: "movie",
+                  title: movie.title,
+                  year,
+                  poster_path: movie.poster_path ?? null,
+                }}
+              />
+              <ShareButton
+                title={movie.title}
+                text={movie.overview?.slice(0, 100) ?? undefined}
+              />
+            </div>
           </div>
         </section>
 
@@ -283,9 +318,24 @@ export default async function MoviePage({ params }: Props) {
           </section>
         )}
 
-        {/* Dónde verla — streaming providers via TMDB (datos JustWatch).
-            Detecta región desde el header x-vercel-ip-country (Vercel) o
-            fallback a AR. */}
+        {/* Tráiler — embed YouTube. Si TMDB no tiene videos devuelve null
+            y la sección no aparece. */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">{t("movie.trailer")}</h2>
+          <Suspense fallback={<TrailerSkeleton />}>
+            <TrailerSection tmdbId={movie.id} />
+          </Suspense>
+        </section>
+
+        {/* Galería de imágenes — backdrops alternativos */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">{t("movie.gallery")}</h2>
+          <Suspense fallback={<ImageGallerySkeleton />}>
+            <ImageGallery tmdbId={movie.id} />
+          </Suspense>
+        </section>
+
+        {/* Dónde verla — streaming providers via TMDB (datos JustWatch). */}
         <section className="mb-10">
           <h2 className="text-lg font-semibold mb-3">{t("movie.whereToWatch")}</h2>
           <Suspense fallback={<WhereToWatchSkeleton />}>

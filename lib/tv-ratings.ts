@@ -52,7 +52,7 @@ export async function getTvRatings(tvId: number): Promise<RatingsResponse> {
     metacritic: null,
     tmdb: null,
     letterboxd: null, // no indexa series
-    filmaffinity: null, // Cloudflare nos banea
+    // filmaffinity removida
     errors,
   };
 

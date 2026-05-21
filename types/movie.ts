@@ -337,6 +337,51 @@ export const tmdbTrendingResponseSchema = z.object({
 export type TmdbTrendingResponse = z.infer<typeof tmdbTrendingResponseSchema>;
 
 // =============================================================================
+// TMDB: Videos (trailers, clips, behind-the-scenes)
+// =============================================================================
+
+const tmdbVideoSchema = z.object({
+  id: z.string(),
+  key: z.string(), // YouTube video ID
+  name: z.string(),
+  site: z.string(), // "YouTube" o "Vimeo"
+  type: z.string(), // "Trailer", "Teaser", "Clip", etc.
+  official: z.boolean().optional(),
+  iso_639_1: z.string().nullable().optional(),
+  published_at: z.string().nullable().optional(),
+});
+
+export const tmdbVideosResponseSchema = z.object({
+  id: z.number(),
+  results: z.array(tmdbVideoSchema),
+});
+
+export type TmdbVideo = z.infer<typeof tmdbVideoSchema>;
+export type TmdbVideosResponse = z.infer<typeof tmdbVideosResponseSchema>;
+
+// =============================================================================
+// TMDB: Images (backdrops, posters)
+// =============================================================================
+
+const tmdbImageSchema = z.object({
+  file_path: z.string(),
+  aspect_ratio: z.number().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+  iso_639_1: z.string().nullable().optional(),
+  vote_average: z.number().optional(),
+});
+
+export const tmdbImagesResponseSchema = z.object({
+  id: z.number(),
+  backdrops: z.array(tmdbImageSchema).optional(),
+  posters: z.array(tmdbImageSchema).optional(),
+});
+
+export type TmdbImage = z.infer<typeof tmdbImageSchema>;
+export type TmdbImagesResponse = z.infer<typeof tmdbImagesResponseSchema>;
+
+// =============================================================================
 // OMDb
 // =============================================================================
 // OMDb devuelve TODO como string ("imdbRating": "7.8") así que parseamos a
@@ -390,6 +435,6 @@ export type RatingsResponse = {
   metacritic: PlatformRating | null;
   tmdb: PlatformRating | null;
   letterboxd: PlatformRating | null; // Paso 7
-  filmaffinity: PlatformRating | null; // Paso 7
+  filmaffinity?: PlatformRating | null; // legacy — removida del UI, se mantiene opcional por backward compat del cache
   errors: string[]; // qué fuentes fallaron, para debug
 };

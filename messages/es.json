@@ -22,7 +22,7 @@
     "genres": "Géneros"
   },
   "footer": {
-    "disclaimer": "Datos de IMDb, Rotten Tomatoes y Metacritic vía OMDb. Letterboxd y Filmaffinity no proveen API pública — los datos pueden no estar disponibles temporalmente. Información de películas por TMDB."
+    "disclaimer": "Datos de IMDb, Rotten Tomatoes y Metacritic vía OMDb. Letterboxd no provee API pública — los datos pueden no estar disponibles temporalmente. Información de películas por TMDB."
   },
   "auth": {
     "signIn": "Iniciar sesión",
@@ -74,6 +74,8 @@
     "cast": "Elenco principal",
     "ratings": "Ratings comparados",
     "whereToWatch": "Dónde verla",
+    "trailer": "Tráiler",
+    "gallery": "Galería",
     "similar": "Similares",
     "noSimilar": "Sin recomendaciones para esta película.",
     "notFoundTitle": "No encontramos esa película",
@@ -144,6 +146,24 @@
       "tv": "Series",
       "ariaLabel": "Tipo de contenido"
     }
+  },
+  "share": {
+    "share": "Compartir",
+    "copied": "Link copiado",
+    "failed": "No se pudo compartir"
+  },
+  "watchlist": {
+    "heading": "Mi lista",
+    "addToList": "Agregar a mi lista",
+    "inList": "En mi lista",
+    "added": "Agregada a tu lista",
+    "removed": "Quitada de tu lista",
+    "addError": "No se pudo agregar.",
+    "removeError": "No se pudo quitar.",
+    "empty": "Tu lista está vacía",
+    "emptyBody": "Las películas y series que marques como 'quiero ver' aparecen acá.",
+    "countOne": "{count} título",
+    "countOther": "{count} títulos"
   },
   "history": {
     "heading": "Mi historial",

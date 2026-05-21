@@ -10,8 +10,7 @@ export type Platform =
   | "rt"
   | "metacritic"
   | "tmdb"
-  | "letterboxd"
-  | "filmaffinity";
+  | "letterboxd";
 
 type PlatformMeta = {
   accent: string; // tailwind text color para el nombre
@@ -26,7 +25,6 @@ const PLATFORM_META: Record<Platform, PlatformMeta> = {
   metacritic: { accent: "text-emerald-400", unit: "/100" },
   tmdb: { accent: "text-sky-400", unit: "/10" },
   letterboxd: { accent: "text-orange-400", unit: "/10" },
-  filmaffinity: { accent: "text-blue-400", unit: "/10" },
 };
 
 function formatNumberLocale(

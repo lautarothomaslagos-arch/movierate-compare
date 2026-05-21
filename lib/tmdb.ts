@@ -8,8 +8,10 @@ import {
   tmdbPersonTvCreditsSchema,
   tmdbRecommendationsResponseSchema,
   tmdbSearchResponseSchema,
+  tmdbImagesResponseSchema,
   tmdbTrendingResponseSchema,
   tmdbTvDetailsSchema,
+  tmdbVideosResponseSchema,
   tmdbTvDiscoverResponseSchema,
   tmdbTvRecommendationsResponseSchema,
   tmdbWatchProvidersResponseSchema,
@@ -22,8 +24,10 @@ import {
   type TmdbPersonTvCredits,
   type TmdbRecommendationsResponse,
   type TmdbSearchResponse,
+  type TmdbImagesResponse,
   type TmdbTrendingResponse,
   type TmdbTvDetails,
+  type TmdbVideosResponse,
   type TmdbTvDiscoverResponse,
   type TmdbTvRecommendationsResponse,
   type TmdbWatchProvidersResponse,
@@ -287,6 +291,26 @@ export function getTrending(
     {},
     tmdbTrendingResponseSchema
   );
+}
+
+// ----- Videos (trailers) e Images (galería) -----
+
+export function getMovieVideos(movieId: number): Promise<TmdbVideosResponse> {
+  return tmdbFetch(`/movie/${movieId}/videos`, {}, tmdbVideosResponseSchema);
+}
+
+export function getTvVideos(tvId: number): Promise<TmdbVideosResponse> {
+  return tmdbFetch(`/tv/${tvId}/videos`, {}, tmdbVideosResponseSchema);
+}
+
+// /images NO acepta language (devuelve todas las del archivo).
+// Si querés filtrar por idioma, hacelo en el consumer mirando iso_639_1.
+export function getMovieImages(movieId: number): Promise<TmdbImagesResponse> {
+  return tmdbFetch(`/movie/${movieId}/images`, {}, tmdbImagesResponseSchema);
+}
+
+export function getTvImages(tvId: number): Promise<TmdbImagesResponse> {
+  return tmdbFetch(`/tv/${tvId}/images`, {}, tmdbImagesResponseSchema);
 }
 
 // Helper para perfiles de personas (la imagen del actor).

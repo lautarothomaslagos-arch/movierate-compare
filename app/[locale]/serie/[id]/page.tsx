@@ -11,7 +11,17 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import {
+  ImageGallery,
+  ImageGallerySkeleton,
+} from "@/components/ImageGallery";
+import { ShareButton } from "@/components/ShareButton";
 import { TrackVisit } from "@/components/TrackVisit";
+import { WatchlistButton } from "@/components/WatchlistButton";
+import {
+  TrailerSection,
+  TrailerSkeleton,
+} from "@/components/TrailerSection";
 import {
   TvRatingsSection,
   TvRatingsSkeleton,
@@ -28,6 +38,7 @@ import { Link } from "@/i18n/navigation";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getTvDetails, getYear, posterUrl } from "@/lib/tmdb";
+import { isInWatchlist } from "@/lib/watchlist";
 
 type Props = {
   params: Promise<{ id: string; locale: string }>;
@@ -160,6 +171,10 @@ export default async function SeriePage({ params }: Props) {
       poster_path: tv.poster_path ?? null,
     });
   }
+
+  const initiallyInWatchlist = isLogged
+    ? await isInWatchlist(tv.id, "tv")
+    : false;
 
   return (
     <div className="flex flex-col flex-1">
@@ -301,6 +316,25 @@ export default async function SeriePage({ params }: Props) {
                 </span>
               </div>
             )}
+
+            {/* Botones de acción: watchlist */}
+            <div className="mt-5 flex flex-wrap gap-2 justify-center md:justify-start">
+              <WatchlistButton
+                isLogged={isLogged}
+                initiallyInList={initiallyInWatchlist}
+                item={{
+                  tmdb_id: tv.id,
+                  media_type: "tv",
+                  title: tv.name,
+                  year,
+                  poster_path: tv.poster_path ?? null,
+                }}
+              />
+              <ShareButton
+                title={tv.name}
+                text={tv.overview?.slice(0, 100) ?? undefined}
+              />
+            </div>
           </div>
         </section>
 
@@ -349,6 +383,22 @@ export default async function SeriePage({ params }: Props) {
             </div>
           </section>
         )}
+
+        {/* Tráiler */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">{t("movie.trailer")}</h2>
+          <Suspense fallback={<TrailerSkeleton />}>
+            <TrailerSection tmdbId={tv.id} mediaType="tv" />
+          </Suspense>
+        </section>
+
+        {/* Galería */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">{t("movie.gallery")}</h2>
+          <Suspense fallback={<ImageGallerySkeleton />}>
+            <ImageGallery tmdbId={tv.id} mediaType="tv" />
+          </Suspense>
+        </section>
 
         {/* Dónde verla */}
         <section className="mb-10">
