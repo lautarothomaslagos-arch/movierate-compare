@@ -1,6 +1,7 @@
 "use client";
 
 import { LogIn } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export function LoginButton() {
   const [loading, setLoading] = useState(false);
+  const t = useTranslations("auth");
 
   async function handleLogin() {
     setLoading(true);
@@ -29,14 +31,12 @@ export function LoginButton() {
       });
 
       if (error) {
-        toast.error(`No se pudo iniciar sesión: ${error.message}`);
+        toast.error(t("signInError", { error: error.message }));
         setLoading(false);
       }
-      // Si todo va bien, Supabase redirige al usuario a Google y después
-      // a /auth/callback. No tocamos setLoading(false) porque ya navegamos.
     } catch (err) {
       console.error(err);
-      toast.error("Error inesperado en el login.");
+      toast.error(t("unexpectedError"));
       setLoading(false);
     }
   }
@@ -49,7 +49,7 @@ export function LoginButton() {
       disabled={loading}
     >
       <LogIn className="size-4" />
-      {loading ? "Conectando..." : "Iniciar sesión"}
+      {loading ? t("signingIn") : t("signIn")}
     </Button>
   );
 }

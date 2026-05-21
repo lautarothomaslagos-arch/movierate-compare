@@ -2,11 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRouter } from "@/i18n/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type SearchResult = {
@@ -31,6 +32,7 @@ export function SearchBar() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const t = useTranslations("search");
   const debouncedQuery = useDebounced(query, 300);
 
   // Cerrar el dropdown si clickeás afuera
@@ -77,7 +79,7 @@ export function SearchBar() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
           type="text"
-          placeholder="Buscá una película..."
+          placeholder={t("placeholder")}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -85,7 +87,7 @@ export function SearchBar() {
           }}
           onFocus={() => setOpen(true)}
           className="pl-9 h-11 text-base"
-          aria-label="Buscar película"
+          aria-label={t("ariaLabel")}
           autoComplete="off"
         />
       </div>
@@ -98,14 +100,12 @@ export function SearchBar() {
           )}
         >
           {isError && (
-            <div className="p-3 text-sm text-destructive">
-              Falló la búsqueda. Probá de nuevo.
-            </div>
+            <div className="p-3 text-sm text-destructive">{t("failed")}</div>
           )}
 
           {!isError && results.length === 0 && !isFetching && (
             <div className="p-3 text-sm text-muted-foreground">
-              No encontramos nada.
+              {t("noResults")}
             </div>
           )}
 
@@ -138,7 +138,9 @@ export function SearchBar() {
                         : "bg-blue-500/15 text-blue-400"
                     )}
                   >
-                    {m.media_type === "tv" ? "Serie" : "Peli"}
+                    {m.media_type === "tv"
+                      ? t("badgeTv")
+                      : t("badgeMovie")}
                   </span>
                 </div>
                 {m.year !== null && (
@@ -149,7 +151,9 @@ export function SearchBar() {
           ))}
 
           {isFetching && results.length === 0 && (
-            <div className="p-3 text-sm text-muted-foreground">Buscando...</div>
+            <div className="p-3 text-sm text-muted-foreground">
+              {t("searching")}
+            </div>
           )}
         </div>
       )}

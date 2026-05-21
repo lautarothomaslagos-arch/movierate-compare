@@ -1,26 +1,25 @@
 "use client";
 
 import { Film, Tv } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 export type MediaType = "movie" | "tv";
 
 const OPTIONS: Array<{
   value: MediaType;
-  label: string;
+  labelKey: "movie" | "tv";
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { value: "movie", label: "Películas", icon: Film },
-  { value: "tv", label: "Series", icon: Tv },
+  { value: "movie", labelKey: "movie", icon: Film },
+  { value: "tv", labelKey: "tv", icon: Tv },
 ];
 
 // Toggle entre películas y series. Acepta dos formas:
 // - `basePath`: URL base (la toggle agrega/quita ?type=tv).
-// - `hrefs`: URLs explícitas por tipo (útil cuando navegando entre tipos
-//   no es solo cambiar el query string — ej en /genero/[id] donde el ID
-//   cambia entre tipos).
+// - `hrefs`: URLs explícitas por tipo.
 export function MediaTypeToggle(
   props: {
     active: MediaType;
@@ -30,6 +29,7 @@ export function MediaTypeToggle(
   )
 ) {
   const { active } = props;
+  const t = useTranslations("genres.mediaToggle");
 
   function computeHref(value: MediaType): string {
     if ("hrefs" in props && props.hrefs) return props.hrefs[value];
@@ -40,10 +40,10 @@ export function MediaTypeToggle(
   return (
     <div
       role="tablist"
-      aria-label="Tipo de contenido"
+      aria-label={t("ariaLabel")}
       className="inline-flex items-center gap-1 p-1 rounded-md border bg-secondary/40"
     >
-      {OPTIONS.map(({ value, label, icon: Icon }) => {
+      {OPTIONS.map(({ value, labelKey, icon: Icon }) => {
         const isActive = value === active;
         return (
           <Link
@@ -60,7 +60,7 @@ export function MediaTypeToggle(
             )}
           >
             <Icon className="size-4" />
-            {label}
+            {t(labelKey)}
           </Link>
         );
       })}

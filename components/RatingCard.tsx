@@ -1,4 +1,6 @@
 import { ExternalLink } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { PlatformRating } from "@/types/movie";
@@ -12,65 +14,30 @@ export type Platform =
   | "filmaffinity";
 
 type PlatformMeta = {
-  name: string;
   accent: string; // tailwind text color para el nombre
   // Si el rating natural es 0-100 (RT, Metacritic) mostramos /100,
   // si es 0-10 (IMDb, TMDB, Letterboxd, Filmaffinity) mostramos /10.
   unit: "/10" | "/100";
-  // Mensaje cuando la fuente no devolvió rating (con onda, en vez de "No disponible").
-  emptyMessage: string;
 };
 
 const PLATFORM_META: Record<Platform, PlatformMeta> = {
-  imdb: {
-    name: "IMDb",
-    accent: "text-yellow-400",
-    unit: "/10",
-    emptyMessage: "Sin estrellas todavía",
-  },
-  rt: {
-    name: "Rotten Tomatoes",
-    accent: "text-red-400",
-    unit: "/100",
-    emptyMessage: "El tomate no maduró",
-  },
-  metacritic: {
-    name: "Metacritic",
-    accent: "text-emerald-400",
-    unit: "/100",
-    emptyMessage: "Metacritic se tomó el día",
-  },
-  tmdb: {
-    name: "TMDB",
-    accent: "text-sky-400",
-    unit: "/10",
-    emptyMessage: "Sin puntaje aún",
-  },
-  letterboxd: {
-    name: "Letterboxd",
-    accent: "text-orange-400",
-    unit: "/10",
-    emptyMessage: "Letterboxd no respondió",
-  },
-  filmaffinity: {
-    name: "Filmaffinity",
-    accent: "text-blue-400",
-    unit: "/10",
-    emptyMessage: "Filmaffinity nos baneó (no es joda)",
-  },
+  imdb: { accent: "text-yellow-400", unit: "/10" },
+  rt: { accent: "text-red-400", unit: "/100" },
+  metacritic: { accent: "text-emerald-400", unit: "/100" },
+  tmdb: { accent: "text-sky-400", unit: "/10" },
+  letterboxd: { accent: "text-orange-400", unit: "/10" },
+  filmaffinity: { accent: "text-blue-400", unit: "/10" },
 };
 
-function formatNumber(n: number, decimals: number): string {
-  return n.toLocaleString("es-AR", {
+function formatNumberLocale(
+  n: number,
+  decimals: number,
+  locale: string
+): string {
+  return n.toLocaleString(locale, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
-}
-
-function formatVotes(votes: number): string {
-  if (votes >= 1_000_000) return `${(votes / 1_000_000).toFixed(1)}M votos`;
-  if (votes >= 1_000) return `${Math.round(votes / 1_000)}k votos`;
-  return `${votes} votos`;
 }
 
 export function RatingCard({
@@ -81,6 +48,10 @@ export function RatingCard({
   rating: PlatformRating | null;
 }) {
   const meta = PLATFORM_META[platform];
+  const tRatings = useTranslations("ratings");
+  const locale = useLocale();
+  const platformName = tRatings(platform);
+  const emptyMessage = tRatings(`empty.${platform}` as never) as string;
 
   if (!rating) {
     return (
@@ -91,11 +62,11 @@ export function RatingCard({
             meta.accent
           )}
         >
-          {meta.name}
+          {platformName}
         </div>
         <div className="flex-1 flex items-center">
           <span className="text-sm text-muted-foreground italic">
-            {meta.emptyMessage}
+            {emptyMessage}
           </span>
         </div>
       </Card>
@@ -104,7 +75,7 @@ export function RatingCard({
 
   const displayScore =
     meta.unit === "/10"
-      ? formatNumber(rating.score10, 1)
+      ? formatNumberLocale(rating.score10, 1, locale)
       : String(rating.score100);
 
   const Wrapper = rating.url ? "a" : "div";
@@ -116,6 +87,21 @@ export function RatingCard({
         className: "group",
       }
     : {};
+
+  let votesText: string | null = null;
+  if (rating.votes !== undefined) {
+    if (rating.votes >= 1_000_000) {
+      votesText = tRatings("votesMillions", {
+        count: (rating.votes / 1_000_000).toFixed(1),
+      });
+    } else if (rating.votes >= 1_000) {
+      votesText = tRatings("votesThousands", {
+        count: Math.round(rating.votes / 1_000),
+      });
+    } else {
+      votesText = tRatings("votesCount", { count: rating.votes });
+    }
+  }
 
   return (
     <Wrapper {...wrapperProps}>
@@ -133,7 +119,7 @@ export function RatingCard({
               meta.accent
             )}
           >
-            {meta.name}
+            {platformName}
           </div>
           {rating.url && (
             <ExternalLink className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -145,10 +131,8 @@ export function RatingCard({
           <span className="text-sm text-muted-foreground">{meta.unit}</span>
         </div>
 
-        {rating.votes !== undefined && (
-          <div className="text-xs text-muted-foreground">
-            {formatVotes(rating.votes)}
-          </div>
+        {votesText && (
+          <div className="text-xs text-muted-foreground">{votesText}</div>
         )}
       </Card>
     </Wrapper>

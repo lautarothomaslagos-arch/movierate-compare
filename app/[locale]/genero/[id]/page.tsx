@@ -5,13 +5,14 @@ import {
   Film,
   PartyPopper,
 } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 
 import { GenreSortSelect, type GenreSort } from "@/components/GenreSortSelect";
 import { MediaTypeToggle, type MediaType } from "@/components/MediaTypeToggle";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import {
   discoverByGenre,
   discoverTvByGenre,
@@ -24,7 +25,7 @@ import {
 import type { TmdbGenre } from "@/types/movie";
 
 type Props = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
   searchParams: Promise<{ page?: string; sort?: string; type?: string }>;
 };
 
@@ -36,12 +37,6 @@ function parseSort(value: string | undefined): DiscoverSort {
 function parseType(value: string | undefined): MediaType {
   return value === "tv" ? "tv" : "movie";
 }
-
-const SORT_LABELS: Record<GenreSort, string> = {
-  popular: "populares",
-  top: "mejor puntuadas",
-  recent: "más recientes",
-};
 
 // Normaliza un nombre de género para matching: lowercase, sin acentos,
 // sin "and"/"y" y palabras genéricas, sin espacios duplicados.
@@ -101,7 +96,9 @@ export async function generateMetadata({ params, searchParams }: Props) {
 }
 
 export default async function GeneroPage({ params, searchParams }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("genres");
   const {
     page: pageParam,
     sort: sortParam,
@@ -137,10 +134,12 @@ export default async function GeneroPage({ params, searchParams }: Props) {
   const currentGenre = activeGenres.find((g) => g.id === genreId);
 
   // CASO: el ID no existe en este media_type. Mostramos fallback amigable
-  // en vez de 404 — esto pasa cuando alguien comparte una URL imposible o
-  // hace algún parseo manual.
+  // en vez de 404 — esto pasa cuando alguien comparte una URL imposible.
   if (!currentGenre) {
-    const otherNoun = mediaType === "tv" ? "películas" : "series";
+    const currentTypeLabel =
+      mediaType === "tv" ? t("tvPlural") : t("moviesPlural");
+    const otherTypeLabel =
+      mediaType === "tv" ? t("moviesPlural") : t("tvPlural");
     const altType: MediaType = mediaType === "tv" ? "movie" : "tv";
     const altHref =
       altType === "tv" ? "/generos?type=tv" : "/generos";
@@ -148,11 +147,13 @@ export default async function GeneroPage({ params, searchParams }: Props) {
       <main className="px-4 sm:px-6 py-16 max-w-2xl mx-auto w-full text-center">
         <PartyPopper className="size-12 text-muted-foreground mx-auto mb-4" />
         <h1 className="text-xl sm:text-2xl font-bold">
-          Ese género no existe en este catálogo
+          {t("mismatchTitle")}
         </h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-          Los géneros de {mediaType === "tv" ? "series" : "películas"} y{" "}
-          {otherNoun} no son los mismos. Probá elegir uno de la lista.
+          {t("mismatchBody", {
+            currentType: currentTypeLabel,
+            otherType: otherTypeLabel,
+          })}
         </p>
         <div className="mt-6 flex flex-col sm:flex-row gap-2 justify-center">
           <Button asChild>
@@ -161,12 +162,14 @@ export default async function GeneroPage({ params, searchParams }: Props) {
                 mediaType === "tv" ? "/generos?type=tv" : "/generos"
               }
             >
-              Géneros de {mediaType === "tv" ? "series" : "películas"}
+              {mediaType === "tv"
+                ? t("viewTvGenres")
+                : t("viewMoviesGenres")}
             </Link>
           </Button>
           <Button asChild variant="outline">
             <Link href={altHref}>
-              Ver géneros de {otherNoun}
+              {t("viewOther", { other: otherTypeLabel })}
             </Link>
           </Button>
         </div>
@@ -241,7 +244,10 @@ export default async function GeneroPage({ params, searchParams }: Props) {
   };
 
   const itemHrefPrefix = mediaType === "tv" ? "/serie" : "/movie";
-  const nounPlural = mediaType === "tv" ? "series" : "películas";
+  const nounPlural =
+    mediaType === "tv" ? t("tvPlural") : t("moviesPlural");
+  const sortLabel = t(`sort.${sort}`);
+  const localeForNumber = locale === "en" ? "en-US" : "es-AR";
 
   return (
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
@@ -250,7 +256,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-3"
       >
         <ArrowLeft className="size-4" />
-        Todos los géneros
+        {t("allGenres")}
       </Link>
 
       <header className="mb-4 flex flex-col gap-3">
@@ -260,8 +266,12 @@ export default async function GeneroPage({ params, searchParams }: Props) {
               {currentGenre.name}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Página {page} de {totalPages.toLocaleString("es-AR")} ·{" "}
-              {SORT_LABELS[sort]} · {nounPlural}
+              {t("pageOfTotal", {
+                page,
+                total: totalPages.toLocaleString(localeForNumber),
+                sort: sortLabel,
+                plural: nounPlural,
+              })}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -277,7 +287,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
 
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No encontramos {nounPlural} para esta página.
+          {t("noPlatformItems", { plural: nounPlural })}
         </p>
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -327,29 +337,29 @@ export default async function GeneroPage({ params, searchParams }: Props) {
             {hasPrev ? (
               <Link href={pageUrl(page - 1)} prefetch={false}>
                 <ChevronLeft className="size-4" />
-                Anterior
+                {t("previous")}
               </Link>
             ) : (
               <span>
                 <ChevronLeft className="size-4" />
-                Anterior
+                {t("previous")}
               </span>
             )}
           </Button>
 
           <span className="text-xs text-muted-foreground">
-            {page} / {totalPages.toLocaleString("es-AR")}
+            {page} / {totalPages.toLocaleString(localeForNumber)}
           </span>
 
           <Button asChild variant="outline" size="sm" disabled={!hasNext}>
             {hasNext ? (
               <Link href={pageUrl(page + 1)} prefetch={false}>
-                Siguiente
+                {t("next")}
                 <ChevronRight className="size-4" />
               </Link>
             ) : (
               <span>
-                Siguiente
+                {t("next")}
                 <ChevronRight className="size-4" />
               </span>
             )}

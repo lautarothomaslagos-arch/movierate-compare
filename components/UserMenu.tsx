@@ -1,8 +1,7 @@
 "use client";
 
 import { History, LogOut } from "lucide-react";
-import { Link } from "@/i18n/navigation";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import {
@@ -19,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export type UserInfo = {
@@ -36,20 +36,21 @@ function initials(input: string | null | undefined): string {
 
 export function UserMenu({ user }: { user: UserInfo }) {
   const router = useRouter();
+  const t = useTranslations("auth");
 
   async function handleLogout() {
     const supabase = createClient();
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error(`No se pudo cerrar sesión: ${error.message}`);
+      toast.error(t("signOutError", { error: error.message }));
       return;
     }
-    toast.success("Sesión cerrada");
+    toast.success(t("sessionClosed"));
     // Forzar refresh del Server Component del header para que vea null user
     router.refresh();
   }
 
-  const displayName = user.name ?? user.email ?? "Usuario";
+  const displayName = user.name ?? user.email ?? "User";
 
   return (
     <DropdownMenu>
@@ -58,7 +59,7 @@ export function UserMenu({ user }: { user: UserInfo }) {
           variant="ghost"
           size="icon"
           className="rounded-full"
-          aria-label="Menú de usuario"
+          aria-label={t("userMenu")}
         >
           <Avatar className="size-8">
             {user.avatar_url && (
@@ -83,13 +84,13 @@ export function UserMenu({ user }: { user: UserInfo }) {
         <DropdownMenuItem asChild>
           <Link href="/historial">
             <History />
-            Mi historial
+            {t("myHistory")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={handleLogout}>
           <LogOut />
-          Cerrar sesión
+          {t("signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

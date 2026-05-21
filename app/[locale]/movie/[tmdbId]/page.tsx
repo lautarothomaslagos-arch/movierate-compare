@@ -1,6 +1,6 @@
 import { ArrowLeft, Calendar, Clock, Film } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -15,12 +15,13 @@ import {
   WhereToWatch,
   WhereToWatchSkeleton,
 } from "@/components/WhereToWatch";
+import { Link } from "@/i18n/navigation";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getMovieDetails, getYear, posterUrl } from "@/lib/tmdb";
 
 type Props = {
-  params: Promise<{ tmdbId: string }>;
+  params: Promise<{ tmdbId: string; locale: string }>;
 };
 
 // Genera metadata dinámica por película — incluye Open Graph y Twitter cards
@@ -80,7 +81,9 @@ function formatRuntime(minutes: number | null | undefined): string | null {
 }
 
 export default async function MoviePage({ params }: Props) {
-  const { tmdbId } = await params;
+  const { tmdbId, locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations();
   const id = parseInt(tmdbId, 10);
   if (!Number.isFinite(id)) notFound();
 
@@ -148,7 +151,7 @@ export default async function MoviePage({ params }: Props) {
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="size-4" />
-          Volver
+          {t("common.back")}
         </Link>
       </header>
 
@@ -222,7 +225,9 @@ export default async function MoviePage({ params }: Props) {
             {directors.length > 0 && (
               <div className="mt-4 text-sm">
                 <span className="text-muted-foreground">
-                  {directors.length === 1 ? "Dirección: " : "Dirección: "}
+                  {directors.length === 1
+                    ? t("movie.directorOne")
+                    : t("movie.directorMany")}
                 </span>
                 <span className="font-medium">
                   {directors.map((d) => d.name).join(", ")}
@@ -235,7 +240,7 @@ export default async function MoviePage({ params }: Props) {
         {/* Elenco */}
         {topCast.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-lg font-semibold mb-3">Elenco principal</h2>
+            <h2 className="text-lg font-semibold mb-3">{t("movie.cast")}</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
               {topCast.map((actor) => {
                 const profile = actor.profile_path
@@ -282,7 +287,7 @@ export default async function MoviePage({ params }: Props) {
             Detecta región desde el header x-vercel-ip-country (Vercel) o
             fallback a AR. */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">Dónde verla</h2>
+          <h2 className="text-lg font-semibold mb-3">{t("movie.whereToWatch")}</h2>
           <Suspense fallback={<WhereToWatchSkeleton />}>
             <WhereToWatch tmdbId={movie.id} />
           </Suspense>
@@ -292,7 +297,7 @@ export default async function MoviePage({ params }: Props) {
             Envuelto en Suspense para streamear: la peli renderiza ya,
             las cards aparecen cuando los scrapers/APIs terminan. */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">Ratings comparados</h2>
+          <h2 className="text-lg font-semibold mb-3">{t("movie.ratings")}</h2>
           <Suspense fallback={<RatingsSkeleton />}>
             <RatingsSection tmdbId={movie.id} />
           </Suspense>
@@ -301,7 +306,7 @@ export default async function MoviePage({ params }: Props) {
         {/* Similares — top 12 de TMDB /recommendations.
             Suspense para que la peli se vea sin esperar este fetch. */}
         <section>
-          <h2 className="text-lg font-semibold mb-3">Similares</h2>
+          <h2 className="text-lg font-semibold mb-3">{t("movie.similar")}</h2>
           <Suspense fallback={<MovieGridSkeleton />}>
             <RecommendationsSection tmdbId={movie.id} />
           </Suspense>

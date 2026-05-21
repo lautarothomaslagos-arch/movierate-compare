@@ -28,9 +28,27 @@ import {
   type TmdbTvRecommendationsResponse,
   type TmdbWatchProvidersResponse,
 } from "@/types/movie";
+import { getLocale } from "next-intl/server";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
-const TMDB_LANG = "es-AR";
+
+// Mapeo de locale next-intl → código TMDB.
+// TMDB acepta códigos ISO 639-1 con sufijo opcional de región (es-AR, en-US).
+const LOCALE_TO_TMDB: Record<string, string> = {
+  es: "es-AR",
+  en: "en-US",
+};
+
+// Resuelve el lang para TMDB. Si no hay request context (raro pero pasa
+// en algunos casos de prerender), default a es-AR.
+async function getTmdbLang(): Promise<string> {
+  try {
+    const locale = await getLocale();
+    return LOCALE_TO_TMDB[locale] ?? "es-AR";
+  } catch {
+    return "es-AR";
+  }
+}
 
 // Helper que detecta si la key es un v4 Read Access Token (JWT) o v3 API key.
 // - v4 token (lo que TMDB recomienda hoy) empieza con "eyJ" — va en header Authorization: Bearer
@@ -61,8 +79,9 @@ async function tmdbFetch<T>(
   schema: { parse: (data: unknown) => T }
 ): Promise<T> {
   const auth = buildAuth();
+  const lang = await getTmdbLang();
   const url = new URL(`${TMDB_BASE}${path}`);
-  url.searchParams.set("language", TMDB_LANG);
+  url.searchParams.set("language", lang);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined) url.searchParams.set(k, String(v));
   }

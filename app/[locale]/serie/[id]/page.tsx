@@ -6,8 +6,8 @@ import {
   Layers,
   PlayCircle,
 } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -24,12 +24,13 @@ import {
   WhereToWatch,
   WhereToWatchSkeleton,
 } from "@/components/WhereToWatch";
+import { Link } from "@/i18n/navigation";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getTvDetails, getYear, posterUrl } from "@/lib/tmdb";
 
 type Props = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -69,31 +70,47 @@ export async function generateMetadata({ params }: Props) {
   }
 }
 
-function formatEpisodeRuntime(times: number[] | undefined): string | null {
+// Helper firma compatible con next-intl's translator (acepta strings/numbers/dates)
+type TFn = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
+
+function formatEpisodeRuntime(
+  times: number[] | undefined,
+  t: TFn
+): string | null {
   if (!times || times.length === 0) return null;
   // TMDB devuelve un array — tomamos el promedio si hay varios
   const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
-  if (avg < 60) return `${avg} min/ep`;
+  if (avg < 60) return t("tv.episodeRuntime", { value: avg });
   const h = Math.floor(avg / 60);
   const m = avg % 60;
-  return m === 0 ? `${h}h/ep` : `${h}h ${m}min/ep`;
+  return m === 0
+    ? t("tv.episodeRuntimeHours", { h })
+    : t("tv.episodeRuntimeFull", { h, m });
 }
 
-function translateStatus(status: string | null | undefined): string | null {
+// Set fijo de status que sabemos cómo traducir. Si TMDB devuelve un valor
+// no contemplado, mostramos el crudo.
+const KNOWN_STATUS = new Set([
+  "Returning Series",
+  "Ended",
+  "Canceled",
+  "In Production",
+  "Planned",
+  "Pilot",
+]);
+function translateStatus(status: string | null | undefined, t: TFn): string | null {
   if (!status) return null;
-  const map: Record<string, string> = {
-    "Returning Series": "En emisión",
-    Ended: "Terminada",
-    Canceled: "Cancelada",
-    "In Production": "En producción",
-    Planned: "Planeada",
-    Pilot: "Piloto",
-  };
-  return map[status] ?? status;
+  if (KNOWN_STATUS.has(status)) return t(`tv.status.${status}`);
+  return status;
 }
 
 export default async function SeriePage({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations();
   const tvId = parseInt(id, 10);
   if (!Number.isFinite(tvId)) notFound();
 
@@ -107,8 +124,8 @@ export default async function SeriePage({ params }: Props) {
   const year = getYear(tv.first_air_date);
   const endYear = getYear(tv.last_air_date);
   const inProduction = tv.in_production === true;
-  const runtimeStr = formatEpisodeRuntime(tv.episode_run_time);
-  const statusStr = translateStatus(tv.status);
+  const runtimeStr = formatEpisodeRuntime(tv.episode_run_time, t);
+  const statusStr = translateStatus(tv.status, t);
   const poster = posterUrl(tv.poster_path, "w500");
   const backdrop = backdropUrl(tv.backdrop_path, "w1280");
   const creators = tv.created_by ?? [];
@@ -118,9 +135,11 @@ export default async function SeriePage({ params }: Props) {
   let yearDisplay: string | null = null;
   if (year !== null) {
     if (endYear !== null && endYear !== year) {
-      yearDisplay = inProduction ? `${year} – presente` : `${year} – ${endYear}`;
+      yearDisplay = inProduction
+        ? t("tv.yearsToPresent", { startYear: year })
+        : t("tv.yearsRange", { startYear: year, endYear });
     } else if (inProduction) {
-      yearDisplay = `${year} – presente`;
+      yearDisplay = t("tv.yearsToPresent", { startYear: year });
     } else {
       yearDisplay = String(year);
     }
@@ -175,7 +194,7 @@ export default async function SeriePage({ params }: Props) {
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="size-4" />
-          Volver
+          {t("common.back")}
         </Link>
       </header>
 
@@ -205,7 +224,7 @@ export default async function SeriePage({ params }: Props) {
           <div className="flex-1 min-w-0 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
               <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-purple-500/15 text-purple-400">
-                Serie
+                {t("tv.badge")}
               </span>
               {statusStr && (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -235,10 +254,11 @@ export default async function SeriePage({ params }: Props) {
                 tv.number_of_seasons !== undefined && (
                   <span className="inline-flex items-center gap-1">
                     <Layers className="size-3.5" />
-                    {tv.number_of_seasons}{" "}
-                    {tv.number_of_seasons === 1 ? "temporada" : "temporadas"}
+                    {tv.number_of_seasons === 1
+                      ? t("tv.seasonsOne", { count: tv.number_of_seasons })
+                      : t("tv.seasonsOther", { count: tv.number_of_seasons })}
                     {tv.number_of_episodes
-                      ? ` · ${tv.number_of_episodes} eps`
+                      ? ` · ${t("tv.episodesShort", { count: tv.number_of_episodes })}`
                       : ""}
                   </span>
                 )}
@@ -272,7 +292,9 @@ export default async function SeriePage({ params }: Props) {
             {creators.length > 0 && (
               <div className="mt-4 text-sm">
                 <span className="text-muted-foreground">
-                  {creators.length === 1 ? "Creada por: " : "Creadores: "}
+                  {creators.length === 1
+                    ? t("tv.creatorOne")
+                    : t("tv.creatorMany")}
                 </span>
                 <span className="font-medium">
                   {creators.map((c) => c.name).join(", ")}
@@ -285,7 +307,7 @@ export default async function SeriePage({ params }: Props) {
         {/* Elenco */}
         {topCast.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-lg font-semibold mb-3">Elenco principal</h2>
+            <h2 className="text-lg font-semibold mb-3">{t("movie.cast")}</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
               {topCast.map((actor) => {
                 const profile = actor.profile_path
@@ -330,7 +352,7 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Dónde verla */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">Dónde verla</h2>
+          <h2 className="text-lg font-semibold mb-3">{t("movie.whereToWatch")}</h2>
           <Suspense fallback={<WhereToWatchSkeleton />}>
             <WhereToWatch tmdbId={tv.id} mediaType="tv" />
           </Suspense>
@@ -338,18 +360,18 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Ratings — solo IMDb, RT, Metacritic, TMDB (no Letterboxd/Filmaffinity) */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">Ratings comparados</h2>
+          <h2 className="text-lg font-semibold mb-3">{t("movie.ratings")}</h2>
           <Suspense fallback={<TvRatingsSkeleton />}>
             <TvRatingsSection tvId={tv.id} />
           </Suspense>
           <p className="mt-2 text-xs text-muted-foreground">
-            Letterboxd no indexa series.
+            {t("tv.letterboxdNoTv")}
           </p>
         </section>
 
         {/* Similares */}
         <section>
-          <h2 className="text-lg font-semibold mb-3">Similares</h2>
+          <h2 className="text-lg font-semibold mb-3">{t("movie.similar")}</h2>
           <Suspense fallback={<TvRecommendationsSkeleton />}>
             <TvRecommendationsSection tvId={tv.id} />
           </Suspense>

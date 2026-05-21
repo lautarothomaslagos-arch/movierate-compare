@@ -1,16 +1,15 @@
 ﻿import { Film } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { getTvRecommendations, getYear } from "@/lib/tmdb";
 
-// Grid horizontal scrollable de series similares. Similar a MovieGrid pero
-// linkea a /serie/[id]. Por simplicidad lo dejo como server component sin
-// las flechas (que requieren cliente). El swipe nativo en mobile y el scroll
-// horizontal con shift+wheel en desktop alcanzan.
+// Grid horizontal scrollable de series similares.
 export async function TvRecommendationsSection({ tvId }: { tvId: number }) {
+  const t = await getTranslations("tv");
   let items: Array<{
     id: number;
     name: string;
@@ -20,11 +19,11 @@ export async function TvRecommendationsSection({ tvId }: { tvId: number }) {
 
   try {
     const data = await getTvRecommendations(tvId);
-    items = data.results.slice(0, 12).map((t) => ({
-      id: t.id,
-      name: t.name,
-      year: getYear(t.first_air_date),
-      poster_path: t.poster_path ?? null,
+    items = data.results.slice(0, 12).map((r) => ({
+      id: r.id,
+      name: r.name,
+      year: getYear(r.first_air_date),
+      poster_path: r.poster_path ?? null,
     }));
   } catch (err) {
     console.error("[TvRecommendations] failed:", err);
@@ -32,9 +31,7 @@ export async function TvRecommendationsSection({ tvId }: { tvId: number }) {
 
   if (items.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        Sin recomendaciones para esta serie.
-      </p>
+      <p className="text-sm text-muted-foreground">{t("noSimilar")}</p>
     );
   }
 

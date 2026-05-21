@@ -1,10 +1,11 @@
 "use client";
 
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 // Error boundary global. Lo invoca Next cuando un error no manejado se
 // propaga desde cualquier ruta. Tiene que ser Client Component porque
@@ -16,6 +17,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations();
+
   useEffect(() => {
     console.error("[global error]", error);
   }, [error]);
@@ -23,10 +26,9 @@ export default function GlobalError({
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
       <AlertTriangle className="size-12 text-destructive mb-4" />
-      <h1 className="text-2xl font-bold">Algo salió mal</h1>
+      <h1 className="text-2xl font-bold">{t("error.title")}</h1>
       <p className="text-muted-foreground mt-2 max-w-md">
-        Hubo un problema cargando esta página. Probá refrescar; si persiste,
-        volvé al inicio.
+        {t("error.body")}
       </p>
       {error.digest && (
         <p className="text-xs text-muted-foreground/60 mt-2 font-mono">
@@ -36,10 +38,10 @@ export default function GlobalError({
       <div className="mt-6 flex gap-2">
         <Button onClick={reset} variant="default">
           <RefreshCw className="size-4" />
-          Reintentar
+          {t("common.retry")}
         </Button>
         <Button asChild variant="outline">
-          <Link href="/">Volver al inicio</Link>
+          <Link href="/">{t("common.backToHome")}</Link>
         </Button>
       </div>
     </main>

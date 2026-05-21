@@ -1,8 +1,9 @@
 import { Film } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 
 import { MediaTypeToggle, type MediaType } from "@/components/MediaTypeToggle";
+import { Link } from "@/i18n/navigation";
 import {
   backdropUrl,
   discoverByGenre,
@@ -12,6 +13,7 @@ import {
 } from "@/lib/tmdb";
 
 type Props = {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ type?: string }>;
 };
 
@@ -24,7 +26,10 @@ function parseType(value: string | undefined): MediaType {
   return value === "tv" ? "tv" : "movie";
 }
 
-export default async function GenerosPage({ searchParams }: Props) {
+export default async function GenerosPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("genres");
   const { type: typeParam } = await searchParams;
   const mediaType = parseType(typeParam);
 
@@ -36,15 +41,12 @@ export default async function GenerosPage({ searchParams }: Props) {
     console.error("[/generos] failed:", err);
     return (
       <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6">Géneros</h1>
-        <p className="text-sm text-muted-foreground">
-          No se pudieron cargar los géneros. Probá refrescar la página.
-        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6">{t("heading")}</h1>
+        <p className="text-sm text-muted-foreground">{t("loadFailed")}</p>
       </main>
     );
   }
 
-  // Para cada género traemos backdrop de una opción popular para el fondo
   const withBackdrops = await Promise.all(
     genres.map(async (g) => {
       try {
@@ -65,10 +67,8 @@ export default async function GenerosPage({ searchParams }: Props) {
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Géneros</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Elegí un género y descubrí qué hay para ver.
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t("heading")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <MediaTypeToggle basePath="/generos" active={mediaType} />
       </header>

@@ -1,9 +1,10 @@
 import { ArrowLeft, Calendar, Film, MapPin } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   getPersonDetails,
@@ -15,7 +16,7 @@ import {
 } from "@/lib/tmdb";
 
 type Props = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -43,10 +44,14 @@ export async function generateMetadata({ params }: Props) {
   }
 }
 
-function formatDate(iso: string | null | undefined): string | null {
+function formatDate(
+  iso: string | null | undefined,
+  locale: string
+): string | null {
   if (!iso) return null;
   try {
-    return new Date(iso).toLocaleDateString("es-AR", {
+    const lang = locale === "en" ? "en-US" : "es-AR";
+    return new Date(iso).toLocaleDateString(lang, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -73,7 +78,9 @@ function calcAge(
 }
 
 export default async function ActorPage({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations();
   const personId = parseInt(id, 10);
   if (!Number.isFinite(personId)) notFound();
 
@@ -96,8 +103,8 @@ export default async function ActorPage({ params }: Props) {
   }
 
   const profile = profileUrl(person.profile_path, "h632");
-  const birthFormatted = formatDate(person.birthday);
-  const deathFormatted = formatDate(person.deathday);
+  const birthFormatted = formatDate(person.birthday, locale);
+  const deathFormatted = formatDate(person.deathday, locale);
   const age = calcAge(person.birthday, person.deathday);
 
   // Filmografía unificada (pelis + series), ordenada por popularidad desc.
@@ -151,7 +158,7 @@ export default async function ActorPage({ params }: Props) {
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="size-4" />
-          Volver
+          {t("common.back")}
         </Link>
       </header>
 
@@ -194,7 +201,9 @@ export default async function ActorPage({ params }: Props) {
                   {birthFormatted}
                   {age !== null && (
                     <span className="ml-1">
-                      ({age} {deathFormatted ? "años, falleció" : "años"})
+                      {deathFormatted
+                        ? t("person.ageDeceased", { age })
+                        : t("person.ageLiving", { age })}
                     </span>
                   )}
                 </span>
@@ -217,7 +226,7 @@ export default async function ActorPage({ params }: Props) {
               <Biography text={person.biography} />
             ) : (
               <p className="mt-4 text-sm text-muted-foreground italic">
-                Sin biografía disponible para esta persona.
+                {t("person.noBio")}
               </p>
             )}
           </div>
@@ -226,7 +235,7 @@ export default async function ActorPage({ params }: Props) {
         {/* Filmografía */}
         <section>
           <h2 className="text-lg font-semibold mb-3">
-            Filmografía{" "}
+            {t("person.filmographyHeading")}{" "}
             {filmography.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">
                 ({filmography.length})
@@ -235,7 +244,7 @@ export default async function ActorPage({ params }: Props) {
           </h2>
           {filmography.length === 0 ? (
             <Card className="p-6 text-sm text-muted-foreground text-center">
-              No tenemos filmografía registrada para esta persona.
+              {t("person.noFilmography")}
             </Card>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">

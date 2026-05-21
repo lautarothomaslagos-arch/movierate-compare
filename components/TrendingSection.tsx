@@ -1,8 +1,9 @@
 import { Film } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { getTrending, getYear } from "@/lib/tmdb";
 
@@ -15,6 +16,7 @@ type TrendingItem = {
 };
 
 export async function TrendingSection({ limit = 12 }: { limit?: number }) {
+  const t = await getTranslations();
   let items: TrendingItem[] = [];
   try {
     const trending = await getTrending("day");
@@ -49,7 +51,7 @@ export async function TrendingSection({ limit = 12 }: { limit?: number }) {
   if (items.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No se pudieron cargar las tendencias.
+        {t("home.trendingFailed")}
       </p>
     );
   }
@@ -98,7 +100,9 @@ export async function TrendingSection({ limit = 12 }: { limit?: number }) {
                       : "bg-blue-500/90 text-white"
                   )}
                 >
-                  {it.media_type === "tv" ? "Serie" : "Peli"}
+                  {it.media_type === "tv"
+                    ? t("search.badgeTv")
+                    : t("search.badgeMovie")}
                 </span>
               </div>
               <div className="mt-1.5 text-xs font-medium truncate">

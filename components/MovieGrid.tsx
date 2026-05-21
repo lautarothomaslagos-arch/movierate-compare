@@ -1,11 +1,12 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Film } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 export type GridMovie = {
@@ -24,6 +25,7 @@ export function MovieGrid({ movies }: { movies: GridMovie[] }) {
   const scrollerRef = useRef<HTMLUListElement | null>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
+  const t = useTranslations("movie");
 
   const updateEdges = useCallback(() => {
     const el = scrollerRef.current;
@@ -56,9 +58,7 @@ export function MovieGrid({ movies }: { movies: GridMovie[] }) {
 
   if (movies.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        Sin recomendaciones para esta película.
-      </p>
+      <p className="text-sm text-muted-foreground">{t("noSimilar")}</p>
     );
   }
 

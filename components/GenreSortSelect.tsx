@@ -1,25 +1,25 @@
 "use client";
 
 import { Flame, Sparkles, Star } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 export type GenreSort = "popular" | "top" | "recent";
 
 const OPTIONS: Array<{
   value: GenreSort;
-  label: string;
+  labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { value: "popular", label: "Populares", icon: Flame },
-  { value: "top", label: "Mejor puntuadas", icon: Star },
-  { value: "recent", label: "Más recientes", icon: Sparkles },
+  { value: "popular", labelKey: "popularLabel", icon: Flame },
+  { value: "top", labelKey: "topLabel", icon: Star },
+  { value: "recent", labelKey: "recentLabel", icon: Sparkles },
 ];
 
 // Selector tipo "pill" navega entre las opciones. Cambiar de sort resetea
-// page a 1 (no propagamos page entre cambios). Es Server-Component-friendly
-// (sólo Links, sin estado). Preserva el type (tv) si está activo.
+// page a 1. Server-Component-friendly (sólo Links). Preserva type (tv).
 export function GenreSortSelect({
   genreId,
   active,
@@ -29,13 +29,14 @@ export function GenreSortSelect({
   active: GenreSort;
   mediaType?: "movie" | "tv";
 }) {
+  const t = useTranslations("genres.sort");
   return (
     <div
       role="tablist"
-      aria-label="Ordenar películas"
+      aria-label={t("popularLabel")}
       className="inline-flex items-center gap-1 p-1 rounded-md border bg-secondary/40"
     >
-      {OPTIONS.map(({ value, label, icon: Icon }) => {
+      {OPTIONS.map(({ value, labelKey, icon: Icon }) => {
         const isActive = value === active;
         const sp = new URLSearchParams();
         if (value !== "popular") sp.set("sort", value);
@@ -57,7 +58,7 @@ export function GenreSortSelect({
             )}
           >
             <Icon className="size-3.5" />
-            <span className="hidden sm:inline">{label}</span>
+            <span className="hidden sm:inline">{t(labelKey)}</span>
           </Link>
         );
       })}

@@ -1,33 +1,52 @@
 import { ArrowRight, Film } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { backdropUrl, discoverByGenre } from "@/lib/tmdb";
+import { Link } from "@/i18n/navigation";
+import { backdropUrl, discoverByGenre, getGenres } from "@/lib/tmdb";
 
-// Géneros destacados con sus IDs de TMDB (movie genres).
-// Mantenemos esta lista hardcoded — son los más visitados y le da personalidad
-// a la home. La lista completa de géneros sigue en /generos.
+// Géneros destacados con sus IDs de TMDB (movie genres) + emoji.
+// El nombre viene de TMDB (respeta el locale del request gracias al
+// TMDB_LANG dinámico). Si no hay nombre, caemos al fallback.
 const FEATURED = [
-  { id: 28, name: "Acción", emoji: "💥" },
-  { id: 35, name: "Comedia", emoji: "😂" },
-  { id: 18, name: "Drama", emoji: "🎭" },
-  { id: 27, name: "Terror", emoji: "👻" },
-  { id: 10749, name: "Romance", emoji: "💘" },
-  { id: 878, name: "Ciencia ficción", emoji: "🛸" },
+  { id: 28, fallback: "Acción", emoji: "💥" },
+  { id: 35, fallback: "Comedia", emoji: "😂" },
+  { id: 18, fallback: "Drama", emoji: "🎭" },
+  { id: 27, fallback: "Terror", emoji: "👻" },
+  { id: 10749, fallback: "Romance", emoji: "💘" },
+  { id: 878, fallback: "Ciencia ficción", emoji: "🛸" },
 ];
 
 export async function FeaturedGenresSection() {
-  // Fetch en paralelo de un backdrop por género (de la peli más popular)
+  const t = await getTranslations("home");
+
+  // Fetch en paralelo: nombres de géneros en el locale activo + backdrop por género
+  let genreNameById: Map<number, string> = new Map();
+  try {
+    const genresData = await getGenres();
+    genreNameById = new Map(genresData.genres.map((g) => [g.id, g.name]));
+  } catch {
+    // si falla, usamos fallbacks
+  }
+
   const withBackdrops = await Promise.all(
     FEATURED.map(async (g) => {
       try {
         const res = await discoverByGenre(g.id, 1);
         const first = res.results[0];
         const backdrop = backdropUrl(first?.backdrop_path, "w780");
-        return { ...g, backdrop };
+        return {
+          ...g,
+          name: genreNameById.get(g.id) ?? g.fallback,
+          backdrop,
+        };
       } catch {
-        return { ...g, backdrop: null as string | null };
+        return {
+          ...g,
+          name: genreNameById.get(g.id) ?? g.fallback,
+          backdrop: null as string | null,
+        };
       }
     })
   );
@@ -71,7 +90,7 @@ export async function FeaturedGenresSection() {
           href="/generos"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Ver todos los géneros
+          {t("viewAllGenres")}
           <ArrowRight className="size-4" />
         </Link>
       </div>

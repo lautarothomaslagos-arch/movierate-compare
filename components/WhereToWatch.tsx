@@ -1,4 +1,5 @@
 import { Tv } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { headers } from "next/headers";
 
@@ -7,30 +8,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getTvWatchProviders, getWatchProviders } from "@/lib/tmdb";
 import type { TmdbProvider } from "@/types/movie";
 
-// Mapeo de código ISO de país a nombre legible en español.
-// Solo cubrimos los más comunes para la UI; el resto cae al código.
-const COUNTRY_NAMES: Record<string, string> = {
-  AR: "Argentina",
-  MX: "México",
-  ES: "España",
-  US: "Estados Unidos",
-  CL: "Chile",
-  CO: "Colombia",
-  PE: "Perú",
-  UY: "Uruguay",
-  BR: "Brasil",
-  EC: "Ecuador",
-  BO: "Bolivia",
-  PY: "Paraguay",
-  VE: "Venezuela",
-  GT: "Guatemala",
-  CR: "Costa Rica",
-  PA: "Panamá",
-  DO: "República Dominicana",
-};
+// Países que tenemos traducidos en messages/*.json/countries.
+// Si TMDB devuelve un código no contemplado, mostramos el código crudo.
+const KNOWN_COUNTRIES = new Set([
+  "AR", "MX", "ES", "US", "CL", "CO", "PE", "UY", "BR", "EC",
+  "BO", "PY", "VE", "GT", "CR", "PA", "DO",
+]);
 
-function countryName(code: string): string {
-  return COUNTRY_NAMES[code] ?? code;
+type TFn = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
+
+function countryName(code: string, t: TFn): string {
+  if (KNOWN_COUNTRIES.has(code)) return t(`countries.${code}`);
+  return code;
 }
 
 // Detección de región:
@@ -102,6 +94,8 @@ export async function WhereToWatch({
   mediaType?: "movie" | "tv";
 }) {
   const region = await detectRegion();
+  const t = await getTranslations();
+  const country = countryName(region, t);
 
   let data;
   try {
@@ -119,7 +113,7 @@ export async function WhereToWatch({
   if (!regionData) {
     return (
       <p className="text-sm text-muted-foreground">
-        Sin información de streaming en {countryName(region)} por el momento.
+        {t("whereToWatch.noRegionData", { country })}
       </p>
     );
   }
@@ -129,7 +123,6 @@ export async function WhereToWatch({
   const buy = regionData.buy ?? [];
   const free = regionData.free ?? [];
 
-  // Si no hay ningún provider en absoluto
   if (
     flatrate.length === 0 &&
     rent.length === 0 &&
@@ -138,7 +131,7 @@ export async function WhereToWatch({
   ) {
     return (
       <p className="text-sm text-muted-foreground">
-        No está disponible en streaming en {countryName(region)} por ahora.
+        {t("whereToWatch.noProviders", { country })}
       </p>
     );
   }
@@ -146,31 +139,37 @@ export async function WhereToWatch({
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        Disponible en {countryName(region)}{" "}
-        <span className="opacity-60">
-          (datos de JustWatch via TMDB · click → abre en el proveedor)
-        </span>
+        {t("whereToWatch.availableIn", { country })}{" "}
+        <span className="opacity-60">{t("whereToWatch.source")}</span>
       </p>
 
       {flatrate.length > 0 && (
         <ProviderRow
-          title="Con suscripción"
+          title={t("whereToWatch.subscription")}
           providers={flatrate}
           link={regionData.link}
         />
       )}
       {free.length > 0 && (
-        <ProviderRow title="Gratis" providers={free} link={regionData.link} />
+        <ProviderRow
+          title={t("whereToWatch.free")}
+          providers={free}
+          link={regionData.link}
+        />
       )}
       {rent.length > 0 && (
         <ProviderRow
-          title="Alquilar"
+          title={t("whereToWatch.rent")}
           providers={rent}
           link={regionData.link}
         />
       )}
       {buy.length > 0 && (
-        <ProviderRow title="Comprar" providers={buy} link={regionData.link} />
+        <ProviderRow
+          title={t("whereToWatch.buy")}
+          providers={buy}
+          link={regionData.link}
+        />
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 
 import { AuthErrorToast } from "@/components/AuthErrorToast";
@@ -11,7 +12,15 @@ import {
   TrendingSectionSkeleton,
 } from "@/components/TrendingSection";
 
-export default function Home() {
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function Home({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("home");
+
   return (
     <main className="flex flex-1 flex-col">
       {/* Suspense porque useSearchParams es client-only */}
@@ -29,10 +38,10 @@ export default function Home() {
         <section>
           <div className="mb-3 flex items-baseline justify-between">
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-              Tendencias de hoy
+              {t("trendingHeading")}
             </h2>
             <p className="text-xs text-muted-foreground hidden sm:block">
-              Lo que más se está viendo en TMDB
+              {t("trendingSubtitle")}
             </p>
           </div>
           <Suspense fallback={<TrendingSectionSkeleton />}>
@@ -43,7 +52,7 @@ export default function Home() {
         {/* Géneros destacados */}
         <section>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-3">
-            Géneros para arrancar
+            {t("featuredGenresHeading")}
           </h2>
           <Suspense fallback={<FeaturedGenresSkeleton />}>
             <FeaturedGenresSection />

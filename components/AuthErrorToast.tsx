@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -10,15 +11,16 @@ import { toast } from "sonner";
 export function AuthErrorToast() {
   const params = useSearchParams();
   const err = params.get("error");
+  const t = useTranslations("auth");
 
   useEffect(() => {
     if (!err) return;
     if (err === "auth_callback_failed") {
-      toast.error("No se pudo completar el inicio de sesión. Probá de nuevo.");
+      toast.error(t("callbackFailed"));
     } else {
       toast.error(`Error: ${err}`);
     }
-  }, [err]);
+  }, [err, t]);
 
   return null;
 }

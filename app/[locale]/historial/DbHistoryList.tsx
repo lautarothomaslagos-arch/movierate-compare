@@ -1,6 +1,7 @@
 "use client";
 
 import { Trash } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -12,20 +13,18 @@ import {
 import { Button } from "@/components/ui/button";
 import type { HistoryItem } from "@/lib/history";
 
-// Render del listado para usuarios logueados.
-// Recibe los items ya cargados desde el server (page.tsx) y maneja delete/clear
-// vía server actions.
 export function DbHistoryList({ items }: { items: HistoryItem[] }) {
   const [isClearing, startClearTransition] = useTransition();
+  const t = useTranslations("history");
 
   function handleClearAll() {
-    if (!confirm("¿Borrar todo el historial? No se puede deshacer.")) return;
+    if (!confirm(t("clearConfirm"))) return;
     startClearTransition(async () => {
       const r = await clearAllHistory();
       if ("error" in r && r.error) {
-        toast.error("No se pudo limpiar el historial.");
+        toast.error(t("clearError"));
       } else {
-        toast.success("Historial limpiado.");
+        toast.success(t("cleared"));
       }
     });
   }
@@ -38,7 +37,9 @@ export function DbHistoryList({ items }: { items: HistoryItem[] }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {items.length} {items.length === 1 ? "película" : "películas"}
+          {items.length === 1
+            ? t("countOne", { count: items.length })
+            : t("countOther", { count: items.length })}
         </p>
         <Button
           variant="outline"
@@ -47,7 +48,7 @@ export function DbHistoryList({ items }: { items: HistoryItem[] }) {
           disabled={isClearing}
         >
           <Trash className="size-4" />
-          Limpiar todo
+          {t("clearAll")}
         </Button>
       </div>
       <ul className="space-y-2">
@@ -69,12 +70,11 @@ export function DbHistoryList({ items }: { items: HistoryItem[] }) {
 }
 
 function EmptyState() {
+  const t = useTranslations("history");
   return (
     <div className="rounded-lg border border-dashed p-8 text-center">
-      <h2 className="font-semibold">Tu historial está vacío</h2>
-      <p className="text-sm text-muted-foreground mt-1">
-        Las películas que abras van a aparecer acá.
-      </p>
+      <h2 className="font-semibold">{t("empty")}</h2>
+      <p className="text-sm text-muted-foreground mt-1">{t("emptyBody")}</p>
     </div>
   );
 }

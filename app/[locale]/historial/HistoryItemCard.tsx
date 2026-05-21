@@ -1,19 +1,16 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-// Item visual del historial. El onDelete es genérico — sirve tanto para
-// borrar de DB (server action) como de localStorage (sync).
-// media_type opcional (default 'movie') determina si linkea a /movie/[id]
-// o /serie/[id], y muestra badge correspondiente.
 export function HistoryItemCard({
   tmdb_id,
   media_type = "movie",
@@ -33,6 +30,7 @@ export function HistoryItemCard({
   ) => void | Promise<{ error?: string; ok?: true }>;
 }) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations();
   const href = media_type === "tv" ? `/serie/${tmdb_id}` : `/movie/${tmdb_id}`;
 
   function handleDelete(e: React.MouseEvent) {
@@ -41,7 +39,7 @@ export function HistoryItemCard({
     startTransition(async () => {
       const r = await onDelete(tmdb_id, media_type);
       if (r && "error" in r && r.error) {
-        toast.error("No se pudo eliminar.");
+        toast.error(t("history.deleteError"));
       }
     });
   }
@@ -73,7 +71,9 @@ export function HistoryItemCard({
                 : "bg-blue-500/15 text-blue-400"
             )}
           >
-            {media_type === "tv" ? "Serie" : "Peli"}
+            {media_type === "tv"
+              ? t("search.badgeTv")
+              : t("search.badgeMovie")}
           </span>
         </div>
         {year !== null && (
@@ -85,7 +85,7 @@ export function HistoryItemCard({
         size="icon"
         onClick={handleDelete}
         disabled={isPending}
-        aria-label={`Eliminar ${title} del historial`}
+        aria-label={t("history.deleteAriaLabel", { title })}
         className="text-muted-foreground hover:text-destructive sm:opacity-60 group-hover:opacity-100"
       >
         <Trash2 className="size-4" />
