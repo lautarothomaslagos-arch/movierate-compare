@@ -33,9 +33,13 @@ export async function HeroSection() {
   }
 
   return (
-    <section className="relative overflow-hidden border-b border-border/40">
+    // OJO: NO usar overflow-hidden en el <section>. El SearchBar tiene un
+    // dropdown absoluto que sobresale debajo del hero y si recortamos acá
+    // queda tapado por la sección de Recientes. El backdrop tiene su propio
+    // overflow-hidden en su contenedor (que sí lo necesita).
+    <section className="relative border-b border-border/40">
       {backdropSrc ? (
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 -z-10 overflow-hidden">
           <Image
             src={backdropSrc}
             alt=""
