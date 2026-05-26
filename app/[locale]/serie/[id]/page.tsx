@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { FullCastModal } from "@/components/FullCastModal";
+import { JsonLd } from "@/components/JsonLd";
 import {
   ImageGallery,
   ImageGallerySkeleton,
@@ -41,6 +42,7 @@ import {
 } from "@/components/WhereToWatch";
 import { Link } from "@/i18n/navigation";
 import { genreBadgeClass } from "@/lib/genre-colors";
+import { SITE_URL, tvSeriesJsonLd } from "@/lib/seo";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getTvDetails, getYear, posterUrl } from "@/lib/tmdb";
@@ -182,8 +184,28 @@ export default async function SeriePage({ params }: Props) {
     ? await isInWatchlist(tv.id, "tv")
     : false;
 
+  // JSON-LD para SEO
+  const jsonLd = tvSeriesJsonLd({
+    name: tv.name,
+    originalName: tv.original_name,
+    url: `${SITE_URL}/serie/${tv.id}`,
+    imageUrl: tv.poster_path
+      ? `https://image.tmdb.org/t/p/w780${tv.poster_path}`
+      : null,
+    description: tv.overview ?? null,
+    firstAirDate: tv.first_air_date,
+    numberOfSeasons: tv.number_of_seasons,
+    numberOfEpisodes: tv.number_of_episodes,
+    creators: creators.map((c) => ({ name: c.name })),
+    cast: topCast.map((c) => ({ name: c.name })),
+    genres: tv.genres,
+    rating10: tv.vote_average,
+    ratingCount: tv.vote_count,
+  });
+
   return (
     <div className="flex flex-col flex-1">
+      <JsonLd data={jsonLd} />
       {!isLogged && (
         <TrackVisit
           tmdb_id={tv.id}

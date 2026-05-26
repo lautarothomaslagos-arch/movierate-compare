@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Film, History, Menu } from "lucide-react";
+import { Bookmark, Film, History, Menu, Trophy } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,12 @@ export function MobileNavMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem asChild>
+          <Link href="/top">
+            <Trophy />
+            {t("top")}
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/generos">
             <Film />

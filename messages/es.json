@@ -22,6 +22,7 @@
     "genres": "Géneros",
     "watchlist": "Mi lista",
     "history": "Historial",
+    "top": "Top",
     "menu": "Menú"
   },
   "footer": {
@@ -194,6 +195,15 @@
   "releaseDates": {
     "heading": "Estrenos",
     "noData": "Sin información de estrenos por país."
+  },
+  "top": {
+    "heading": "Top Rated",
+    "subtitle": "Las películas y series mejor puntuadas en TMDB",
+    "movies": "Películas",
+    "tv": "Series",
+    "page": "Página {page}",
+    "rank": "#{n}",
+    "votesShort": "{count} votos"
   },
   "compare": {
     "heading": "Comparar",

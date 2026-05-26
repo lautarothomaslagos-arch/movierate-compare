@@ -22,6 +22,7 @@
     "genres": "Genres",
     "watchlist": "My list",
     "history": "History",
+    "top": "Top",
     "menu": "Menu"
   },
   "footer": {
@@ -194,6 +195,15 @@
   "releaseDates": {
     "heading": "Releases",
     "noData": "No release info by country."
+  },
+  "top": {
+    "heading": "Top Rated",
+    "subtitle": "The best rated movies and TV shows on TMDB",
+    "movies": "Movies",
+    "tv": "TV Shows",
+    "page": "Page {page}",
+    "rank": "#{n}",
+    "votesShort": "{count} votes"
   },
   "compare": {
     "heading": "Compare",

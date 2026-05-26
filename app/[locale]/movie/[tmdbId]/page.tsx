@@ -9,6 +9,7 @@ import {
   CollectionSkeleton,
 } from "@/components/CollectionSection";
 import { FullCastModal } from "@/components/FullCastModal";
+import { JsonLd } from "@/components/JsonLd";
 import {
   ImageGallery,
   ImageGallerySkeleton,
@@ -36,6 +37,7 @@ import {
 } from "@/components/WhereToWatch";
 import { Link } from "@/i18n/navigation";
 import { genreBadgeClass } from "@/lib/genre-colors";
+import { movieJsonLd, SITE_URL } from "@/lib/seo";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getMovieDetails, getYear, posterUrl } from "@/lib/tmdb";
@@ -144,8 +146,27 @@ export default async function MoviePage({ params }: Props) {
     ? await isInWatchlist(movie.id, "movie")
     : false;
 
+  // JSON-LD para SEO (rich snippets en Google)
+  const jsonLd = movieJsonLd({
+    title: movie.title,
+    originalTitle: movie.original_title,
+    url: `${SITE_URL}/movie/${movie.id}`,
+    imageUrl: movie.poster_path
+      ? `https://image.tmdb.org/t/p/w780${movie.poster_path}`
+      : null,
+    description: movie.overview ?? null,
+    releaseDate: movie.release_date,
+    runtime: movie.runtime,
+    director: directors[0]?.name ?? null,
+    cast: topCast.map((c) => ({ name: c.name })),
+    genres: movie.genres,
+    rating10: movie.vote_average,
+    ratingCount: movie.vote_count,
+  });
+
   return (
     <div className="flex flex-col flex-1">
+      <JsonLd data={jsonLd} />
       {/* Tracking de visita para anónimos (logueados ya se guardó arriba). */}
       {!isLogged && (
         <TrackVisit

@@ -319,6 +319,40 @@ export function getTvImages(tvId: number): Promise<TmdbImagesResponse> {
   return tmdbFetch(`/tv/${tvId}/images`, {}, tmdbImagesResponseSchema);
 }
 
+// ----- Top rated discover (general, sin filtrar por género) -----
+
+export function discoverTopMovies(
+  page: number = 1,
+  minVotes: number = 2000
+): Promise<TmdbDiscoverResponse> {
+  return tmdbFetch(
+    "/discover/movie",
+    {
+      page,
+      sort_by: "vote_average.desc",
+      "vote_count.gte": minVotes,
+      include_adult: "false",
+    },
+    tmdbDiscoverResponseSchema
+  );
+}
+
+export function discoverTopTv(
+  page: number = 1,
+  minVotes: number = 500
+): Promise<TmdbTvDiscoverResponse> {
+  return tmdbFetch(
+    "/discover/tv",
+    {
+      page,
+      sort_by: "vote_average.desc",
+      "vote_count.gte": minVotes,
+      include_adult: "false",
+    },
+    tmdbTvDiscoverResponseSchema
+  );
+}
+
 // ----- Collection / saga -----
 
 export function getCollection(

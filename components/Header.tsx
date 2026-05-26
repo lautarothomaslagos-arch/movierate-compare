@@ -1,4 +1,4 @@
-import { Bookmark, Film } from "lucide-react";
+import { Bookmark, Film, Trophy } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { LoginButton } from "@/components/LoginButton";
@@ -48,6 +48,13 @@ export async function Header() {
           </Link>
           {/* Links en desktop */}
           <nav className="hidden sm:flex items-center gap-1 text-sm">
+            <Link
+              href="/top"
+              className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors inline-flex items-center gap-1"
+            >
+              <Trophy className="size-3.5" />
+              {t("top")}
+            </Link>
             <Link
               href="/generos"
               className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
