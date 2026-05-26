@@ -21,6 +21,7 @@ import {
   TrailerSection,
   TrailerSkeleton,
 } from "@/components/TrailerSection";
+import { TriviaSection, TriviaSkeleton } from "@/components/TriviaSection";
 import {
   WhereToWatch,
   WhereToWatchSkeleton,
@@ -317,6 +318,26 @@ export default async function MoviePage({ params }: Props) {
             </div>
           </section>
         )}
+
+        {/* Dato curioso — generado con Gemini Flash, cacheado en DB por id+locale.
+            Si IA falla devuelve null y la sección desaparece. */}
+        <section className="mb-10">
+          <Suspense fallback={<TriviaSkeleton />}>
+            <TriviaSection
+              tmdbId={movie.id}
+              mediaType="movie"
+              input={{
+                title: movie.title,
+                originalTitle: movie.original_title,
+                year,
+                overview: movie.overview ?? null,
+                director: directors[0]?.name ?? null,
+                cast: topCast.map((c) => c.name),
+                mediaType: "movie",
+              }}
+            />
+          </Suspense>
+        </section>
 
         {/* Tráiler — embed YouTube. Si TMDB no tiene videos devuelve null
             y la sección no aparece. */}

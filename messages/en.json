@@ -155,6 +155,10 @@
     "copied": "Link copied",
     "failed": "Could not share"
   },
+  "trivia": {
+    "heading": "Did you know",
+    "aiBy": "Generated with AI · may contain errors"
+  },
   "watchlist": {
     "heading": "My list",
     "addToList": "Add to my list",

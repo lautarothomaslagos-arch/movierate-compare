@@ -22,6 +22,7 @@ import {
   TrailerSection,
   TrailerSkeleton,
 } from "@/components/TrailerSection";
+import { TriviaSection, TriviaSkeleton } from "@/components/TriviaSection";
 import {
   TvRatingsSection,
   TvRatingsSkeleton,
@@ -389,6 +390,25 @@ export default async function SeriePage({ params }: Props) {
           <h2 className="text-lg font-semibold mb-3">{t("movie.trailer")}</h2>
           <Suspense fallback={<TrailerSkeleton />}>
             <TrailerSection tmdbId={tv.id} mediaType="tv" />
+          </Suspense>
+        </section>
+
+        {/* Dato curioso — IA */}
+        <section className="mb-10">
+          <Suspense fallback={<TriviaSkeleton />}>
+            <TriviaSection
+              tmdbId={tv.id}
+              mediaType="tv"
+              input={{
+                title: tv.name,
+                originalTitle: tv.original_name,
+                year,
+                overview: tv.overview ?? null,
+                director: creators[0]?.name ?? null,
+                cast: topCast.map((c) => c.name),
+                mediaType: "tv",
+              }}
+            />
           </Suspense>
         </section>
 
