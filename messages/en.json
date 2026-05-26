@@ -69,7 +69,12 @@
     "searching": "Searching...",
     "minChars": "Type at least 2 characters",
     "badgeMovie": "Movie",
-    "badgeTv": "TV"
+    "badgeTv": "TV",
+    "didYouMean": "Showing results for: ",
+    "recentHeading": "Recent",
+    "trendingHeading": "Trending",
+    "genresHeading": "Genres",
+    "viewAll": "View all"
   },
   "movie": {
     "directorOne": "Director: ",

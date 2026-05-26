@@ -69,7 +69,12 @@
     "searching": "Buscando...",
     "minChars": "Tipeá al menos 2 caracteres",
     "badgeMovie": "Peli",
-    "badgeTv": "Serie"
+    "badgeTv": "Serie",
+    "didYouMean": "Buscamos: ",
+    "recentHeading": "Recientes",
+    "trendingHeading": "Tendencias",
+    "genresHeading": "Géneros",
+    "viewAll": "Ver todos"
   },
   "movie": {
     "directorOne": "Dirección: ",
