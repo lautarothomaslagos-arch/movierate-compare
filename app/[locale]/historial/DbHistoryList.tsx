@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-import { HistoryItemCard } from "@/app/[locale]/historial/HistoryItemCard";
+import { HistoryFilters } from "@/app/[locale]/historial/HistoryFilters";
 import {
   clearAllHistory,
   deleteHistoryItem,
@@ -30,7 +30,12 @@ export function DbHistoryList({ items }: { items: HistoryItem[] }) {
   }
 
   if (items.length === 0) {
-    return <EmptyState />;
+    return (
+      <div className="rounded-lg border border-dashed p-8 text-center">
+        <h2 className="font-semibold">{t("empty")}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("emptyBody")}</p>
+      </div>
+    );
   }
 
   return (
@@ -51,30 +56,7 @@ export function DbHistoryList({ items }: { items: HistoryItem[] }) {
           {t("clearAll")}
         </Button>
       </div>
-      <ul className="space-y-2">
-        {items.map((item) => (
-          <li key={`${item.media_type}-${item.tmdb_id}`}>
-            <HistoryItemCard
-              tmdb_id={item.tmdb_id}
-              media_type={item.media_type}
-              title={item.title}
-              year={item.year}
-              poster_path={item.poster_path}
-              onDelete={deleteHistoryItem}
-            />
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function EmptyState() {
-  const t = useTranslations("history");
-  return (
-    <div className="rounded-lg border border-dashed p-8 text-center">
-      <h2 className="font-semibold">{t("empty")}</h2>
-      <p className="text-sm text-muted-foreground mt-1">{t("emptyBody")}</p>
+      <HistoryFilters items={items} onDelete={deleteHistoryItem} />
     </div>
   );
 }

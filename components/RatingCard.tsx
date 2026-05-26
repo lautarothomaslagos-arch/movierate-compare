@@ -52,18 +52,21 @@ export function RatingCard({
   const emptyMessage = tRatings(`empty.${platform}` as never) as string;
 
   if (!rating) {
+    // Card compacta para empty state: misma altura mínima visual pero menos
+    // peso visual (opacidad menor, fondo "muted", sin layout interno
+    // dramático). Sigue mostrando el nombre y el mensaje ingenioso.
     return (
-      <Card className="p-4 flex flex-col gap-2 min-h-[112px]">
+      <Card className="p-3 flex flex-col gap-1.5 min-h-[112px] opacity-60 hover:opacity-90 transition-opacity bg-muted/30 border-dashed">
         <div
           className={cn(
-            "text-xs font-semibold uppercase tracking-wide",
+            "text-[10px] sm:text-xs font-semibold uppercase tracking-wide",
             meta.accent
           )}
         >
           {platformName}
         </div>
         <div className="flex-1 flex items-center">
-          <span className="text-sm text-muted-foreground italic">
+          <span className="text-xs text-muted-foreground italic leading-tight">
             {emptyMessage}
           </span>
         </div>

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { HistoryItemCard } from "@/app/[locale]/historial/HistoryItemCard";
+import { HistoryFilters } from "@/app/[locale]/historial/HistoryFilters";
 import { Button } from "@/components/ui/button";
 import {
   clearLocalHistory,
@@ -14,7 +14,6 @@ import {
   type HistoryItem,
 } from "@/lib/history-local";
 
-// Para usuarios NO logueados: leemos localStorage en useEffect (client-only).
 export function LocalHistoryList() {
   const [items, setItems] = useState<HistoryItem[] | null>(null);
   const t = useTranslations("history");
@@ -31,6 +30,7 @@ export function LocalHistoryList() {
         ? prev.filter((x) => !(x.tmdb_id === id && x.media_type === mediaType))
         : prev
     );
+    return Promise.resolve({ ok: true as const });
   }
 
   function handleClearAll() {
@@ -72,23 +72,7 @@ export function LocalHistoryList() {
           {t("clearAll")}
         </Button>
       </div>
-      <ul className="space-y-2">
-        {items.map((item) => (
-          <li key={`${item.media_type}-${item.tmdb_id}`}>
-            <HistoryItemCard
-              tmdb_id={item.tmdb_id}
-              media_type={item.media_type}
-              title={item.title}
-              year={item.year}
-              poster_path={item.poster_path}
-              onDelete={(id, mediaType) => {
-                handleDelete(id, mediaType);
-                return Promise.resolve({ ok: true });
-              }}
-            />
-          </li>
-        ))}
-      </ul>
+      <HistoryFilters items={items} onDelete={handleDelete} />
     </div>
   );
 }

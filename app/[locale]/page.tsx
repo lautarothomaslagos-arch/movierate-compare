@@ -7,6 +7,7 @@ import {
   FeaturedGenresSkeleton,
 } from "@/components/FeaturedGenresSection";
 import { HeroSection, HeroSectionSkeleton } from "@/components/HeroSection";
+import { RecentlyVisitedSection } from "@/components/RecentlyVisitedSection";
 import {
   TrendingSection,
   TrendingSectionSkeleton,
@@ -34,6 +35,12 @@ export default async function Home({ params }: Props) {
       </Suspense>
 
       <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-10 sm:py-14 space-y-12">
+        {/* Recientes — solo si el user tiene historial (DB o localStorage).
+            Si no, el componente devuelve null y la sección no aparece. */}
+        <Suspense fallback={null}>
+          <RecentlyVisitedSection limit={6} />
+        </Suspense>
+
         {/* Tendencias del día */}
         <section>
           <div className="mb-3 flex items-baseline justify-between">

@@ -19,7 +19,10 @@
   "header": {
     "title": "MovieRate",
     "subtitle": "Compare",
-    "genres": "Géneros"
+    "genres": "Géneros",
+    "watchlist": "Mi lista",
+    "history": "Historial",
+    "menu": "Menú"
   },
   "footer": {
     "disclaimer": "Datos de IMDb, Rotten Tomatoes y Metacritic vía OMDb. Letterboxd no provee API pública — los datos pueden no estar disponibles temporalmente. Información de películas por TMDB."
@@ -167,6 +170,12 @@
   },
   "history": {
     "heading": "Mi historial",
+    "recentlyVisited": "Recientemente visto",
+    "filterAll": "Todos",
+    "filterMovies": "Películas",
+    "filterTv": "Series",
+    "searchPlaceholder": "Buscar en tu historial...",
+    "noFilterResults": "No hay títulos que coincidan con el filtro.",
     "empty": "Tu historial está vacío",
     "emptyBody": "Las películas que abras van a aparecer acá.",
     "anonymousNote": "Estás navegando sin sesión. Si iniciás sesión con Google, tu historial se guarda en la nube.",
