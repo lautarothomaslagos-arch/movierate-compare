@@ -160,6 +160,41 @@
     "copied": "Link copiado",
     "failed": "No se pudo compartir"
   },
+  "production": {
+    "heading": "Producción",
+    "studios": "Estudios",
+    "countries": "País",
+    "countriesPlural": "Países",
+    "languages": "Idiomas",
+    "budget": "Presupuesto",
+    "revenue": "Recaudación",
+    "network": "Cadena",
+    "networksPlural": "Cadenas"
+  },
+  "fullCast": {
+    "openBtn": "Ver todo el elenco",
+    "heading": "Elenco completo",
+    "searchPlaceholder": "Buscar actor...",
+    "noResults": "Ningún actor coincide.",
+    "totalCount": "{count} actores"
+  },
+  "saga": {
+    "partOf": "Parte de {name}",
+    "watchAll": "Ver la saga completa"
+  },
+  "seasons": {
+    "heading": "Temporadas",
+    "seasonLabel": "Temporada {n}",
+    "episodes": "{count} episodios",
+    "bestEp": "Mejor",
+    "worstEp": "Peor",
+    "noEpisodes": "Sin episodios cargados",
+    "viewSeason": "Ver detalles"
+  },
+  "releaseDates": {
+    "heading": "Estrenos",
+    "noData": "Sin información de estrenos por país."
+  },
   "compare": {
     "heading": "Comparar",
     "subtitle": "Compará dos películas o series lado a lado",

@@ -11,10 +11,13 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { FullCastModal } from "@/components/FullCastModal";
 import {
   ImageGallery,
   ImageGallerySkeleton,
 } from "@/components/ImageGallery";
+import { ProductionSection } from "@/components/ProductionSection";
+import { SeasonsSection, SeasonsSkeleton } from "@/components/SeasonsSection";
 import { CompareButton } from "@/components/CompareButton";
 import { ShareButton } from "@/components/ShareButton";
 import { TrackVisit } from "@/components/TrackVisit";
@@ -385,6 +388,31 @@ export default async function SeriePage({ params }: Props) {
                 );
               })}
             </div>
+            {/* Botón ver todo el elenco */}
+            {tv.credits?.cast && tv.credits.cast.length > 6 && (
+              <div className="mt-3 flex justify-center md:justify-start">
+                <FullCastModal
+                  cast={tv.credits.cast.map((a) => ({
+                    id: a.id,
+                    name: a.name,
+                    character: a.character,
+                    profile_path: a.profile_path,
+                  }))}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Temporadas con mejor/peor episodio */}
+        {tv.seasons && tv.seasons.filter((s) => s.season_number > 0).length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-semibold mb-3">
+              {t("seasons.heading")}
+            </h2>
+            <Suspense fallback={<SeasonsSkeleton />}>
+              <SeasonsSection tvId={tv.id} seasons={tv.seasons} />
+            </Suspense>
           </section>
         )}
 
@@ -440,6 +468,19 @@ export default async function SeriePage({ params }: Props) {
           <p className="mt-2 text-xs text-muted-foreground">
             {t("tv.letterboxdNoTv")}
           </p>
+        </section>
+
+        {/* Producción */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">
+            {t("production.heading")}
+          </h2>
+          <ProductionSection
+            studios={tv.production_companies}
+            countries={tv.production_countries}
+            languages={tv.spoken_languages}
+            networks={tv.networks}
+          />
         </section>
 
         {/* Similares */}

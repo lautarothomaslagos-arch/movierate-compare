@@ -160,6 +160,41 @@
     "copied": "Link copied",
     "failed": "Could not share"
   },
+  "production": {
+    "heading": "Production",
+    "studios": "Studios",
+    "countries": "Country",
+    "countriesPlural": "Countries",
+    "languages": "Languages",
+    "budget": "Budget",
+    "revenue": "Box office",
+    "network": "Network",
+    "networksPlural": "Networks"
+  },
+  "fullCast": {
+    "openBtn": "See full cast",
+    "heading": "Full cast",
+    "searchPlaceholder": "Search actor...",
+    "noResults": "No actor matches.",
+    "totalCount": "{count} actors"
+  },
+  "saga": {
+    "partOf": "Part of {name}",
+    "watchAll": "View the full saga"
+  },
+  "seasons": {
+    "heading": "Seasons",
+    "seasonLabel": "Season {n}",
+    "episodes": "{count} episodes",
+    "bestEp": "Best",
+    "worstEp": "Worst",
+    "noEpisodes": "No episodes loaded",
+    "viewSeason": "See details"
+  },
+  "releaseDates": {
+    "heading": "Releases",
+    "noData": "No release info by country."
+  },
   "compare": {
     "heading": "Compare",
     "subtitle": "Compare two movies or shows side by side",

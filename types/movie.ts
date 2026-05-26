@@ -40,6 +40,31 @@ const crewMemberSchema = z.object({
   department: z.string().nullable().optional(),
 });
 
+const productionCompanySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  logo_path: z.string().nullable().optional(),
+  origin_country: z.string().nullable().optional(),
+});
+
+const productionCountrySchema = z.object({
+  iso_3166_1: z.string(),
+  name: z.string(),
+});
+
+const spokenLanguageSchema = z.object({
+  iso_639_1: z.string(),
+  name: z.string(),
+  english_name: z.string().nullable().optional(),
+});
+
+const belongsToCollectionSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  poster_path: z.string().nullable().optional(),
+  backdrop_path: z.string().nullable().optional(),
+});
+
 export const tmdbMovieDetailsSchema = z.object({
   id: z.number(),
   imdb_id: z.string().nullable().optional(),
@@ -52,7 +77,13 @@ export const tmdbMovieDetailsSchema = z.object({
   runtime: z.number().nullable().optional(),
   vote_average: z.number().nullable().optional(),
   vote_count: z.number().nullable().optional(),
+  budget: z.number().nullable().optional(),
+  revenue: z.number().nullable().optional(),
   genres: z.array(z.object({ id: z.number(), name: z.string() })).optional(),
+  production_companies: z.array(productionCompanySchema).optional(),
+  production_countries: z.array(productionCountrySchema).optional(),
+  spoken_languages: z.array(spokenLanguageSchema).optional(),
+  belongs_to_collection: belongsToCollectionSchema.nullable().optional(),
   credits: z
     .object({
       cast: z.array(castMemberSchema).optional(),
@@ -198,6 +229,24 @@ const tvCreatorSchema = z.object({
   profile_path: z.string().nullable().optional(),
 });
 
+const tvSeasonSummarySchema = z.object({
+  id: z.number(),
+  season_number: z.number(),
+  name: z.string(),
+  overview: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  air_date: z.string().nullable().optional(),
+  episode_count: z.number().nullable().optional(),
+  vote_average: z.number().nullable().optional(),
+});
+
+const tvNetworkSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  logo_path: z.string().nullable().optional(),
+  origin_country: z.string().nullable().optional(),
+});
+
 export const tmdbTvDetailsSchema = z.object({
   id: z.number(),
   external_ids: z
@@ -219,8 +268,14 @@ export const tmdbTvDetailsSchema = z.object({
   in_production: z.boolean().nullable().optional(),
   vote_average: z.number().nullable().optional(),
   vote_count: z.number().nullable().optional(),
+  origin_country: z.array(z.string()).optional(),
   genres: z.array(z.object({ id: z.number(), name: z.string() })).optional(),
   created_by: z.array(tvCreatorSchema).optional(),
+  production_companies: z.array(productionCompanySchema).optional(),
+  production_countries: z.array(productionCountrySchema).optional(),
+  spoken_languages: z.array(spokenLanguageSchema).optional(),
+  networks: z.array(tvNetworkSchema).optional(),
+  seasons: z.array(tvSeasonSummarySchema).optional(),
   credits: z
     .object({
       cast: z
@@ -237,6 +292,75 @@ export const tmdbTvDetailsSchema = z.object({
     })
     .optional(),
 });
+
+// /collection/{id}
+const collectionPartSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  original_title: z.string().nullable().optional(),
+  release_date: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  vote_average: z.number().nullable().optional(),
+  overview: z.string().nullable().optional(),
+});
+
+export const tmdbCollectionResponseSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  overview: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  backdrop_path: z.string().nullable().optional(),
+  parts: z.array(collectionPartSchema),
+});
+
+// /tv/{id}/season/{n}
+const tvEpisodeSchema = z.object({
+  id: z.number(),
+  episode_number: z.number(),
+  season_number: z.number(),
+  name: z.string(),
+  overview: z.string().nullable().optional(),
+  air_date: z.string().nullable().optional(),
+  still_path: z.string().nullable().optional(),
+  vote_average: z.number().nullable().optional(),
+  vote_count: z.number().nullable().optional(),
+  runtime: z.number().nullable().optional(),
+});
+
+export const tmdbSeasonResponseSchema = z.object({
+  id: z.number(),
+  season_number: z.number(),
+  name: z.string(),
+  overview: z.string().nullable().optional(),
+  air_date: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  episodes: z.array(tvEpisodeSchema),
+});
+
+// /movie/{id}/release_dates
+const releaseDateEntrySchema = z.object({
+  certification: z.string().nullable().optional(),
+  iso_639_1: z.string().nullable().optional(),
+  release_date: z.string(),
+  type: z.number(),
+  // type: 1=Premiere, 2=Theatrical (limited), 3=Theatrical, 4=Digital, 5=Physical, 6=TV
+});
+
+const releaseDateByCountrySchema = z.object({
+  iso_3166_1: z.string(),
+  release_dates: z.array(releaseDateEntrySchema),
+});
+
+export const tmdbReleaseDatesResponseSchema = z.object({
+  id: z.number(),
+  results: z.array(releaseDateByCountrySchema),
+});
+
+export type TmdbProductionCompany = z.infer<typeof productionCompanySchema>;
+export type TmdbCollection = z.infer<typeof tmdbCollectionResponseSchema>;
+export type TmdbSeason = z.infer<typeof tmdbSeasonResponseSchema>;
+export type TmdbEpisode = z.infer<typeof tvEpisodeSchema>;
+export type TmdbReleaseDates = z.infer<typeof tmdbReleaseDatesResponseSchema>;
 
 export const tmdbTvDiscoverResponseSchema = z.object({
   page: z.number(),

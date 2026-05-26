@@ -8,7 +8,10 @@ import {
   tmdbPersonTvCreditsSchema,
   tmdbRecommendationsResponseSchema,
   tmdbSearchResponseSchema,
+  tmdbCollectionResponseSchema,
   tmdbImagesResponseSchema,
+  tmdbReleaseDatesResponseSchema,
+  tmdbSeasonResponseSchema,
   tmdbTrendingResponseSchema,
   tmdbTvDetailsSchema,
   tmdbVideosResponseSchema,
@@ -24,7 +27,10 @@ import {
   type TmdbPersonTvCredits,
   type TmdbRecommendationsResponse,
   type TmdbSearchResponse,
+  type TmdbCollection,
   type TmdbImagesResponse,
+  type TmdbReleaseDates,
+  type TmdbSeason,
   type TmdbTrendingResponse,
   type TmdbTvDetails,
   type TmdbVideosResponse,
@@ -311,6 +317,43 @@ export function getMovieImages(movieId: number): Promise<TmdbImagesResponse> {
 
 export function getTvImages(tvId: number): Promise<TmdbImagesResponse> {
   return tmdbFetch(`/tv/${tvId}/images`, {}, tmdbImagesResponseSchema);
+}
+
+// ----- Collection / saga -----
+
+export function getCollection(
+  collectionId: number
+): Promise<TmdbCollection> {
+  return tmdbFetch(
+    `/collection/${collectionId}`,
+    {},
+    tmdbCollectionResponseSchema
+  );
+}
+
+// ----- TV season details (episodes) -----
+
+export function getTvSeason(
+  tvId: number,
+  seasonNumber: number
+): Promise<TmdbSeason> {
+  return tmdbFetch(
+    `/tv/${tvId}/season/${seasonNumber}`,
+    {},
+    tmdbSeasonResponseSchema
+  );
+}
+
+// ----- Release dates (movie) -----
+
+export function getMovieReleaseDates(
+  movieId: number
+): Promise<TmdbReleaseDates> {
+  return tmdbFetch(
+    `/movie/${movieId}/release_dates`,
+    {},
+    tmdbReleaseDatesResponseSchema
+  );
 }
 
 // Helper para perfiles de personas (la imagen del actor).

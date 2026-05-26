@@ -5,9 +5,16 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import {
+  CollectionSection,
+  CollectionSkeleton,
+} from "@/components/CollectionSection";
+import { FullCastModal } from "@/components/FullCastModal";
+import {
   ImageGallery,
   ImageGallerySkeleton,
 } from "@/components/ImageGallery";
+import { ProductionSection } from "@/components/ProductionSection";
+import { ReleaseDatesSection } from "@/components/ReleaseDatesSection";
 import { MovieGridSkeleton } from "@/components/MovieGrid";
 import {
   RatingsSection,
@@ -319,6 +326,31 @@ export default async function MoviePage({ params }: Props) {
                 );
               })}
             </div>
+            {/* Botón "Ver todo el elenco" abre modal con todos los actores */}
+            {movie.credits?.cast && movie.credits.cast.length > 6 && (
+              <div className="mt-3 flex justify-center md:justify-start">
+                <FullCastModal
+                  cast={movie.credits.cast.map((a) => ({
+                    id: a.id,
+                    name: a.name,
+                    character: a.character,
+                    profile_path: a.profile_path,
+                  }))}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Saga / Colección si la peli es parte de una */}
+        {movie.belongs_to_collection && (
+          <section className="mb-10">
+            <Suspense fallback={<CollectionSkeleton />}>
+              <CollectionSection
+                collectionId={movie.belongs_to_collection.id}
+                currentMovieId={movie.id}
+              />
+            </Suspense>
           </section>
         )}
 
@@ -374,6 +406,34 @@ export default async function MoviePage({ params }: Props) {
           <h2 className="text-lg font-semibold mb-3">{t("movie.ratings")}</h2>
           <Suspense fallback={<RatingsSkeleton />}>
             <RatingsSection tmdbId={movie.id} />
+          </Suspense>
+        </section>
+
+        {/* Producción: estudios, países, presupuesto, recaudación */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">
+            {t("production.heading")}
+          </h2>
+          <ProductionSection
+            studios={movie.production_companies}
+            countries={movie.production_countries}
+            languages={movie.spoken_languages}
+            budget={movie.budget}
+            revenue={movie.revenue}
+          />
+        </section>
+
+        {/* Fechas de estreno por país */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">
+            {t("releaseDates.heading")}
+          </h2>
+          <Suspense
+            fallback={
+              <div className="h-32 bg-muted/20 rounded-lg animate-pulse" />
+            }
+          >
+            <ReleaseDatesSection movieId={movie.id} />
           </Suspense>
         </section>
 
