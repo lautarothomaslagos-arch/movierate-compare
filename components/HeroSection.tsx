@@ -53,21 +53,21 @@ export async function HeroSection() {
 
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 sm:py-24 md:py-32 flex flex-col items-center text-center">
         {highlight && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/60 backdrop-blur text-xs font-medium text-muted-foreground mb-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/60 backdrop-blur text-xs font-medium text-muted-foreground mb-4 animate-fade-in">
             <Sparkles className="size-3 text-primary" />
             {t("trendingChip", { title: highlight.title })}
           </div>
         )}
 
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight animate-fade-in-up">
           {t("title")}{" "}
           <span className="text-muted-foreground">{t("titleSecondary")}</span>
         </h1>
-        <p className="text-muted-foreground text-base sm:text-lg max-w-md mt-3">
+        <p className="text-muted-foreground text-base sm:text-lg max-w-md mt-3 animate-fade-in-up animate-delay-100">
           {t("tagline")}
         </p>
 
-        <div className="w-full max-w-xl mt-8">
+        <div className="w-full max-w-xl mt-8 animate-fade-in-up animate-delay-200">
           <SearchBar />
           <p className="text-xs text-muted-foreground mt-2">
             {t("searchHint")}

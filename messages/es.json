@@ -155,6 +155,21 @@
     "copied": "Link copiado",
     "failed": "No se pudo compartir"
   },
+  "compare": {
+    "heading": "Comparar",
+    "subtitle": "Compará dos películas o series lado a lado",
+    "pickFirst": "Elegí una película o serie",
+    "pickSecond": "Elegí qué comparar",
+    "searchPlaceholder": "Buscar...",
+    "removeBtn": "Quitar",
+    "averageLabel": "Promedio ponderado",
+    "winner": "Mejor en {platform}",
+    "tie": "Empatadas",
+    "noData": "Sin datos",
+    "swapBtn": "Intercambiar",
+    "shareBtn": "Compartir comparación",
+    "compareAction": "Comparar"
+  },
   "trivia": {
     "heading": "Dato curioso",
     "aiBy": "Generado con IA · puede contener errores"
@@ -194,6 +209,10 @@
     "deleteAriaLabel": "Eliminar {title} del historial"
   },
   "ratings": {
+    "weightedAverage": "Promedio ponderado",
+    "averageHint": "Basado en {count} plataforma(s) · IMDb pondera más por escala",
+    "highest": "Más alto",
+    "lowest": "Más bajo",
     "imdb": "IMDb",
     "rt": "Rotten Tomatoes",
     "metacritic": "Metacritic",

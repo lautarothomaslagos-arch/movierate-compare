@@ -1,9 +1,11 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Trophy } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { PlatformRating } from "@/types/movie";
+
+export type RatingHighlight = "highest" | "lowest" | null;
 
 export type Platform =
   | "imdb"
@@ -41,9 +43,11 @@ function formatNumberLocale(
 export function RatingCard({
   platform,
   rating,
+  highlight = null,
 }: {
   platform: Platform;
   rating: PlatformRating | null;
+  highlight?: RatingHighlight;
 }) {
   const meta = PLATFORM_META[platform];
   const tRatings = useTranslations("ratings");
@@ -108,11 +112,24 @@ export function RatingCard({
     <Wrapper {...wrapperProps}>
       <Card
         className={cn(
-          "p-4 flex flex-col gap-2 min-h-[112px] h-full",
+          "p-4 flex flex-col gap-2 min-h-[112px] h-full relative",
           rating.url &&
-            "transition-colors group-hover:bg-accent group-hover:text-accent-foreground cursor-pointer"
+            "transition-colors group-hover:bg-accent group-hover:text-accent-foreground cursor-pointer",
+          // Highlight visual: la card con score más alto tiene un anillo
+          // emerald sutil; la más baja un anillo rose. Solo se aplica si
+          // el promedio se pudo computar (highlight !== null).
+          highlight === "highest" &&
+            "ring-2 ring-emerald-500/40 shadow-emerald-500/10 shadow-lg",
+          highlight === "lowest" && "ring-1 ring-rose-500/30 opacity-95"
         )}
       >
+        {/* Badge esquina superior derecha si está destacado */}
+        {highlight === "highest" && (
+          <div className="absolute -top-2 -right-2 z-10 size-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
+            <Trophy className="size-3.5" />
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div
             className={cn(
@@ -128,7 +145,15 @@ export function RatingCard({
         </div>
 
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold tabular-nums">{displayScore}</span>
+          <span
+            className={cn(
+              "text-3xl font-bold tabular-nums",
+              highlight === "highest" && "text-emerald-400",
+              highlight === "lowest" && "text-rose-400"
+            )}
+          >
+            {displayScore}
+          </span>
           <span className="text-sm text-muted-foreground">{meta.unit}</span>
         </div>
 

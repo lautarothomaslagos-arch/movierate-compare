@@ -15,6 +15,7 @@ import {
 } from "@/components/RatingsSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
 import { ShareButton } from "@/components/ShareButton";
+import { CompareButton } from "@/components/CompareButton";
 import { TrackVisit } from "@/components/TrackVisit";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import {
@@ -27,6 +28,7 @@ import {
   WhereToWatchSkeleton,
 } from "@/components/WhereToWatch";
 import { Link } from "@/i18n/navigation";
+import { genreBadgeClass } from "@/lib/genre-colors";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getMovieDetails, getYear, posterUrl } from "@/lib/tmdb";
@@ -225,7 +227,7 @@ export default async function MoviePage({ params }: Props) {
                 {movie.genres.map((g) => (
                   <span
                     key={g.id}
-                    className="inline-block px-2.5 py-0.5 text-xs rounded-full bg-secondary text-secondary-foreground"
+                    className={`inline-block px-2.5 py-0.5 text-xs rounded-full border ${genreBadgeClass(g.id)}`}
                   >
                     {g.name}
                   </span>
@@ -269,6 +271,7 @@ export default async function MoviePage({ params }: Props) {
                 title={movie.title}
                 text={movie.overview?.slice(0, 100) ?? undefined}
               />
+              <CompareButton currentId={movie.id} currentMediaType="movie" />
             </div>
           </div>
         </section>

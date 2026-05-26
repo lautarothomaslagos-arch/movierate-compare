@@ -15,6 +15,7 @@ import {
   ImageGallery,
   ImageGallerySkeleton,
 } from "@/components/ImageGallery";
+import { CompareButton } from "@/components/CompareButton";
 import { ShareButton } from "@/components/ShareButton";
 import { TrackVisit } from "@/components/TrackVisit";
 import { WatchlistButton } from "@/components/WatchlistButton";
@@ -36,6 +37,7 @@ import {
   WhereToWatchSkeleton,
 } from "@/components/WhereToWatch";
 import { Link } from "@/i18n/navigation";
+import { genreBadgeClass } from "@/lib/genre-colors";
 import { addVisitToDb } from "@/lib/history";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getTvDetails, getYear, posterUrl } from "@/lib/tmdb";
@@ -291,7 +293,7 @@ export default async function SeriePage({ params }: Props) {
                 {tv.genres.map((g) => (
                   <span
                     key={g.id}
-                    className="inline-block px-2.5 py-0.5 text-xs rounded-full bg-secondary text-secondary-foreground"
+                    className={`inline-block px-2.5 py-0.5 text-xs rounded-full border ${genreBadgeClass(g.id)}`}
                   >
                     {g.name}
                   </span>
@@ -335,6 +337,7 @@ export default async function SeriePage({ params }: Props) {
                 title={tv.name}
                 text={tv.overview?.slice(0, 100) ?? undefined}
               />
+              <CompareButton currentId={tv.id} currentMediaType="tv" />
             </div>
           </div>
         </section>

@@ -155,6 +155,21 @@
     "copied": "Link copied",
     "failed": "Could not share"
   },
+  "compare": {
+    "heading": "Compare",
+    "subtitle": "Compare two movies or shows side by side",
+    "pickFirst": "Pick a movie or show",
+    "pickSecond": "Pick what to compare against",
+    "searchPlaceholder": "Search...",
+    "removeBtn": "Remove",
+    "averageLabel": "Weighted average",
+    "winner": "Better on {platform}",
+    "tie": "Tied",
+    "noData": "No data",
+    "swapBtn": "Swap",
+    "shareBtn": "Share comparison",
+    "compareAction": "Compare"
+  },
   "trivia": {
     "heading": "Did you know",
     "aiBy": "Generated with AI · may contain errors"
@@ -194,6 +209,10 @@
     "deleteAriaLabel": "Remove {title} from history"
   },
   "ratings": {
+    "weightedAverage": "Weighted average",
+    "averageHint": "Based on {count} source(s) · IMDb weighs more due to scale",
+    "highest": "Highest",
+    "lowest": "Lowest",
     "imdb": "IMDb",
     "rt": "Rotten Tomatoes",
     "metacritic": "Metacritic",
