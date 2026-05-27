@@ -250,6 +250,33 @@
     "heading": "Dato curioso",
     "aiBy": "Generado con IA · puede contener errores"
   },
+  "recommender": {
+    "heading": "Recomendador IA",
+    "subtitle": "Te sugerimos qué ver según lo que te gustó y querés ver",
+    "disclaimer": "Generado con IA · puede contener errores o títulos inexistentes",
+    "inputLabel": "¿Qué te gustaría ver?",
+    "inputPlaceholder": "Ej: algo de los 80 dark, comedia para ver en pareja...",
+    "moodLabel": "Mood (opcional)",
+    "submitBtn": "Recomendame",
+    "loading": "Pensando...",
+    "loginRequired": "Iniciá sesión para usar el recomendador.",
+    "rateLimitReached": "Llegaste al máximo diario. Probá de nuevo mañana.",
+    "genericError": "Algo salió mal. Probá de nuevo.",
+    "noResults": "No pudimos generar recomendaciones esta vez. Probá cambiando la consulta.",
+    "resultsHeading": "{count} sugerencias para vos",
+    "initialTitle": "Empezá por contarnos qué buscás",
+    "initialBody": "Podés escribir lo que querés ver, elegir un mood, o ambos. Vamos a usar tu historial, watchlist y reviews para sugerirte 5 títulos personalizados.",
+    "mood": {
+      "relaxed": "Relajado",
+      "intense": "Intenso",
+      "funny": "Para reír",
+      "romantic": "Romántico",
+      "classic": "Clásico",
+      "weekend": "Maratón fin de semana",
+      "smart": "Inteligente",
+      "dark": "Oscuro"
+    }
+  },
   "upcoming": {
     "homeHeading": "Próximo en tu lista",
     "homeSubtitle": "Episodios que salen pronto de las series que querés ver",

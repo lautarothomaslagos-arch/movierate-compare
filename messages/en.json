@@ -250,6 +250,33 @@
     "heading": "Did you know",
     "aiBy": "Generated with AI · may contain errors"
   },
+  "recommender": {
+    "heading": "AI Recommender",
+    "subtitle": "We suggest what to watch based on what you loved and want to see",
+    "disclaimer": "Generated with AI · may contain errors or non-existent titles",
+    "inputLabel": "What would you like to watch?",
+    "inputPlaceholder": "e.g. something dark from the 80s, comedy for date night...",
+    "moodLabel": "Mood (optional)",
+    "submitBtn": "Recommend me",
+    "loading": "Thinking...",
+    "loginRequired": "Sign in to use the recommender.",
+    "rateLimitReached": "You hit the daily limit. Try again tomorrow.",
+    "genericError": "Something went wrong. Try again.",
+    "noResults": "We couldn't generate recommendations this time. Try changing the query.",
+    "resultsHeading": "{count} suggestions for you",
+    "initialTitle": "Start by telling us what you're looking for",
+    "initialBody": "You can describe what you want, pick a mood, or both. We'll use your history, watchlist and reviews to suggest 5 personalized titles.",
+    "mood": {
+      "relaxed": "Relaxed",
+      "intense": "Intense",
+      "funny": "Funny",
+      "romantic": "Romantic",
+      "classic": "Classic",
+      "weekend": "Weekend binge",
+      "smart": "Smart",
+      "dark": "Dark"
+    }
+  },
   "upcoming": {
     "homeHeading": "Coming up on your list",
     "homeSubtitle": "Upcoming episodes from shows you want to watch",

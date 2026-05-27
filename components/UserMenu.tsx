@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, History, LogOut, Star } from "lucide-react";
+import { Bookmark, History, LogOut, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -39,6 +39,7 @@ export function UserMenu({ user }: { user: UserInfo }) {
   const t = useTranslations("auth");
   const tWatchlist = useTranslations("watchlist");
   const tReviews = useTranslations("myReviews");
+  const tRec = useTranslations("recommender");
 
   async function handleLogout() {
     const supabase = createClient();
@@ -99,6 +100,12 @@ export function UserMenu({ user }: { user: UserInfo }) {
           <Link href="/mis-reviews">
             <Star />
             {tReviews("heading")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/recomendador">
+            <Sparkles />
+            {tRec("heading")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
