@@ -44,6 +44,20 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Preconnect a TMDB images: cada página detalle/grid carga 5-10
+            imágenes. Establecer la conexión TLS antes ahorra ~100-200ms al
+            primer fetch. */}
+        <link
+          rel="preconnect"
+          href="https://image.tmdb.org"
+          crossOrigin="anonymous"
+        />
+        {/* dns-prefetch para YouTube embeds (TrailerSection). Más liviano
+            que preconnect porque el trailer está abajo del fold. */}
+        <link rel="dns-prefetch" href="https://www.youtube.com" />
+        <link rel="dns-prefetch" href="https://i.ytimg.com" />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
         <Analytics />
