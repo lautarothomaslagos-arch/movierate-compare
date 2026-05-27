@@ -12,6 +12,7 @@ import {
   TrendingSection,
   TrendingSectionSkeleton,
 } from "@/components/TrendingSection";
+import { UpcomingSection } from "@/components/UpcomingSection";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -35,6 +36,13 @@ export default async function Home({ params }: Props) {
       </Suspense>
 
       <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-10 sm:py-14 space-y-12">
+        {/* Próximo en tu lista — Fase F.4. Solo se muestra si el user
+            está logueado y tiene series en watchlist con episodios
+            próximos. Si no, devuelve null. */}
+        <Suspense fallback={null}>
+          <UpcomingSection />
+        </Suspense>
+
         {/* Recientes — solo si el user tiene historial (DB o localStorage).
             Si no, el componente devuelve null y la sección no aparece. */}
         <Suspense fallback={null}>

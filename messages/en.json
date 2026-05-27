@@ -250,6 +250,14 @@
     "heading": "Did you know",
     "aiBy": "Generated with AI · may contain errors"
   },
+  "upcoming": {
+    "homeHeading": "Coming up on your list",
+    "homeSubtitle": "Upcoming episodes from shows you want to watch",
+    "bannerLabel": "Next episode",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "inDays": "In {n} days"
+  },
   "reviews": {
     "heading": "My review",
     "yourRatingLabel": "Your rating",

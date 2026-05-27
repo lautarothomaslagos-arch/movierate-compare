@@ -250,6 +250,14 @@
     "heading": "Dato curioso",
     "aiBy": "Generado con IA · puede contener errores"
   },
+  "upcoming": {
+    "homeHeading": "Próximo en tu lista",
+    "homeSubtitle": "Episodios que salen pronto de las series que querés ver",
+    "bannerLabel": "Próximo episodio",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "inDays": "En {n} días"
+  },
   "reviews": {
     "heading": "Mi review",
     "yourRatingLabel": "Tu puntaje",

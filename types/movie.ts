@@ -266,6 +266,19 @@ export const tmdbTvDetailsSchema = z.object({
   episode_run_time: z.array(z.number()).optional(),
   status: z.string().nullable().optional(),
   in_production: z.boolean().nullable().optional(),
+  // Próximo episodio al aire (Fase F.4): banner + sección home
+  next_episode_to_air: z
+    .object({
+      id: z.number(),
+      name: z.string().nullable().optional(),
+      overview: z.string().nullable().optional(),
+      air_date: z.string().nullable().optional(),
+      episode_number: z.number().nullable().optional(),
+      season_number: z.number().nullable().optional(),
+      still_path: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
   vote_average: z.number().nullable().optional(),
   vote_count: z.number().nullable().optional(),
   origin_country: z.array(z.string()).optional(),

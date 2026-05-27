@@ -20,6 +20,7 @@ import {
 import { ProductionSection } from "@/components/ProductionSection";
 import { ReviewSection } from "@/components/ReviewSection";
 import { SeasonsSection, SeasonsSkeleton } from "@/components/SeasonsSection";
+import { UpcomingEpisodeBanner } from "@/components/UpcomingEpisodeBanner";
 import { CompareButton } from "@/components/CompareButton";
 import { ShareButton } from "@/components/ShareButton";
 import { TrackVisit } from "@/components/TrackVisit";
@@ -247,6 +248,12 @@ export default async function SeriePage({ params }: Props) {
       </header>
 
       <main className="px-4 sm:px-6 pb-16 max-w-5xl mx-auto w-full">
+        {/* Banner de próximo episodio (Fase F.4). Solo si next_episode_to_air
+            cae en los próximos 7 días, sino devuelve null. */}
+        <div className="mb-6">
+          <UpcomingEpisodeBanner nextEpisode={tv.next_episode_to_air} />
+        </div>
+
         <section className="flex flex-col md:flex-row gap-6 md:gap-8 mb-10">
           {/* Poster */}
           <div className="shrink-0 mx-auto md:mx-0">
