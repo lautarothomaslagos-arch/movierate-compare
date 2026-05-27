@@ -22,6 +22,7 @@ import {
   RatingsSkeleton,
 } from "@/components/RatingsSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
+import { ReviewSection } from "@/components/ReviewSection";
 import { ShareButton } from "@/components/ShareButton";
 import { CompareButton } from "@/components/CompareButton";
 import { TrackVisit } from "@/components/TrackVisit";
@@ -39,6 +40,7 @@ import { Link } from "@/i18n/navigation";
 import { genreBadgeClass } from "@/lib/genre-colors";
 import { movieJsonLd, SITE_URL } from "@/lib/seo";
 import { addVisitToDb } from "@/lib/history";
+import { getReview } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getMovieDetails, getYear, posterUrl } from "@/lib/tmdb";
 import { isInWatchlist } from "@/lib/watchlist";
@@ -145,6 +147,9 @@ export default async function MoviePage({ params }: Props) {
   const initiallyInWatchlist = isLogged
     ? await isInWatchlist(movie.id, "movie")
     : false;
+
+  // Review del user (solo logueado). Si no hay, initialReview === null.
+  const initialReview = isLogged ? await getReview(movie.id, "movie") : null;
 
   // JSON-LD para SEO (rich snippets en Google)
   const jsonLd = movieJsonLd({
@@ -428,6 +433,30 @@ export default async function MoviePage({ params }: Props) {
           <Suspense fallback={<RatingsSkeleton />}>
             <RatingsSection tmdbId={movie.id} />
           </Suspense>
+        </section>
+
+        {/* Tu review personal (Fase F.3). Solo se ve si hay sesión o si
+            queremos invitar a iniciar sesión. La review queda privada por
+            RLS — solo el dueño la lee/escribe. */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">{t("reviews.heading")}</h2>
+          <ReviewSection
+            tmdb_id={movie.id}
+            media_type="movie"
+            title={movie.title}
+            year={year}
+            poster_path={movie.poster_path ?? null}
+            isLogged={isLogged}
+            initialReview={
+              initialReview
+                ? {
+                    rating: initialReview.rating,
+                    notes: initialReview.notes,
+                    updated_at: initialReview.updated_at,
+                  }
+                : null
+            }
+          />
         </section>
 
         {/* Producción: estudios, países, presupuesto, recaudación */}

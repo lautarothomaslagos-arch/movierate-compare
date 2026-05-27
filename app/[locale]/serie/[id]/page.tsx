@@ -18,6 +18,7 @@ import {
   ImageGallerySkeleton,
 } from "@/components/ImageGallery";
 import { ProductionSection } from "@/components/ProductionSection";
+import { ReviewSection } from "@/components/ReviewSection";
 import { SeasonsSection, SeasonsSkeleton } from "@/components/SeasonsSection";
 import { CompareButton } from "@/components/CompareButton";
 import { ShareButton } from "@/components/ShareButton";
@@ -44,6 +45,7 @@ import { Link } from "@/i18n/navigation";
 import { genreBadgeClass } from "@/lib/genre-colors";
 import { SITE_URL, tvSeriesJsonLd } from "@/lib/seo";
 import { addVisitToDb } from "@/lib/history";
+import { getReview } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getTvDetails, getYear, posterUrl } from "@/lib/tmdb";
 import { isInWatchlist } from "@/lib/watchlist";
@@ -183,6 +185,9 @@ export default async function SeriePage({ params }: Props) {
   const initiallyInWatchlist = isLogged
     ? await isInWatchlist(tv.id, "tv")
     : false;
+
+  // Review del user (solo logueado). null si no hay aún.
+  const initialReview = isLogged ? await getReview(tv.id, "tv") : null;
 
   // JSON-LD para SEO
   const jsonLd = tvSeriesJsonLd({
@@ -490,6 +495,28 @@ export default async function SeriePage({ params }: Props) {
           <p className="mt-2 text-xs text-muted-foreground">
             {t("tv.letterboxdNoTv")}
           </p>
+        </section>
+
+        {/* Tu review personal (Fase F.3). RLS asegura privacidad. */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">{t("reviews.heading")}</h2>
+          <ReviewSection
+            tmdb_id={tv.id}
+            media_type="tv"
+            title={tv.name}
+            year={getYear(tv.first_air_date)}
+            poster_path={tv.poster_path ?? null}
+            isLogged={isLogged}
+            initialReview={
+              initialReview
+                ? {
+                    rating: initialReview.rating,
+                    notes: initialReview.notes,
+                    updated_at: initialReview.updated_at,
+                  }
+                : null
+            }
+          />
         </section>
 
         {/* Producción */}
