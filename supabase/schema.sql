@@ -62,6 +62,34 @@ create policy "users see own watchlist"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+-- ------------------------------ tabla tv_ratings_cache ------------------------------
+-- Cache de ratings para series. Estructura mínima — Letterboxd no indexa
+-- series, así que no hay letterboxd_avg.
+create table if not exists public.tv_ratings_cache (
+  tmdb_id int primary key,
+  imdb_rating numeric,
+  rt_score int,
+  metacritic_score int,
+  tmdb_score numeric,
+  raw_data jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.tv_ratings_cache enable row level security;
+
+drop policy if exists "anyone can read tv cache" on public.tv_ratings_cache;
+create policy "anyone can read tv cache"
+  on public.tv_ratings_cache
+  for select
+  using (true);
+
+drop policy if exists "service role can write tv cache" on public.tv_ratings_cache;
+create policy "service role can write tv cache"
+  on public.tv_ratings_cache
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
 -- ------------------------------ tabla movie_trivia ------------------------------
 -- Cache de "dato curioso" generado por IA (Gemini Flash). Forever cache.
 -- PK compuesta porque la misma peli tiene trivia distinta por idioma.

@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { searchMulti } from "@/lib/tmdb";
 
 // Normaliza un query para que sea más tolerante a typos comunes:
@@ -83,6 +85,19 @@ async function tmdbSearch(query: string): Promise<SearchItem[]> {
 // - query: el query efectivo usado (puede ser distinto al original)
 // - didYouMean: el query usado SI fue distinto al original, sino null
 export async function GET(request: NextRequest) {
+  // Rate limit por IP: 60 req/min en search (es la API más usada)
+  const ip = getClientIp(request.headers);
+  const rl = rateLimit(`search:${ip}`, { limit: 60, windowMs: 60_000 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "rate_limit", results: [], query: "", didYouMean: null },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rl.retryAfterSeconds) },
+      }
+    );
+  }
+
   const original = request.nextUrl.searchParams.get("q")?.trim() ?? "";
 
   if (original.length < 2) {

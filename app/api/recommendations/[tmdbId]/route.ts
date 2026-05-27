@@ -1,12 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
+
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { getRecommendations } from "@/lib/tmdb";
 
 // GET /api/recommendations/[tmdbId]
 // Devuelve top 12 pelis similares según TMDB.
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ tmdbId: string }> }
 ) {
+  const ip = getClientIp(request.headers);
+  const rl = rateLimit(`recs:${ip}`, { limit: 60, windowMs: 60_000 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "rate_limit", results: [] },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rl.retryAfterSeconds) },
+      }
+    );
+  }
+
   const { tmdbId } = await params;
   const id = parseInt(tmdbId, 10);
 
