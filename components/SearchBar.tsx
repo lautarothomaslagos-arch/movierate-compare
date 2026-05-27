@@ -11,13 +11,22 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { getLocalHistory } from "@/lib/history-local";
 import { cn } from "@/lib/utils";
 
-type SearchResult = {
+type SearchResultMedia = {
   id: number;
   media_type: "movie" | "tv";
   title: string;
   year: number | null;
   poster_path: string | null;
 };
+
+type SearchResultPerson = {
+  id: number;
+  media_type: "person";
+  title: string;
+  profile_path: string | null;
+};
+
+type SearchResult = SearchResultMedia | SearchResultPerson;
 
 type SearchResponse = {
   results: SearchResult[];
@@ -26,8 +35,9 @@ type SearchResponse = {
 };
 
 type SuggestionsResponse = {
-  recent: SearchResult[];
-  trending: SearchResult[];
+  // Sugerencias (recientes DB + trending) son solo pelis/series, no personas
+  recent: SearchResultMedia[];
+  trending: SearchResultMedia[];
 };
 
 // Géneros destacados como atajos (hardcoded — mismos que home FeaturedGenres)
@@ -52,7 +62,7 @@ function useDebounced<T>(value: T, ms: number): T {
 export function SearchBar() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const [localRecent, setLocalRecent] = useState<SearchResult[]>([]);
+  const [localRecent, setLocalRecent] = useState<SearchResultMedia[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const t = useTranslations("search");
@@ -122,7 +132,7 @@ export function SearchBar() {
 
   // Merge recientes DB con localStorage. Si hay DB, esos ganan; localStorage
   // complementa si no hay suficientes.
-  const recentMerged: SearchResult[] = (() => {
+  const recentMerged: SearchResultMedia[] = (() => {
     const dbRecent = suggestionsData?.recent ?? [];
     if (dbRecent.length >= 5) return dbRecent;
     const seen = new Set(dbRecent.map((r) => `${r.media_type}-${r.id}`));
@@ -137,9 +147,13 @@ export function SearchBar() {
     return merged;
   })();
 
-  function selectItem(id: number, mediaType: "movie" | "tv") {
+  function selectItem(id: number, mediaType: "movie" | "tv" | "person") {
     setOpen(false);
     setQuery("");
+    if (mediaType === "person") {
+      router.push(`/actor/${id}`);
+      return;
+    }
     router.push(mediaType === "tv" ? `/serie/${id}` : `/movie/${id}`);
   }
 
@@ -232,9 +246,9 @@ function EmptyState({
   onCloseDropdown,
   t,
 }: {
-  recent: SearchResult[];
-  trending: SearchResult[];
-  onSelect: (id: number, mediaType: "movie" | "tv") => void;
+  recent: SearchResultMedia[];
+  trending: SearchResultMedia[];
+  onSelect: (id: number, mediaType: "movie" | "tv" | "person") => void;
   onCloseDropdown: () => void;
   t: ReturnType<typeof useTranslations<"search">>;
 }) {
@@ -297,8 +311,8 @@ function SuggestionSection({
 }: {
   icon: React.ReactNode;
   title: string;
-  items: SearchResult[];
-  onSelect: (id: number, mediaType: "movie" | "tv") => void;
+  items: SearchResultMedia[];
+  onSelect: (id: number, mediaType: "movie" | "tv" | "person") => void;
   t: ReturnType<typeof useTranslations<"search">>;
 }) {
   return (
@@ -333,6 +347,17 @@ function ResultRow({
   t: ReturnType<typeof useTranslations<"search">>;
   compact?: boolean;
 }) {
+  const isPerson = item.media_type === "person";
+
+  // Persona usa profile_path con avatar circular; media usa poster vertical
+  const imageSrc = isPerson
+    ? item.profile_path
+      ? `https://image.tmdb.org/t/p/w92${item.profile_path}`
+      : null
+    : item.poster_path
+    ? `https://image.tmdb.org/t/p/w92${item.poster_path}`
+    : null;
+
   return (
     <button
       type="button"
@@ -344,16 +369,18 @@ function ResultRow({
     >
       <div
         className={cn(
-          "relative shrink-0 bg-muted rounded-sm overflow-hidden",
-          compact ? "w-8 h-11" : "w-10 h-14"
+          "relative shrink-0 bg-muted overflow-hidden",
+          isPerson
+            ? cn("rounded-full", compact ? "w-10 h-10" : "w-12 h-12")
+            : cn("rounded-sm", compact ? "w-8 h-11" : "w-10 h-14")
         )}
       >
-        {item.poster_path && (
+        {imageSrc && (
           <Image
-            src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+            src={imageSrc}
             alt=""
             fill
-            sizes={compact ? "32px" : "40px"}
+            sizes={compact ? "40px" : "48px"}
             className="object-cover"
           />
         )}
@@ -366,13 +393,19 @@ function ResultRow({
               "shrink-0 inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide",
               item.media_type === "tv"
                 ? "bg-purple-500/15 text-purple-400"
+                : item.media_type === "person"
+                ? "bg-emerald-500/15 text-emerald-400"
                 : "bg-blue-500/15 text-blue-400"
             )}
           >
-            {item.media_type === "tv" ? t("badgeTv") : t("badgeMovie")}
+            {item.media_type === "tv"
+              ? t("badgeTv")
+              : item.media_type === "person"
+              ? t("badgePerson")
+              : t("badgeMovie")}
           </span>
         </div>
-        {item.year !== null && (
+        {item.media_type !== "person" && item.year !== null && (
           <div className="text-xs text-muted-foreground">{item.year}</div>
         )}
       </div>

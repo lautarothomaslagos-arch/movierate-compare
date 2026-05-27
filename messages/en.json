@@ -71,6 +71,7 @@
     "minChars": "Type at least 2 characters",
     "badgeMovie": "Movie",
     "badgeTv": "TV",
+    "badgePerson": "Person",
     "didYouMean": "Showing results for: ",
     "recentHeading": "Recent",
     "trendingHeading": "Trending",
@@ -123,6 +124,21 @@
     "ageDeceased": "({age} years old, passed away)",
     "notFoundTitle": "We couldn't find that person",
     "notFoundBody": "The ID doesn't exist in TMDB."
+  },
+  "filters": {
+    "title": "Filters",
+    "applyBtn": "Apply",
+    "clearBtn": "Clear",
+    "yearLabel": "Year",
+    "yearFromPlaceholder": "From",
+    "yearToPlaceholder": "To",
+    "ratingLabel": "Min rating",
+    "runtimeLabel": "Runtime",
+    "runtimeAny": "Any",
+    "runtimeShort": "Short (<90 min)",
+    "runtimeNormal": "Normal (90-150)",
+    "runtimeLong": "Long (>150)",
+    "activeBadge": "{count} filters"
   },
   "genres": {
     "heading": "Genres",
@@ -203,7 +219,17 @@
     "tv": "TV Shows",
     "page": "Page {page}",
     "rank": "#{n}",
-    "votesShort": "{count} votes"
+    "votesShort": "{count} votes",
+    "noResultsDecade": "Not enough titles with votes for this decade.",
+    "decade": {
+      "all": "All",
+      "2020s": "2020s",
+      "2010s": "2010s",
+      "2000s": "2000s",
+      "90s": "90s",
+      "80s": "80s",
+      "classics": "Classics"
+    }
   },
   "compare": {
     "heading": "Compare",

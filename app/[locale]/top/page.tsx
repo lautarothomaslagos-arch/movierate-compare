@@ -2,9 +2,11 @@ import { ChevronLeft, ChevronRight, Film, Star, Trophy } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 
+import { DecadeFilter } from "@/components/DecadeFilter";
 import { MediaTypeToggle, type MediaType } from "@/components/MediaTypeToggle";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
+import { decadeToRange, parseDecade, type DecadeKey } from "@/lib/decades";
 import {
   discoverTopMovies,
   discoverTopTv,
@@ -15,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ type?: string; page?: string }>;
+  searchParams: Promise<{ type?: string; page?: string; decade?: string }>;
 };
 
 function parseType(value: string | undefined): MediaType {
@@ -39,11 +41,13 @@ export async function generateMetadata({ params, searchParams }: Props) {
 export default async function TopPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { type, page: pageParam } = await searchParams;
+  const { type, page: pageParam, decade: decadeParam } = await searchParams;
   const t = await getTranslations("top");
 
   const mediaType = parseType(type);
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const decade = parseDecade(decadeParam);
+  const yearRange = decadeToRange(decade);
 
   // Fetch top items
   let items: Array<{
@@ -56,9 +60,14 @@ export default async function TopPage({ params, searchParams }: Props) {
   }> = [];
   let totalPages = 1;
 
+  // Reducimos minVotes para clásicos/80s (catálogo más chico)
+  const isOldDecade = decade === "80s" || decade === "classics";
+  const minVotesMovies = isOldDecade ? 500 : 2000;
+  const minVotesTv = isOldDecade ? 100 : 500;
+
   try {
     if (mediaType === "tv") {
-      const data = await discoverTopTv(page);
+      const data = await discoverTopTv(page, minVotesTv, yearRange);
       items = data.results.map((t) => ({
         id: t.id,
         title: t.name,
@@ -69,7 +78,7 @@ export default async function TopPage({ params, searchParams }: Props) {
       }));
       totalPages = Math.min(data.total_pages, 500);
     } else {
-      const data = await discoverTopMovies(page);
+      const data = await discoverTopMovies(page, minVotesMovies, yearRange);
       items = data.results.map((m) => ({
         id: m.id,
         title: m.title,
@@ -92,14 +101,37 @@ export default async function TopPage({ params, searchParams }: Props) {
   function pageUrl(p: number): string {
     const sp = new URLSearchParams();
     if (mediaType === "tv") sp.set("type", "tv");
+    if (decade !== "all") sp.set("decade", decade);
     if (p > 1) sp.set("page", String(p));
     const qs = sp.toString();
     return `/top${qs ? `?${qs}` : ""}`;
   }
 
+  function decadeHref(d: DecadeKey): string {
+    const sp = new URLSearchParams();
+    if (mediaType === "tv") sp.set("type", "tv");
+    if (d !== "all") sp.set("decade", d);
+    // Resetea a página 1 al cambiar de década
+    const qs = sp.toString();
+    return `/top${qs ? `?${qs}` : ""}`;
+  }
+
+  // toggleHrefs preserva la década actual al cambiar entre pelis/series
+  const toggleSuffix = decade !== "all" ? `&decade=${decade}` : "";
   const toggleHrefs: Record<MediaType, string> = {
-    movie: "/top",
-    tv: "/top?type=tv",
+    movie: decade !== "all" ? `/top?decade=${decade}` : "/top",
+    tv: `/top?type=tv${toggleSuffix}`,
+  };
+
+  // Labels para las pills (traducidas)
+  const decadeLabels: Record<DecadeKey, string> = {
+    all: t("decade.all"),
+    "2020s": t("decade.2020s"),
+    "2010s": t("decade.2010s"),
+    "2000s": t("decade.2000s"),
+    "90s": t("decade.90s"),
+    "80s": t("decade.80s"),
+    classics: t("decade.classics"),
   };
 
   return (
@@ -114,6 +146,21 @@ export default async function TopPage({ params, searchParams }: Props) {
         </div>
         <MediaTypeToggle hrefs={toggleHrefs} active={mediaType} />
       </header>
+
+      {/* Decade picker */}
+      <div className="mb-5">
+        <DecadeFilter
+          active={decade}
+          buildHref={decadeHref}
+          labels={decadeLabels}
+        />
+      </div>
+
+      {items.length === 0 && (
+        <div className="rounded-md border border-border bg-muted/30 px-4 py-8 text-center text-sm text-muted-foreground">
+          {t("noResultsDecade")}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {items.map((m, idx) => {

@@ -9,6 +9,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
+import { GenreFilters, type ActiveFilters } from "@/components/GenreFilters";
 import { GenreSortSelect, type GenreSort } from "@/components/GenreSortSelect";
 import { MediaTypeToggle, type MediaType } from "@/components/MediaTypeToggle";
 import { Button } from "@/components/ui/button";
@@ -20,13 +21,22 @@ import {
   getTvGenres,
   getYear,
   posterUrl,
+  type DiscoverFilters,
   type DiscoverSort,
 } from "@/lib/tmdb";
 import type { TmdbGenre } from "@/types/movie";
 
 type Props = {
   params: Promise<{ id: string; locale: string }>;
-  searchParams: Promise<{ page?: string; sort?: string; type?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    sort?: string;
+    type?: string;
+    yearFrom?: string;
+    yearTo?: string;
+    minRating?: string;
+    runtime?: string;
+  }>;
 };
 
 function parseSort(value: string | undefined): DiscoverSort {
@@ -103,6 +113,10 @@ export default async function GeneroPage({ params, searchParams }: Props) {
     page: pageParam,
     sort: sortParam,
     type: typeParam,
+    yearFrom: yearFromParam,
+    yearTo: yearToParam,
+    minRating: minRatingParam,
+    runtime: runtimeParam,
   } = await searchParams;
   const genreId = parseInt(id, 10);
   if (!Number.isFinite(genreId)) notFound();
@@ -110,6 +124,33 @@ export default async function GeneroPage({ params, searchParams }: Props) {
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
   const sort = parseSort(sortParam);
   const mediaType = parseType(typeParam);
+
+  // Filtros avanzados — parseo desde query string
+  const filters: DiscoverFilters = {};
+  const activeFilters: ActiveFilters = {};
+  const yf = parseInt(yearFromParam ?? "", 10);
+  if (Number.isFinite(yf) && yf > 1900 && yf < 2200) {
+    filters.yearFrom = yf;
+    activeFilters.yearFrom = yf;
+  }
+  const yt = parseInt(yearToParam ?? "", 10);
+  if (Number.isFinite(yt) && yt > 1900 && yt < 2200) {
+    filters.yearTo = yt;
+    activeFilters.yearTo = yt;
+  }
+  const mr = parseFloat(minRatingParam ?? "");
+  if (Number.isFinite(mr) && mr > 0 && mr <= 10) {
+    filters.minRating = mr;
+    activeFilters.minRating = mr;
+  }
+  if (
+    runtimeParam === "short" ||
+    runtimeParam === "normal" ||
+    runtimeParam === "long"
+  ) {
+    filters.runtimeBucket = runtimeParam;
+    activeFilters.runtime = runtimeParam;
+  }
 
   // Traemos AMBOS conjuntos de géneros: el activo (para resolver el id actual
   // y validar) y el del otro tipo (para calcular el href del toggle).
@@ -208,7 +249,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
   let totalPages = 1;
   try {
     if (mediaType === "tv") {
-      const discover = await discoverTvByGenre(genreId, page, sort);
+      const discover = await discoverTvByGenre(genreId, page, sort, filters);
       items = discover.results.map((t) => ({
         id: t.id,
         title: t.name,
@@ -217,7 +258,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
       }));
       totalPages = Math.min(discover.total_pages, 500);
     } else {
-      const discover = await discoverByGenre(genreId, page, sort);
+      const discover = await discoverByGenre(genreId, page, sort, filters);
       items = discover.results.map((m) => ({
         id: m.id,
         title: m.title,
@@ -233,15 +274,24 @@ export default async function GeneroPage({ params, searchParams }: Props) {
   const hasPrev = page > 1;
   const hasNext = page < totalPages;
 
-  // Helper para construir URLs de paginación manteniendo sort + type
+  // Helper para construir URLs de paginación manteniendo sort + type + filtros
   const pageUrl = (p: number) => {
     const sp = new URLSearchParams();
     if (p > 1) sp.set("page", String(p));
     if (sort !== "popular") sp.set("sort", sort);
     if (mediaType === "tv") sp.set("type", "tv");
+    if (filters.yearFrom) sp.set("yearFrom", String(filters.yearFrom));
+    if (filters.yearTo) sp.set("yearTo", String(filters.yearTo));
+    if (filters.minRating) sp.set("minRating", String(filters.minRating));
+    if (filters.runtimeBucket) sp.set("runtime", filters.runtimeBucket);
     const qs = sp.toString();
     return `/genero/${genreId}${qs ? `?${qs}` : ""}`;
   };
+
+  // Params a preservar cuando se aplican/limpian filtros (sort + type)
+  const preservedParams: Record<string, string> = {};
+  if (sort !== "popular") preservedParams.sort = sort;
+  if (mediaType === "tv") preservedParams.type = "tv";
 
   const itemHrefPrefix = mediaType === "tv" ? "/serie" : "/movie";
   const nounPlural =
@@ -280,6 +330,12 @@ export default async function GeneroPage({ params, searchParams }: Props) {
               genreId={genreId}
               active={sort}
               mediaType={mediaType}
+            />
+            <GenreFilters
+              basePath={`/genero/${genreId}`}
+              preserveParams={preservedParams}
+              active={activeFilters}
+              hideRuntime={mediaType === "tv"}
             />
           </div>
         </div>

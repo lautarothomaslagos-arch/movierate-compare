@@ -71,6 +71,7 @@
     "minChars": "Tipeá al menos 2 caracteres",
     "badgeMovie": "Peli",
     "badgeTv": "Serie",
+    "badgePerson": "Persona",
     "didYouMean": "Buscamos: ",
     "recentHeading": "Recientes",
     "trendingHeading": "Tendencias",
@@ -123,6 +124,21 @@
     "ageDeceased": "({age} años, falleció)",
     "notFoundTitle": "No encontramos esta persona",
     "notFoundBody": "El ID que buscaste no existe en TMDB."
+  },
+  "filters": {
+    "title": "Filtros",
+    "applyBtn": "Aplicar",
+    "clearBtn": "Limpiar",
+    "yearLabel": "Año",
+    "yearFromPlaceholder": "Desde",
+    "yearToPlaceholder": "Hasta",
+    "ratingLabel": "Rating mínimo",
+    "runtimeLabel": "Duración",
+    "runtimeAny": "Cualquiera",
+    "runtimeShort": "Corta (<90 min)",
+    "runtimeNormal": "Normal (90-150)",
+    "runtimeLong": "Larga (>150)",
+    "activeBadge": "{count} filtros"
   },
   "genres": {
     "heading": "Géneros",
@@ -203,7 +219,17 @@
     "tv": "Series",
     "page": "Página {page}",
     "rank": "#{n}",
-    "votesShort": "{count} votos"
+    "votesShort": "{count} votos",
+    "noResultsDecade": "No hay títulos suficientes con votos para esta década.",
+    "decade": {
+      "all": "Todas",
+      "2020s": "2020s",
+      "2010s": "2010s",
+      "2000s": "2000s",
+      "90s": "90s",
+      "80s": "80s",
+      "classics": "Clásicos"
+    }
   },
   "compare": {
     "heading": "Comparar",

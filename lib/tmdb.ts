@@ -161,10 +161,18 @@ export function getGenres(): Promise<TmdbGenresResponse> {
 
 export type DiscoverSort = "popular" | "top" | "recent";
 
+export type DiscoverFilters = {
+  yearFrom?: number;
+  yearTo?: number;
+  minRating?: number; // 0-10
+  runtimeBucket?: "short" | "normal" | "long"; // <90 / 90-150 / >150 min
+};
+
 export function discoverByGenre(
   genreId: number,
   page: number = 1,
-  sort: DiscoverSort = "popular"
+  sort: DiscoverSort = "popular",
+  filters: DiscoverFilters = {}
 ): Promise<TmdbDiscoverResponse> {
   const params: Record<string, string | number> = {
     with_genres: genreId,
@@ -174,12 +182,10 @@ export function discoverByGenre(
 
   switch (sort) {
     case "top":
-      // Mejor puntuadas con mínimo de votos para excluir rarezas
       params.sort_by = "vote_average.desc";
       params["vote_count.gte"] = 500;
       break;
     case "recent":
-      // Más nuevas, pero filtrando pelis que ya se estrenaron
       params.sort_by = "primary_release_date.desc";
       params["primary_release_date.lte"] = new Date()
         .toISOString()
@@ -189,6 +195,31 @@ export function discoverByGenre(
     case "popular":
     default:
       params.sort_by = "popularity.desc";
+  }
+
+  // Filtros avanzados
+  if (filters.yearFrom) {
+    params["primary_release_date.gte"] = `${filters.yearFrom}-01-01`;
+  }
+  if (filters.yearTo) {
+    params["primary_release_date.lte"] = `${filters.yearTo}-12-31`;
+  }
+  if (filters.minRating !== undefined && filters.minRating > 0) {
+    params["vote_average.gte"] = filters.minRating;
+    // Si el user pide rating mínimo, también pedimos un mínimo de votos
+    // para que no aparezcan rarezas con 1 voto de 10
+    if (!params["vote_count.gte"]) {
+      params["vote_count.gte"] = 100;
+    }
+  }
+  if (filters.runtimeBucket === "short") {
+    params["with_runtime.lte"] = 90;
+    params["with_runtime.gte"] = 1; // excluir runtime 0 (data missing)
+  } else if (filters.runtimeBucket === "normal") {
+    params["with_runtime.gte"] = 90;
+    params["with_runtime.lte"] = 150;
+  } else if (filters.runtimeBucket === "long") {
+    params["with_runtime.gte"] = 150;
   }
 
   return tmdbFetch("/discover/movie", params, tmdbDiscoverResponseSchema);
@@ -243,7 +274,8 @@ export function getTvGenres(): Promise<TmdbGenresResponse> {
 export function discoverTvByGenre(
   genreId: number,
   page: number = 1,
-  sort: DiscoverSort = "popular"
+  sort: DiscoverSort = "popular",
+  filters: DiscoverFilters = {}
 ): Promise<TmdbTvDiscoverResponse> {
   const params: Record<string, string | number> = {
     with_genres: genreId,
@@ -253,7 +285,7 @@ export function discoverTvByGenre(
   switch (sort) {
     case "top":
       params.sort_by = "vote_average.desc";
-      params["vote_count.gte"] = 200; // series tienen menos votos que pelis
+      params["vote_count.gte"] = 200;
       break;
     case "recent":
       params.sort_by = "first_air_date.desc";
@@ -264,6 +296,21 @@ export function discoverTvByGenre(
     default:
       params.sort_by = "popularity.desc";
   }
+
+  if (filters.yearFrom) {
+    params["first_air_date.gte"] = `${filters.yearFrom}-01-01`;
+  }
+  if (filters.yearTo) {
+    params["first_air_date.lte"] = `${filters.yearTo}-12-31`;
+  }
+  if (filters.minRating !== undefined && filters.minRating > 0) {
+    params["vote_average.gte"] = filters.minRating;
+    if (!params["vote_count.gte"]) {
+      params["vote_count.gte"] = 50;
+    }
+  }
+  // runtime no se usa en TV (los episodios varían mucho)
+
   return tmdbFetch("/discover/tv", params, tmdbTvDiscoverResponseSchema);
 }
 
@@ -321,36 +368,44 @@ export function getTvImages(tvId: number): Promise<TmdbImagesResponse> {
 
 // ----- Top rated discover (general, sin filtrar por género) -----
 
+// Filtros opcionales por rango de años para /top (decade picker).
+export type TopYearRange = {
+  yearFrom?: number;
+  yearTo?: number;
+};
+
 export function discoverTopMovies(
   page: number = 1,
-  minVotes: number = 2000
+  minVotes: number = 2000,
+  range: TopYearRange = {}
 ): Promise<TmdbDiscoverResponse> {
-  return tmdbFetch(
-    "/discover/movie",
-    {
-      page,
-      sort_by: "vote_average.desc",
-      "vote_count.gte": minVotes,
-      include_adult: "false",
-    },
-    tmdbDiscoverResponseSchema
-  );
+  const params: Record<string, string | number> = {
+    page,
+    sort_by: "vote_average.desc",
+    "vote_count.gte": minVotes,
+    include_adult: "false",
+  };
+  if (range.yearFrom)
+    params["primary_release_date.gte"] = `${range.yearFrom}-01-01`;
+  if (range.yearTo)
+    params["primary_release_date.lte"] = `${range.yearTo}-12-31`;
+  return tmdbFetch("/discover/movie", params, tmdbDiscoverResponseSchema);
 }
 
 export function discoverTopTv(
   page: number = 1,
-  minVotes: number = 500
+  minVotes: number = 500,
+  range: TopYearRange = {}
 ): Promise<TmdbTvDiscoverResponse> {
-  return tmdbFetch(
-    "/discover/tv",
-    {
-      page,
-      sort_by: "vote_average.desc",
-      "vote_count.gte": minVotes,
-      include_adult: "false",
-    },
-    tmdbTvDiscoverResponseSchema
-  );
+  const params: Record<string, string | number> = {
+    page,
+    sort_by: "vote_average.desc",
+    "vote_count.gte": minVotes,
+    include_adult: "false",
+  };
+  if (range.yearFrom) params["first_air_date.gte"] = `${range.yearFrom}-01-01`;
+  if (range.yearTo) params["first_air_date.lte"] = `${range.yearTo}-12-31`;
+  return tmdbFetch("/discover/tv", params, tmdbTvDiscoverResponseSchema);
 }
 
 // ----- Collection / saga -----

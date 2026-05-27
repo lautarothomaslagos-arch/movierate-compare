@@ -39,27 +39,30 @@ function buildFallbackVariants(query: string): string[] {
   return Array.from(new Set(out)).filter((v) => v.length >= 2);
 }
 
-type SearchItem = {
-  id: number;
-  media_type: "movie" | "tv";
-  title: string;
-  year: number | null;
-  poster_path: string | null;
-};
+type SearchItem =
+  | {
+      id: number;
+      media_type: "movie" | "tv";
+      title: string;
+      year: number | null;
+      poster_path: string | null;
+    }
+  | {
+      id: number;
+      media_type: "person";
+      title: string;
+      profile_path: string | null;
+    };
 
 async function tmdbSearch(query: string): Promise<SearchItem[]> {
   const data = await searchMulti(query);
   return data.results
-    .filter(
-      (item): item is Extract<typeof item, { media_type: "movie" | "tv" }> =>
-        item.media_type === "movie" || item.media_type === "tv"
-    )
-    .slice(0, 8)
-    .map((item) => {
+    .slice(0, 12)
+    .map<SearchItem | null>((item) => {
       if (item.media_type === "movie") {
         return {
           id: item.id,
-          media_type: "movie" as const,
+          media_type: "movie",
           title: item.title,
           year: item.release_date
             ? parseInt(item.release_date.slice(0, 4), 10)
@@ -67,16 +70,29 @@ async function tmdbSearch(query: string): Promise<SearchItem[]> {
           poster_path: item.poster_path ?? null,
         };
       }
-      return {
-        id: item.id,
-        media_type: "tv" as const,
-        title: item.name,
-        year: item.first_air_date
-          ? parseInt(item.first_air_date.slice(0, 4), 10)
-          : null,
-        poster_path: item.poster_path ?? null,
-      };
-    });
+      if (item.media_type === "tv") {
+        return {
+          id: item.id,
+          media_type: "tv",
+          title: item.name,
+          year: item.first_air_date
+            ? parseInt(item.first_air_date.slice(0, 4), 10)
+            : null,
+          poster_path: item.poster_path ?? null,
+        };
+      }
+      if (item.media_type === "person") {
+        return {
+          id: item.id,
+          media_type: "person",
+          title: item.name,
+          profile_path: item.profile_path ?? null,
+        };
+      }
+      return null;
+    })
+    .filter((x): x is SearchItem => x !== null)
+    .slice(0, 10);
 }
 
 // GET /api/search?q=batman
