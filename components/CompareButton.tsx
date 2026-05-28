@@ -97,7 +97,7 @@ export function CompareButton({
       </Button>
 
       {open && (
-        <Card className="absolute z-50 mt-2 w-72 sm:w-80 left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 p-2 shadow-lg">
+        <Card className="absolute z-50 mt-2 w-72 sm:w-80 left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 p-2 shadow-[var(--shadow-2)]">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
             <Input

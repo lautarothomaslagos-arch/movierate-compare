@@ -141,7 +141,7 @@ export function MovieGrid({ movies }: { movies: GridMovie[] }) {
               className="group/card block"
               prefetch={false}
             >
-              <div className="relative aspect-[2/3] bg-muted rounded-md overflow-hidden ring-1 ring-border transition-all duration-200 group-hover/card:-translate-y-1 group-hover/card:ring-2 group-hover/card:ring-primary/60 group-hover/card:shadow-lg">
+              <div className="relative aspect-[2/3] bg-muted rounded-md overflow-hidden ring-1 ring-border transition-all duration-200 group-hover/card:-translate-y-1 group-hover/card:ring-2 group-hover/card:ring-primary/60 group-hover/card:shadow-[var(--shadow-1)]">
                 {m.poster_path ? (
                   <Image
                     src={`https://image.tmdb.org/t/p/w342${m.poster_path}`}

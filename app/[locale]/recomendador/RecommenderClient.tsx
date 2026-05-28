@@ -1,6 +1,6 @@
 "use client";
 
-import { Film, Loader2, Sparkles, Star, Tv, Wand2 } from "lucide-react";
+import { Film, Loader2, Sparkles, Tv, Wand2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { useState } from "react";
@@ -16,7 +16,9 @@ type Recommendation = {
   tmdb_id: number;
   title: string;
   year: number | null;
-  why: string;
+  // Fase G.2 — lede en serif italic, body en sans prose.
+  lede: string;
+  body: string;
   media_type: "movie" | "tv";
   poster_path: string | null;
 };
@@ -238,58 +240,57 @@ function RecommendationCard({
     ? `https://image.tmdb.org/t/p/w185${rec.poster_path}`
     : null;
 
+  const mediaLabel = rec.media_type === "tv" ? "Serie" : "Peli";
+
   return (
-    <Card className="p-3 sm:p-4 group hover:ring-2 hover:ring-primary/40 transition-all">
-      <Link href={detailHref} prefetch={false} className="flex gap-3 sm:gap-4">
-        <div className="relative shrink-0 w-16 sm:w-20 aspect-[2/3] bg-muted rounded-md overflow-hidden ring-1 ring-border">
+    <Card className="p-4 sm:p-5 group hover:ring-2 hover:ring-primary/40 transition-all">
+      <Link href={detailHref} prefetch={false} className="flex gap-4 sm:gap-5">
+        {/* Poster un poco más generoso para layout editorial */}
+        <div className="relative shrink-0 w-20 sm:w-24 aspect-[2/3] bg-muted rounded-md overflow-hidden ring-1 ring-border shadow-[var(--shadow-1)]">
           {poster ? (
             <Image
               src={poster}
-              alt={`Poster de ${rec.title}`}
+              alt={`Afiche de ${rec.title}`}
               fill
-              sizes="(min-width: 640px) 80px, 64px"
+              sizes="(min-width: 640px) 96px, 80px"
               className="object-cover"
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <Film className="size-6 text-muted-foreground" />
+              <Film className="size-7 text-muted-foreground" />
             </div>
           )}
         </div>
 
-        <div className="flex-1 min-w-0 space-y-1.5">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span
-              className={cn(
-                "shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide",
-                rec.media_type === "tv"
-                  ? "bg-purple-500/15 text-purple-400"
-                  : "bg-blue-500/15 text-blue-400"
-              )}
-            >
-              {rec.media_type === "tv" ? (
-                <Tv className="size-2.5" />
-              ) : (
-                <Film className="size-2.5" />
-              )}
-              {rec.media_type === "tv" ? "Serie" : "Peli"}
-            </span>
-            {rec.year && (
-              <span className="text-xs text-muted-foreground">{rec.year}</span>
+        <div className="flex-1 min-w-0 space-y-2">
+          {/* Eyebrow mono: tipo · año */}
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground inline-flex items-center gap-2">
+            {rec.media_type === "tv" ? (
+              <Tv className="size-2.5" />
+            ) : (
+              <Film className="size-2.5" />
             )}
-          </div>
+            {mediaLabel}
+            {rec.year && <span>· {rec.year}</span>}
+          </p>
 
-          <h3 className="text-sm sm:text-base font-bold tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
+          {/* Título serif italic */}
+          <h3 className="font-serif italic font-normal text-xl sm:text-2xl leading-tight tracking-tight line-clamp-2 group-hover:text-primary transition-colors text-balance">
             {rec.title}
           </h3>
 
-          {rec.why && (
-            <div className="flex items-start gap-1.5">
-              <Star className="size-3 mt-0.5 text-amber-400 fill-amber-400 shrink-0" />
-              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                {rec.why}
-              </p>
-            </div>
+          {/* Lede serif italic — "Porque amaste X..." */}
+          {rec.lede && (
+            <p className="font-serif italic font-normal text-base sm:text-lg leading-snug text-foreground/85 text-balance">
+              {rec.lede}
+            </p>
+          )}
+
+          {/* Body en prosa sans */}
+          {rec.body && (
+            <p className="text-xs sm:text-sm text-muted-foreground/95 leading-relaxed line-clamp-3 sm:line-clamp-4">
+              {rec.body}
+            </p>
           )}
         </div>
       </Link>

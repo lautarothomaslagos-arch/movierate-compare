@@ -27,7 +27,12 @@ export type RecommenderInput = {
 export type Recommendation = {
   title: string;
   year: number | null;
-  why: string;
+  // Lede corto en estilo editorial (1 oración, idealmente arranca con
+  // "Porque…"). Va a renderizarse en serif italic. Ej:
+  //   "Porque amaste «Drive» pero querés algo más lento."
+  lede: string;
+  // Cuerpo en prosa fluida (2-3 oraciones). Va en sans regular.
+  body: string;
   media_type: "movie" | "tv";
 };
 
@@ -83,59 +88,77 @@ function buildPrompt(input: RecommenderInput, locale: "es" | "en"): string {
         : "(none)";
 
   if (locale === "en") {
-    return `You are a movie and TV show recommender. Suggest 5 titles based on the user's profile.
+    return `You are a film critic writing a weekly column. Recommend 5 titles based on the reader's profile. Write like a critic, not a chatbot.
 
-USER PROFILE:
+READER PROFILE:
 - Recently watched: ${formatList(input.recentlyWatched, 15)}
-- Want to watch (already in their list): ${formatList(input.watchlist, 15)}
+- Want to watch (already on their list): ${formatList(input.watchlist, 15)}
 - LOVED (high ratings): ${lovedList}
 - DISLIKED (low ratings): ${dislikedList}
 
-USER QUERY: ${input.query ?? "(no specific query)"}
+READER QUERY: ${input.query ?? "(no specific query)"}
 MOOD: ${input.mood ?? "(no specific mood)"}
 
+For each of the 5 titles, write TWO things:
+
+1. LEDE: ONE short sentence (max 90 chars) that begins with "Because" or a similar editorial hook. It connects the recommendation to something specific in their profile.
+   Examples:
+     "Because you loved «Drive» but want something slower."
+     "Because your watchlist has three Finnish films you haven't seen."
+     "Because you rated «Annihilation» a 9."
+
+2. BODY: 2 to 3 sentences of fluid PROSE (no bullets, no markdown) that describe why they'll like it. Atmospheric, specific. Mention where to watch if relevant. Max 300 chars.
+
 Rules:
-- Recommend 5 titles the user has NOT watched and is NOT in their watchlist yet.
-- Mix movies and TV shows when relevant.
-- For each one, give a SHORT reason (max 120 chars) explaining why they'll like it based on their profile.
-- Prioritize titles that match the LOVED ones in style/tone/themes.
+- Recommend 5 titles they have NOT watched and are NOT on their watchlist yet.
+- Mix movies and TV shows when it fits.
+- Prioritize titles aligned in style/tone/themes with the LOVED ones.
 - Avoid anything similar to the DISLIKED ones.
 - Be specific with titles. Year MUST be the real release year.
-- Don't invent titles. Only recommend titles you're confident exist.
+- Don't invent titles.
 
-Respond ONLY with valid JSON in this exact format (no markdown, no preamble, no trailing text):
+Respond ONLY with valid JSON in this exact format (no markdown, no preamble):
 {"recommendations":[
-  {"title":"...","year":2020,"why":"...","media_type":"movie"},
-  {"title":"...","year":2018,"why":"...","media_type":"tv"},
+  {"title":"...","year":2020,"lede":"Because...","body":"...","media_type":"movie"},
+  {"title":"...","year":2018,"lede":"Because...","body":"...","media_type":"tv"},
   ...
 ]}`;
   }
 
-  return `Sos un recomendador de pelis y series. Sugerí 5 títulos basados en el perfil del usuario.
+  return `Sos un crítico de cine que escribe una columna semanal. Recomendá 5 títulos basados en el perfil del lector. Escribí como crítico, no como chatbot.
 
-PERFIL DEL USUARIO:
+PERFIL DEL LECTOR:
 - Vistas recientes: ${formatList(input.recentlyWatched, 15)}
 - En su lista de "quiero ver": ${formatList(input.watchlist, 15)}
 - LE ENCANTARON (rating alto): ${lovedList}
 - NO LE GUSTARON (rating bajo): ${dislikedList}
 
-CONSULTA DEL USUARIO: ${input.query ?? "(sin consulta específica)"}
+CONSULTA DEL LECTOR: ${input.query ?? "(sin consulta específica)"}
 MOOD: ${input.mood ?? "(sin mood específico)"}
 
+Por cada uno de los 5 títulos, escribí DOS cosas:
+
+1. LEDE: UNA oración corta (max 90 caracteres) que empieza con "Porque" o un gancho editorial similar. Conectá la recomendación con algo específico de su perfil.
+   Ejemplos:
+     "Porque amaste «Drive» pero querés algo más lento."
+     "Porque tu watchlist tiene tres finlandesas sin ver."
+     "Porque le pusiste 9 a «Annihilation»."
+
+2. BODY: 2 a 3 oraciones de PROSA fluida (sin bullets, sin markdown) que describan por qué le va a gustar. Atmosférico, específico. Si corresponde, mencioná dónde se puede ver. Max 300 caracteres.
+
 Reglas:
-- Recomendá 5 títulos que el user NO haya visto y NO estén ya en su lista.
+- Recomendá 5 títulos que el lector NO haya visto y NO estén en su lista.
 - Mezclá pelis y series cuando tenga sentido.
-- Por cada una, dame UNA RAZÓN CORTA (max 120 chars) explicando por qué le va a gustar según su perfil.
-- Priorizá títulos parecidos en estilo/tono/temas a los que LE ENCANTARON.
+- Priorizá títulos alineados en estilo/tono/temas con los que LE ENCANTARON.
 - Evitá cualquier cosa similar a las que NO LE GUSTARON.
 - Sé específico con los títulos. El año DEBE ser el real de estreno.
-- No inventes títulos. Solo recomendá títulos que sabés con certeza que existen.
-- Las razones en español, tuteo argentino (vos/tenés).
+- No inventes títulos.
+- Todo en español, tuteo argentino (vos/tenés).
 
-Respondé SOLO con JSON válido en este formato exacto (sin markdown, sin preámbulo, sin texto extra):
+Respondé SOLO con JSON válido en este formato exacto (sin markdown, sin preámbulo):
 {"recommendations":[
-  {"title":"...","year":2020,"why":"...","media_type":"movie"},
-  {"title":"...","year":2018,"why":"...","media_type":"tv"},
+  {"title":"...","year":2020,"lede":"Porque...","body":"...","media_type":"movie"},
+  {"title":"...","year":2018,"lede":"Porque...","body":"...","media_type":"tv"},
   ...
 ]}`;
 }
@@ -162,11 +185,19 @@ function safeParse(raw: string): Recommendation[] {
       const r = raw as Record<string, unknown>;
       const title = typeof r.title === "string" ? r.title.trim() : null;
       const year = typeof r.year === "number" ? r.year : null;
-      const why = typeof r.why === "string" ? r.why.trim() : "";
+      // Aceptamos lede/body nuevo formato, pero también "why" legacy si el
+      // prompt no devuelve los dos campos (degradamos a body genérico).
+      const lede = typeof r.lede === "string" ? r.lede.trim() : "";
+      const body =
+        typeof r.body === "string"
+          ? r.body.trim()
+          : typeof r.why === "string"
+            ? r.why.trim()
+            : "";
       const media_type =
         r.media_type === "tv" ? "tv" : r.media_type === "movie" ? "movie" : "movie";
       if (!title) continue;
-      out.push({ title, year, why, media_type });
+      out.push({ title, year, lede, body, media_type });
     }
     return out.slice(0, 5);
   } catch (err) {

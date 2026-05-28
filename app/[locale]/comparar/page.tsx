@@ -1,7 +1,12 @@
 import { ArrowLeft, Crown, Film, Minus, Tv, X } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
+import { Suspense } from "react";
 
+import {
+  CompareVerdict,
+  CompareVerdictSkeleton,
+} from "@/components/compare/CompareVerdict";
 import { RadarChart } from "@/components/RadarChart";
 import { computeWeightedAverage } from "@/components/RatingsAverage";
 import { Card } from "@/components/ui/card";
@@ -179,18 +184,69 @@ export default async function CompararPage({ params, searchParams }: Props) {
     };
   });
 
+  // Datos compactos para el veredicto IA
+  const verdictItems = items.map((it, i) => ({
+    tmdb_id: it.id,
+    media_type: it.mediaType,
+    title: it.title,
+    year: it.year,
+    weighted: avgScores[i],
+    genres: it.genres.map((g) => g.name),
+  }));
+
   return (
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
-      <header className="mb-6">
-        <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance">
-          {t("heading")}
-        </h1>
-        {n > 2 && (
+      {/* Header — Fase G.2: si son exactamente 2 ítems, mostramos "duelo
+          tipográfico" con dos títulos serif + vs en el medio. Si son 3-4,
+          header simple con contador. */}
+      {n === 2 ? (
+        <header className="mb-6">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground inline-flex items-center gap-2 mb-2">
+            <span className="inline-block size-1.5 rounded-full bg-primary" />
+            {t("heading")}
+          </p>
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 items-baseline">
+            <div className="text-right">
+              <div className="font-mono text-[9px] tracking-[0.16em] uppercase text-muted-foreground">
+                {items[0].year ? `${items[0].year}` : "—"}
+                {items[0].mediaType === "tv" ? " · Serie" : " · Peli"}
+              </div>
+              <h1 className="font-serif italic font-normal text-2xl sm:text-4xl md:text-5xl leading-[0.95] tracking-tight text-balance mt-1">
+                {items[0].title}
+              </h1>
+            </div>
+            <p className="font-serif italic font-normal text-3xl sm:text-5xl md:text-6xl text-muted-foreground/70 select-none leading-none px-2">
+              vs
+            </p>
+            <div className="text-left">
+              <div className="font-mono text-[9px] tracking-[0.16em] uppercase text-muted-foreground">
+                {items[1].year ? `${items[1].year}` : "—"}
+                {items[1].mediaType === "tv" ? " · Serie" : " · Peli"}
+              </div>
+              <h1 className="font-serif italic font-normal text-2xl sm:text-4xl md:text-5xl leading-[0.95] tracking-tight text-balance mt-1">
+                {items[1].title}
+              </h1>
+            </div>
+          </div>
+        </header>
+      ) : (
+        <header className="mb-6">
+          <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance">
+            {t("heading")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Comparando {n} títulos
           </p>
-        )}
-      </header>
+        </header>
+      )}
+
+      {/* Veredicto IA — Fase G.2. Suspense para streaming. Si falla,
+          devuelve null y la sección desaparece. */}
+      <div className="mb-6">
+        <Suspense fallback={<CompareVerdictSkeleton />}>
+          <CompareVerdict items={verdictItems} />
+        </Suspense>
+      </div>
 
       {/* Top: posters + info básica de cada uno */}
       <div className={cn("grid gap-3 sm:gap-4", gridColsClass)}>

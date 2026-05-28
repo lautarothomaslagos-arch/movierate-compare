@@ -8,11 +8,13 @@ import {
 } from "@/components/FeaturedGenresSection";
 import { HeroSection, HeroSectionSkeleton } from "@/components/HeroSection";
 import { RecentlyVisitedSection } from "@/components/RecentlyVisitedSection";
+import { ReturningHero } from "@/components/ReturningHero";
 import {
   TrendingSection,
   TrendingSectionSkeleton,
 } from "@/components/TrendingSection";
 import { UpcomingSection } from "@/components/UpcomingSection";
+import { createClient } from "@/lib/supabase/server";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -23,6 +25,19 @@ export default async function Home({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("home");
 
+  // Branching server-side (Fase G.2): para usuarios logueados, el hero
+  // gigante con backdrop ocupa fold con info que ya conocen. Reemplazado
+  // por ReturningHero compacto. El user anónimo sigue viendo el hero
+  // editorial completo.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userName =
+    (user?.user_metadata?.full_name as string | undefined)?.split(" ")[0] ??
+    user?.email?.split("@")[0] ??
+    null;
+
   return (
     <main className="flex flex-1 flex-col">
       {/* Suspense porque useSearchParams es client-only */}
@@ -30,21 +45,22 @@ export default async function Home({ params }: Props) {
         <AuthErrorToast />
       </Suspense>
 
-      {/* Hero con backdrop dinámico + buscador */}
-      <Suspense fallback={<HeroSectionSkeleton />}>
-        <HeroSection />
-      </Suspense>
+      {/* Hero condicional */}
+      {user ? (
+        <ReturningHero name={userName} />
+      ) : (
+        <Suspense fallback={<HeroSectionSkeleton />}>
+          <HeroSection />
+        </Suspense>
+      )}
 
-      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-10 sm:py-14 space-y-12">
-        {/* Próximo en tu lista — Fase F.4. Solo se muestra si el user
-            está logueado y tiene series en watchlist con episodios
-            próximos. Si no, devuelve null. */}
+      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10 space-y-12">
+        {/* Próximo en tu lista — solo logueado con series próximas */}
         <Suspense fallback={null}>
           <UpcomingSection />
         </Suspense>
 
-        {/* Recientes — solo si el user tiene historial (DB o localStorage).
-            Si no, el componente devuelve null y la sección no aparece. */}
+        {/* Recientes — solo si hay historial DB o localStorage */}
         <Suspense fallback={null}>
           <RecentlyVisitedSection limit={6} />
         </Suspense>

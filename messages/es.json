@@ -244,7 +244,9 @@
     "noData": "Sin datos",
     "swapBtn": "Intercambiar",
     "shareBtn": "Pasar la comparación",
-    "compareAction": "Comparar con…"
+    "compareAction": "Comparar con…",
+    "verdictLabel": "Veredicto IA",
+    "verdictBy": "Curado por Gemini"
   },
   "trivia": {
     "heading": "Sabías que",
@@ -277,6 +279,12 @@
       "smart": "Inteligente",
       "dark": "Oscuro"
     }
+  },
+  "returningHero": {
+    "eyebrow": "De vuelta",
+    "greeting": "¿Qué función ponemos esta noche",
+    "greetingWithName": "Bienvenido de nuevo, {name}",
+    "subtitle": "Tu lista, tu historial y la trivia de la app te están esperando. O buscá algo nuevo acá abajo."
   },
   "upcoming": {
     "homeHeading": "Próximo en tu lista",

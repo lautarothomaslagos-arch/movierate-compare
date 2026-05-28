@@ -124,7 +124,7 @@ export function GenreFilters({
       </Button>
 
       {open && (
-        <Card className="absolute z-50 mt-2 right-0 w-80 p-4 shadow-lg space-y-4">
+        <Card className="absolute z-50 mt-2 right-0 w-80 p-4 shadow-[var(--shadow-2)] space-y-4">
           {/* Año */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

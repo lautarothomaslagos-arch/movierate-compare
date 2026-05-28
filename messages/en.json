@@ -244,7 +244,9 @@
     "noData": "No data",
     "swapBtn": "Swap",
     "shareBtn": "Pass the comparison",
-    "compareAction": "Compare with…"
+    "compareAction": "Compare with…",
+    "verdictLabel": "AI Verdict",
+    "verdictBy": "Curated by Gemini"
   },
   "trivia": {
     "heading": "Did you know",
@@ -277,6 +279,12 @@
       "smart": "Smart",
       "dark": "Dark"
     }
+  },
+  "returningHero": {
+    "eyebrow": "Welcome back",
+    "greeting": "What's tonight's feature",
+    "greetingWithName": "Welcome back, {name}",
+    "subtitle": "Your list, your history and the app's trivia are waiting. Or search for something new below."
   },
   "upcoming": {
     "homeHeading": "Coming up on your list",

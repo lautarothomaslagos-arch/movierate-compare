@@ -179,7 +179,7 @@ export function SearchBar() {
       {open && (
         <div
           className={cn(
-            "absolute z-50 mt-2 w-full rounded-md border bg-popover text-popover-foreground shadow-lg overflow-hidden",
+            "absolute z-50 mt-2 w-full rounded-md border bg-popover text-popover-foreground shadow-[var(--shadow-2)] overflow-hidden",
             "max-h-[min(80vh,32rem)] overflow-y-auto"
           )}
         >
