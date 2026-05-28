@@ -1,7 +1,6 @@
 import { ExternalLink, Trophy } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { PlatformRating } from "@/types/movie";
 
@@ -14,19 +13,44 @@ export type Platform =
   | "tmdb"
   | "letterboxd";
 
+// Boleto de cine: marca como sello mono pequeño arriba, número en serif
+// italic grande, escala en mono dim, votos al pie. Color de la fuente vive
+// en una franja vertical de 3px a la izquierda — acento, no fondo.
+// Reemplaza la card vieja con 5 logos a color a saturación alta.
 type PlatformMeta = {
-  accent: string; // tailwind text color para el nombre
-  // Si el rating natural es 0-100 (RT, Metacritic) mostramos /100,
-  // si es 0-10 (IMDb, TMDB, Letterboxd, Filmaffinity) mostramos /10.
+  // CSS var del color de la fuente (definida en globals.css)
+  stripeVar: string;
+  textColor: string;
+  // /10 o /100 según escala natural
   unit: "/10" | "/100";
 };
 
 const PLATFORM_META: Record<Platform, PlatformMeta> = {
-  imdb: { accent: "text-yellow-400", unit: "/10" },
-  rt: { accent: "text-red-400", unit: "/100" },
-  metacritic: { accent: "text-emerald-400", unit: "/100" },
-  tmdb: { accent: "text-sky-400", unit: "/10" },
-  letterboxd: { accent: "text-orange-400", unit: "/10" },
+  imdb: {
+    stripeVar: "var(--imdb)",
+    textColor: "text-[var(--imdb)]",
+    unit: "/10",
+  },
+  rt: {
+    stripeVar: "var(--rt)",
+    textColor: "text-[var(--rt)]",
+    unit: "/100",
+  },
+  metacritic: {
+    stripeVar: "var(--metac)",
+    textColor: "text-[var(--metac)]",
+    unit: "/100",
+  },
+  tmdb: {
+    stripeVar: "var(--tmdb)",
+    textColor: "text-[var(--tmdb)]",
+    unit: "/10",
+  },
+  letterboxd: {
+    stripeVar: "var(--lbox-g)",
+    textColor: "text-[var(--lbox-g)]",
+    unit: "/10",
+  },
 };
 
 function formatNumberLocale(
@@ -55,26 +79,33 @@ export function RatingCard({
   const platformName = tRatings(platform);
   const emptyMessage = tRatings(`empty.${platform}` as never) as string;
 
+  // Empty state: boleto en gris claro con mensaje ingenioso
   if (!rating) {
-    // Card compacta para empty state: misma altura mínima visual pero menos
-    // peso visual (opacidad menor, fondo "muted", sin layout interno
-    // dramático). Sigue mostrando el nombre y el mensaje ingenioso.
     return (
-      <Card className="p-3 flex flex-col gap-1.5 min-h-[112px] opacity-60 hover:opacity-90 transition-opacity bg-muted/30 border-dashed">
-        <div
+      <article
+        className={cn(
+          "relative rounded-md border border-dashed border-border bg-muted/30",
+          "px-3 py-3.5 min-h-[110px] flex flex-col gap-2 opacity-70 hover:opacity-90",
+          "transition-opacity overflow-hidden"
+        )}
+      >
+        <span
+          aria-hidden
+          className="absolute left-0 inset-y-2 w-[3px] rounded-sm opacity-50"
+          style={{ background: meta.stripeVar }}
+        />
+        <p
           className={cn(
-            "text-[10px] sm:text-xs font-semibold uppercase tracking-wide",
-            meta.accent
+            "font-mono text-[9px] uppercase tracking-[0.18em]",
+            meta.textColor
           )}
         >
           {platformName}
-        </div>
-        <div className="flex-1 flex items-center">
-          <span className="text-xs text-muted-foreground italic leading-tight">
-            {emptyMessage}
-          </span>
-        </div>
-      </Card>
+        </p>
+        <p className="text-xs text-muted-foreground italic leading-snug">
+          {emptyMessage}
+        </p>
+      </article>
     );
   }
 
@@ -82,16 +113,6 @@ export function RatingCard({
     meta.unit === "/10"
       ? formatNumberLocale(rating.score10, 1, locale)
       : String(rating.score100);
-
-  const Wrapper = rating.url ? "a" : "div";
-  const wrapperProps = rating.url
-    ? {
-        href: rating.url,
-        target: "_blank",
-        rel: "noopener noreferrer",
-        className: "group",
-      }
-    : {};
 
   let votesText: string | null = null;
   if (rating.votes !== undefined) {
@@ -108,59 +129,81 @@ export function RatingCard({
     }
   }
 
+  const Wrapper = rating.url ? "a" : "div";
+  const wrapperProps = rating.url
+    ? {
+        href: rating.url,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "group block",
+      }
+    : { className: "block" };
+
   return (
     <Wrapper {...wrapperProps}>
-      <Card
+      <article
         className={cn(
-          "p-4 flex flex-col gap-2 min-h-[112px] h-full relative",
+          "relative rounded-md border bg-card px-3 py-3.5 min-h-[110px] overflow-hidden",
+          "transition-transform duration-200",
+          // Micro rotate al hover — sutil, le da identidad de boleto impreso
           rating.url &&
-            "transition-colors group-hover:bg-accent group-hover:text-accent-foreground cursor-pointer",
-          // Highlight visual: la card con score más alto tiene un anillo
-          // emerald sutil; la más baja un anillo rose. Solo se aplica si
-          // el promedio se pudo computar (highlight !== null).
-          highlight === "highest" &&
-            "ring-2 ring-emerald-500/40 shadow-emerald-500/10 shadow-lg",
-          highlight === "lowest" && "ring-1 ring-rose-500/30 opacity-95"
+            "group-hover:-rotate-[0.4deg] group-hover:-translate-y-px group-hover:shadow-[var(--shadow-1)] cursor-pointer",
+          // Highlight: best en brass, worst en gris
+          highlight === "highest" && "border-primary/50",
+          highlight === "lowest" && "border-border opacity-90",
+          highlight === null && "border-border"
         )}
       >
-        {/* Badge esquina superior derecha si está destacado */}
+        {/* Franja vertical lateral con color de la fuente — acento, no fondo */}
+        <span
+          aria-hidden
+          className="absolute left-0 inset-y-2 w-[3px] rounded-sm"
+          style={{ background: meta.stripeVar }}
+        />
+
+        {/* Trophy badge si es el best */}
         {highlight === "highest" && (
-          <div className="absolute -top-2 -right-2 z-10 size-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
-            <Trophy className="size-3.5" />
-          </div>
+          <Trophy
+            className="absolute top-2 right-2 size-3.5 text-primary"
+            aria-label="Mejor puntuada"
+          />
         )}
 
-        <div className="flex items-center justify-between">
-          <div
-            className={cn(
-              "text-xs font-semibold uppercase tracking-wide",
-              meta.accent
-            )}
-          >
-            {platformName}
-          </div>
-          {rating.url && (
-            <ExternalLink className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        {/* External link icon si tiene url, solo en hover */}
+        {rating.url && highlight !== "highest" && (
+          <ExternalLink
+            className="absolute top-2.5 right-2.5 size-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-hidden
+          />
+        )}
+
+        <p
+          className={cn(
+            "font-mono text-[9px] uppercase tracking-[0.18em] mb-1",
+            meta.textColor
           )}
-        </div>
+        >
+          {platformName}
+        </p>
 
-        <div className="flex items-baseline gap-1">
-          <span
-            className={cn(
-              "text-3xl font-bold tabular-nums",
-              highlight === "highest" && "text-emerald-400",
-              highlight === "lowest" && "text-rose-400"
-            )}
-          >
-            {displayScore}
+        <p
+          className={cn(
+            "font-serif italic font-normal text-3xl leading-none tabular-nums",
+            highlight === "highest" && "text-primary",
+            highlight === "lowest" && "text-muted-foreground"
+          )}
+        >
+          {displayScore}
+          <span className="font-mono not-italic text-[10px] text-muted-foreground ml-0.5 tracking-normal">
+            {" "}
+            {meta.unit}
           </span>
-          <span className="text-sm text-muted-foreground">{meta.unit}</span>
-        </div>
+        </p>
 
-        {votesText && (
-          <div className="text-xs text-muted-foreground">{votesText}</div>
-        )}
-      </Card>
+        <p className="font-mono text-[9px] text-muted-foreground/80 tracking-[0.04em] mt-2.5">
+          {votesText ?? "—"}
+        </p>
+      </article>
     </Wrapper>
   );
 }

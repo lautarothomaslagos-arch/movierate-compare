@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getTvDetails } from "@/lib/tmdb";
 import {
   findRtScore,
@@ -138,7 +140,11 @@ async function writeCache(ratings: RatingsResponse): Promise<void> {
 // Letterboxd NO indexa series → siempre null.
 // Filmaffinity removida del flow.
 // =============================================================================
-export async function getTvRatings(tvId: number): Promise<RatingsResponse> {
+// React.cache dedupea dentro del mismo request: Billboard y TvRatingsSection
+// no duplican fetches.
+export const getTvRatings = cache(_getTvRatings);
+
+async function _getTvRatings(tvId: number): Promise<RatingsResponse> {
   // 1) Cache primero
   const cached = await readCache(tvId);
   if (cached) return cached;

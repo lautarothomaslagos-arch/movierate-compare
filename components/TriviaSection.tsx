@@ -1,9 +1,7 @@
-import { Sparkles } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { generateTrivia, type TriviaInput } from "@/lib/ai-trivia";
+import { cn } from "@/lib/utils";
 import { createServiceClient } from "@/lib/supabase/server";
 
 // Lee el cache de Supabase. Devuelve null si no existe.
@@ -59,9 +57,13 @@ async function writeCache(
   }
 }
 
-// Server Component async. Lee cache primero, sino genera con IA.
-// Si IA falla (Gemini caído, sin key, etc.), devuelve null y la sección
-// no se renderiza.
+// Trivia editorial (Fase G.1):
+// - Comilla angular grande («) como ornamento de fondo en serif italic.
+// - Border-left brass 2px.
+// - Label "Sabías que" en mono uppercase.
+// - Cuerpo en blockquote serif italic, text-balance.
+// - Atribución "— Gemini" en mono pequeño al pie.
+// - Sin caja gris ni ícono Sparkles: el contenido manda.
 export async function TriviaSection({
   tmdbId,
   mediaType = "movie",
@@ -90,36 +92,45 @@ export async function TriviaSection({
   }
 
   return (
-    <Card className="p-4 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
-      <div className="flex items-start gap-3">
-        <div className="shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center">
-          <Sparkles className="size-4 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">
-            {t("heading")}
-          </div>
-          <p className="text-sm leading-relaxed text-foreground/90">{text}</p>
-          <p className="text-[10px] text-muted-foreground/60 mt-1.5">
-            {t("aiBy")}
-          </p>
-        </div>
+    <aside className="relative overflow-hidden py-7 sm:py-9 px-5 sm:px-7">
+      {/* Comilla angular gigante decorativa */}
+      <span
+        aria-hidden
+        className={cn(
+          "absolute left-4 top-3 font-serif italic font-normal",
+          "text-[120px] leading-[0.7] text-primary opacity-15 select-none pointer-events-none"
+        )}
+      >
+        «
+      </span>
+
+      <div className="relative pl-3.5 border-l-2 border-primary max-w-[58ch]">
+        <p
+          className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2.5"
+          title={t("aiBy")}
+        >
+          {t("heading")}
+        </p>
+        <blockquote className="font-serif italic font-normal text-xl sm:text-2xl leading-snug text-balance text-foreground/95">
+          {text}
+        </blockquote>
+        <footer className="flex items-center gap-3.5 mt-4 font-mono text-[10px] text-muted-foreground tracking-[0.04em]">
+          <span>— {t("aiBy")}</span>
+        </footer>
       </div>
-    </Card>
+    </aside>
   );
 }
 
 export function TriviaSkeleton() {
   return (
-    <Card className="p-4 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
-      <div className="flex items-start gap-3">
-        <Skeleton className="shrink-0 size-8 rounded-full" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-        </div>
+    <aside className="relative overflow-hidden py-7 sm:py-9 px-5 sm:px-7">
+      <div className="pl-3.5 border-l-2 border-primary/40 max-w-[58ch] space-y-2.5">
+        <div className="h-2.5 w-20 rounded skeleton-warm" />
+        <div className="h-5 w-full rounded skeleton-warm" />
+        <div className="h-5 w-4/5 rounded skeleton-warm" />
+        <div className="h-2.5 w-32 rounded skeleton-warm mt-3" />
       </div>
-    </Card>
+    </aside>
   );
 }

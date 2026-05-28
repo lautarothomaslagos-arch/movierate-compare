@@ -54,8 +54,8 @@
     "trendingChip": "Trending today: {title}",
     "title": "MovieRate",
     "titleSecondary": "Compare",
-    "tagline": "Compare ratings from IMDb, Rotten Tomatoes, Metacritic, TMDB, Letterboxd and Filmaffinity in one search.",
-    "searchHint": "Search movies or TV shows · at least 2 characters",
+    "tagline": "Five critics, one weighted score. Your own opinion, on top of all of them.",
+    "searchHint": "Search a movie or show — two letters is enough.",
     "trendingHeading": "Trending today",
     "trendingSubtitle": "Top picks on TMDB right now",
     "trendingFailed": "Could not load trending content.",
@@ -63,11 +63,11 @@
     "viewAllGenres": "View all genres"
   },
   "search": {
-    "placeholder": "Search a movie...",
+    "placeholder": "Try: «Mulholland», «Severance», «Aftersun»…",
     "ariaLabel": "Search movie",
-    "failed": "Search failed. Try again.",
-    "noResults": "No results found.",
-    "searching": "Searching...",
+    "failed": "The reel snapped. Try again.",
+    "noResults": "Nothing with that title. Try fewer letters, or the original in English.",
+    "searching": "Searching across five sources…",
     "minChars": "Type at least 2 characters",
     "badgeMovie": "Movie",
     "badgeTv": "TV",
@@ -84,12 +84,12 @@
     "cast": "Top cast",
     "ratings": "Compared ratings",
     "whereToWatch": "Where to watch",
-    "trailer": "Trailer",
+    "trailer": "Watch trailer",
     "gallery": "Gallery",
     "similar": "Similar",
     "noSimilar": "No recommendations for this movie.",
     "notFoundTitle": "We couldn't find that movie",
-    "notFoundBody": "The ID doesn't exist in TMDB or there was an issue loading the data."
+    "notFoundBody": "That movie isn't in any catalog. Did you make it up?"
   },
   "tv": {
     "badge": "TV",
@@ -111,7 +111,7 @@
     "creatorMany": "Creators: ",
     "letterboxdNoTv": "Letterboxd doesn't index TV shows.",
     "notFoundTitle": "We couldn't find that show",
-    "notFoundBody": "The ID doesn't exist in TMDB or there was an issue loading the data.",
+    "notFoundBody": "That show isn't in any catalog. Did you make it up?",
     "yearsToPresent": "{startYear} – present",
     "yearsRange": "{startYear} – {endYear}",
     "noSimilar": "No recommendations for this show."
@@ -173,7 +173,7 @@
     }
   },
   "share": {
-    "share": "Share",
+    "share": "Pass it on",
     "copied": "Link copied",
     "failed": "Could not share"
   },
@@ -233,39 +233,40 @@
   },
   "compare": {
     "heading": "Compare",
-    "subtitle": "Compare two movies or shows side by side",
+    "subtitle": "Movies and shows, side by side.",
     "pickFirst": "Pick a movie or show",
-    "pickSecond": "Pick what to compare against",
-    "searchPlaceholder": "Search...",
+    "pickSecond": "Pick what fights it",
+    "searchPlaceholder": "Search…",
     "removeBtn": "Remove",
-    "averageLabel": "Weighted average",
-    "winner": "Better on {platform}",
-    "tie": "Tied",
+    "averageLabel": "Weighted score",
+    "winner": "Wins on {platform}",
+    "tie": "Tie",
     "noData": "No data",
     "swapBtn": "Swap",
-    "shareBtn": "Share comparison",
-    "compareAction": "Compare"
+    "shareBtn": "Pass the comparison",
+    "compareAction": "Compare with…"
   },
   "trivia": {
     "heading": "Did you know",
-    "aiBy": "Generated with AI · may contain errors"
+    "aiBy": "Curated by Gemini"
   },
   "recommender": {
     "heading": "AI Recommender",
-    "subtitle": "We suggest what to watch based on what you loved and want to see",
-    "disclaimer": "Generated with AI · may contain errors or non-existent titles",
+    "subtitle": "Tell me what matters today and I'll pick five for this week.",
+    "disclaimer": "Curated by Gemini · it might miss, you won't.",
     "inputLabel": "What would you like to watch?",
-    "inputPlaceholder": "e.g. something dark from the 80s, comedy for date night...",
+    "inputPlaceholder": "Something dark from the 80s, a comedy for date night, anything new by Lynch…",
     "moodLabel": "Mood (optional)",
     "submitBtn": "Recommend me",
-    "loading": "Thinking...",
+    "refreshBtn": "Get five more",
+    "loading": "Cross-referencing your history with what just dropped — 10s.",
     "loginRequired": "Sign in to use the recommender.",
-    "rateLimitReached": "You hit the daily limit. Try again tomorrow.",
-    "genericError": "Something went wrong. Try again.",
-    "noResults": "We couldn't generate recommendations this time. Try changing the query.",
-    "resultsHeading": "{count} suggestions for you",
-    "initialTitle": "Start by telling us what you're looking for",
-    "initialBody": "You can describe what you want, pick a mood, or both. We'll use your history, watchlist and reviews to suggest 5 personalized titles.",
+    "rateLimitReached": "You hit the daily limit. Come back tomorrow.",
+    "genericError": "The reel snapped. Try again.",
+    "noResults": "Nothing this time. Change the mood or try a different query.",
+    "resultsHeading": "Five for this week",
+    "initialTitle": "Watch three, I'll bring five",
+    "initialBody": "I need a couple of notes from you before I bet on anything. Type what you want, pick a mood, or both — and I'll pull five from your history.",
     "mood": {
       "relaxed": "Relaxed",
       "intense": "Intense",
@@ -286,31 +287,31 @@
     "inDays": "In {n} days"
   },
   "reviews": {
-    "heading": "My review",
-    "yourRatingLabel": "Your rating",
+    "heading": "Your note",
+    "yourRatingLabel": "Your score",
     "yourNotesLabel": "Your notes",
-    "notesOptional": "optional",
-    "notesPlaceholder": "What did you think? What you felt, what you remember, what stuck with you...",
-    "addReviewBtn": "Add my review",
-    "saveBtn": "Save",
+    "notesOptional": "optional, but you'll thank yourself",
+    "notesPlaceholder": "What stayed with you? An image, a scene, a line. Whatever you remember.",
+    "addReviewBtn": "Add my note",
+    "saveBtn": "Save note",
     "cancelBtn": "Cancel",
-    "saved": "Review saved",
-    "deleted": "Review deleted",
+    "saved": "Note saved. It'll wait for you.",
+    "deleted": "Note deleted",
     "saveError": "Could not save.",
     "deleteError": "Could not delete.",
     "deleteConfirm": "Delete your review? This can't be undone.",
     "editAria": "Edit review",
     "deleteAria": "Delete review",
     "savedAt": "Saved on {date}",
-    "loginCtaTitle": "Rate and save your impressions",
-    "loginCtaBody": "Sign in to rate movies and shows on your own scale and leave private notes only you see.",
+    "loginCtaTitle": "Your own scale, your own notes",
+    "loginCtaBody": "Sign in and build your archive. The best notes get written right after the credits roll.",
     "loginCtaHint": "top right"
   },
   "myReviews": {
     "heading": "My reviews",
     "subtitle": "Your private ratings and notes",
-    "empty": "You have no reviews yet",
-    "emptyBody": "Go to a movie or show and leave your first rating.",
+    "empty": "No notes of yours yet",
+    "emptyBody": "The best ones get written right after the credits.",
     "sortRecent": "Most recent",
     "sortBest": "Top rated",
     "sortWorst": "Worst rated",
@@ -324,14 +325,14 @@
   },
   "watchlist": {
     "heading": "My list",
-    "addToList": "Add to my list",
-    "inList": "In my list",
+    "addToList": "Add to watch",
+    "inList": "On the list",
     "added": "Added to your list",
-    "removed": "Removed from your list",
+    "removed": "Off the list",
     "addError": "Could not add.",
     "removeError": "Could not remove.",
-    "empty": "Your list is empty",
-    "emptyBody": "Movies and shows you mark as 'want to watch' will appear here.",
+    "empty": "Your list is waiting",
+    "emptyBody": "Start with something you've owed yourself for a while.",
     "countOne": "{count} title",
     "countOther": "{count} titles"
   },
@@ -343,8 +344,8 @@
     "filterTv": "TV",
     "searchPlaceholder": "Search your history...",
     "noFilterResults": "No titles match the filter.",
-    "empty": "Your history is empty",
-    "emptyBody": "Anything you open will show up here.",
+    "empty": "Nothing logged yet",
+    "emptyBody": "Mark what you've watched and let's figure out what's next together.",
     "anonymousNote": "You're browsing without an account. Sign in with Google to save your history in the cloud.",
     "countOne": "{count} title",
     "countOther": "{count} titles",
@@ -409,11 +410,11 @@
     "DO": "Dominican Republic"
   },
   "error": {
-    "title": "Something went wrong",
-    "body": "We had trouble loading this page. Try refreshing; if it persists, go home."
+    "title": "The reel snapped",
+    "body": "Something went wrong loading this page. Try refreshing; if it persists, go home."
   },
   "notFound": {
-    "title": "Page not found",
-    "body": "The URL doesn't exist. Try the search."
+    "title": "That URL doesn't exist",
+    "body": "Try the search. Every movie and show is in there."
   }
 }

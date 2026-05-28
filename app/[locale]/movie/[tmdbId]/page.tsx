@@ -1,8 +1,14 @@
-import { ArrowLeft, Calendar, Clock, Film } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+
+import { TitleBillboard } from "@/components/title/TitleBillboard";
+import {
+  WeightedScoreHero,
+  WeightedScoreHeroSkeleton,
+} from "@/components/title/WeightedScoreHero";
 
 import {
   CollectionSection,
@@ -42,7 +48,7 @@ import { movieJsonLd, SITE_URL } from "@/lib/seo";
 import { addVisitToDb } from "@/lib/history";
 import { getReview } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/server";
-import { backdropUrl, getMovieDetails, getYear, posterUrl } from "@/lib/tmdb";
+import { backdropUrl, getMovieDetails, getYear } from "@/lib/tmdb";
 import { isInWatchlist } from "@/lib/watchlist";
 
 type Props = {
@@ -121,7 +127,6 @@ export default async function MoviePage({ params }: Props) {
 
   const year = getYear(movie.release_date);
   const runtime = formatRuntime(movie.runtime);
-  const poster = posterUrl(movie.poster_path, "w500");
   const backdrop = backdropUrl(movie.backdrop_path, "w1280");
   const directors =
     movie.credits?.crew?.filter((c) => c.job === "Director") ?? [];
@@ -208,104 +213,80 @@ export default async function MoviePage({ params }: Props) {
       </header>
 
       <main className="px-4 sm:px-6 pb-16 max-w-5xl mx-auto w-full">
-        <section className="flex flex-col md:flex-row gap-6 md:gap-8 mb-10">
-          {/* Poster */}
-          <div className="shrink-0 mx-auto md:mx-0">
-            <div className="relative w-48 sm:w-56 md:w-64 aspect-[2/3] bg-muted rounded-lg overflow-hidden shadow-2xl ring-1 ring-border">
-              {poster ? (
-                <Image
-                  src={poster}
-                  alt={`Poster de ${movie.title}`}
-                  fill
-                  priority
-                  sizes="(min-width: 768px) 256px, (min-width: 640px) 224px, 192px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Film className="size-12 text-muted-foreground" />
-                </div>
-              )}
+        {/* Billboard editorial sobre el fold (Fase G.1): poster compacto +
+            título serif italic + weighted average como momento principal.
+            El bloque del weighted llega por streaming via Suspense. */}
+        <section className="mb-8 sm:mb-10">
+          <TitleBillboard
+            title={movie.title}
+            originalTitle={movie.original_title ?? null}
+            posterPath={movie.poster_path ?? null}
+            eyebrow={[
+              movie.genres?.map((g) => g.name).join(" · "),
+              year ?? undefined,
+              runtime ?? undefined,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          >
+            <Suspense fallback={<WeightedScoreHeroSkeleton />}>
+              <WeightedScoreHero tmdbId={movie.id} mediaType="movie" />
+            </Suspense>
+          </TitleBillboard>
+        </section>
+
+        {/* Detalle narrativo: géneros con color, sinopsis, dirección y CTAs.
+            Va debajo del Billboard. */}
+        <section className="mb-10 space-y-4">
+          {movie.genres && movie.genres.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {movie.genres.map((g) => (
+                <span
+                  key={g.id}
+                  className={`inline-block px-2.5 py-0.5 text-xs rounded-full border ${genreBadgeClass(g.id)}`}
+                >
+                  {g.name}
+                </span>
+              ))}
             </div>
-          </div>
+          )}
 
-          {/* Info */}
-          <div className="flex-1 min-w-0 text-center md:text-left">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              {movie.title}
-            </h1>
-            {movie.original_title && movie.original_title !== movie.title && (
-              <p className="text-sm text-muted-foreground italic mt-1">
-                {movie.original_title}
-              </p>
-            )}
+          {movie.overview && (
+            <p className="text-sm sm:text-base leading-relaxed text-foreground/90 max-w-prose">
+              {movie.overview}
+            </p>
+          )}
 
-            <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
-              {year && (
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="size-3.5" />
-                  {year}
-                </span>
-              )}
-              {runtime && (
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="size-3.5" />
-                  {runtime}
-                </span>
-              )}
+          {directors.length > 0 && (
+            <div className="text-sm">
+              <span className="text-muted-foreground">
+                {directors.length === 1
+                  ? t("movie.directorOne")
+                  : t("movie.directorMany")}
+              </span>
+              <span className="font-medium">
+                {directors.map((d) => d.name).join(", ")}
+              </span>
             </div>
+          )}
 
-            {movie.genres && movie.genres.length > 0 && (
-              <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mt-3">
-                {movie.genres.map((g) => (
-                  <span
-                    key={g.id}
-                    className={`inline-block px-2.5 py-0.5 text-xs rounded-full border ${genreBadgeClass(g.id)}`}
-                  >
-                    {g.name}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {movie.overview && (
-              <p className="mt-4 text-sm sm:text-base leading-relaxed text-foreground/90">
-                {movie.overview}
-              </p>
-            )}
-
-            {directors.length > 0 && (
-              <div className="mt-4 text-sm">
-                <span className="text-muted-foreground">
-                  {directors.length === 1
-                    ? t("movie.directorOne")
-                    : t("movie.directorMany")}
-                </span>
-                <span className="font-medium">
-                  {directors.map((d) => d.name).join(", ")}
-                </span>
-              </div>
-            )}
-
-            {/* Botones de acción: watchlist + share */}
-            <div className="mt-5 flex flex-wrap gap-2 justify-center md:justify-start">
-              <WatchlistButton
-                isLogged={isLogged}
-                initiallyInList={initiallyInWatchlist}
-                item={{
-                  tmdb_id: movie.id,
-                  media_type: "movie",
-                  title: movie.title,
-                  year,
-                  poster_path: movie.poster_path ?? null,
-                }}
-              />
-              <ShareButton
-                title={movie.title}
-                text={movie.overview?.slice(0, 100) ?? undefined}
-              />
-              <CompareButton currentId={movie.id} currentMediaType="movie" />
-            </div>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <WatchlistButton
+              isLogged={isLogged}
+              initiallyInList={initiallyInWatchlist}
+              item={{
+                tmdb_id: movie.id,
+                media_type: "movie",
+                title: movie.title,
+                year,
+                poster_path: movie.poster_path ?? null,
+              }}
+            />
+            <ShareButton
+              title={movie.title}
+              text={movie.overview?.slice(0, 100) ?? undefined}
+            />
+            <CompareButton currentId={movie.id} currentMediaType="movie" />
           </div>
         </section>
 

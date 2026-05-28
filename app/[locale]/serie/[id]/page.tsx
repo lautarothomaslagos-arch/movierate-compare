@@ -1,11 +1,4 @@
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  Film,
-  Layers,
-  PlayCircle,
-} from "lucide-react";
+import { ArrowLeft, PlayCircle } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -20,6 +13,11 @@ import {
 import { ProductionSection } from "@/components/ProductionSection";
 import { ReviewSection } from "@/components/ReviewSection";
 import { SeasonsSection, SeasonsSkeleton } from "@/components/SeasonsSection";
+import { TitleBillboard } from "@/components/title/TitleBillboard";
+import {
+  WeightedScoreHero,
+  WeightedScoreHeroSkeleton,
+} from "@/components/title/WeightedScoreHero";
 import { UpcomingEpisodeBanner } from "@/components/UpcomingEpisodeBanner";
 import { CompareButton } from "@/components/CompareButton";
 import { ShareButton } from "@/components/ShareButton";
@@ -48,7 +46,7 @@ import { SITE_URL, tvSeriesJsonLd } from "@/lib/seo";
 import { addVisitToDb } from "@/lib/history";
 import { getReview } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/server";
-import { backdropUrl, getTvDetails, getYear, posterUrl } from "@/lib/tmdb";
+import { backdropUrl, getTvDetails, getYear } from "@/lib/tmdb";
 import { isInWatchlist } from "@/lib/watchlist";
 
 type Props = {
@@ -148,7 +146,6 @@ export default async function SeriePage({ params }: Props) {
   const inProduction = tv.in_production === true;
   const runtimeStr = formatEpisodeRuntime(tv.episode_run_time, t);
   const statusStr = translateStatus(tv.status, t);
-  const poster = posterUrl(tv.poster_path, "w500");
   const backdrop = backdropUrl(tv.backdrop_path, "w1280");
   const creators = tv.created_by ?? [];
   const topCast = tv.credits?.cast?.slice(0, 6) ?? [];
@@ -254,128 +251,89 @@ export default async function SeriePage({ params }: Props) {
           <UpcomingEpisodeBanner nextEpisode={tv.next_episode_to_air} />
         </div>
 
-        <section className="flex flex-col md:flex-row gap-6 md:gap-8 mb-10">
-          {/* Poster */}
-          <div className="shrink-0 mx-auto md:mx-0">
-            <div className="relative w-48 sm:w-56 md:w-64 aspect-[2/3] bg-muted rounded-lg overflow-hidden shadow-2xl ring-1 ring-border">
-              {poster ? (
-                <Image
-                  src={poster}
-                  alt={`Poster de ${tv.name}`}
-                  fill
-                  priority
-                  sizes="(min-width: 768px) 256px, (min-width: 640px) 224px, 192px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Film className="size-12 text-muted-foreground" />
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Billboard editorial sobre el fold (Fase G.1) */}
+        <section className="mb-8 sm:mb-10">
+          <TitleBillboard
+            title={tv.name}
+            originalTitle={tv.original_name ?? null}
+            posterPath={tv.poster_path ?? null}
+            eyebrow={[
+              "Serie",
+              tv.genres?.map((g) => g.name).join(" · "),
+              yearDisplay,
+              tv.number_of_seasons
+                ? tv.number_of_seasons === 1
+                  ? t("tv.seasonsOne", { count: tv.number_of_seasons })
+                  : t("tv.seasonsOther", { count: tv.number_of_seasons })
+                : undefined,
+              runtimeStr ?? undefined,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          >
+            <Suspense fallback={<WeightedScoreHeroSkeleton />}>
+              <WeightedScoreHero tmdbId={tv.id} mediaType="tv" />
+            </Suspense>
+          </TitleBillboard>
+        </section>
 
-          {/* Info */}
-          <div className="flex-1 min-w-0 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-purple-500/15 text-purple-400">
-                {t("tv.badge")}
-              </span>
+        {/* Detalle narrativo: status, géneros con color, sinopsis, creadores, CTAs */}
+        <section className="mb-10 space-y-4">
+          {(statusStr || tv.genres?.length) && (
+            <div className="flex flex-wrap items-center gap-2">
               {statusStr && (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <PlayCircle className="size-3" />
                   {statusStr}
                 </span>
               )}
+              {tv.genres?.map((g) => (
+                <span
+                  key={g.id}
+                  className={`inline-block px-2.5 py-0.5 text-xs rounded-full border ${genreBadgeClass(g.id)}`}
+                >
+                  {g.name}
+                </span>
+              ))}
             </div>
+          )}
 
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              {tv.name}
-            </h1>
-            {tv.original_name && tv.original_name !== tv.name && (
-              <p className="text-sm text-muted-foreground italic mt-1">
-                {tv.original_name}
-              </p>
-            )}
+          {tv.overview && (
+            <p className="text-sm sm:text-base leading-relaxed text-foreground/90 max-w-prose">
+              {tv.overview}
+            </p>
+          )}
 
-            <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
-              {yearDisplay && (
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="size-3.5" />
-                  {yearDisplay}
-                </span>
-              )}
-              {tv.number_of_seasons !== null &&
-                tv.number_of_seasons !== undefined && (
-                  <span className="inline-flex items-center gap-1">
-                    <Layers className="size-3.5" />
-                    {tv.number_of_seasons === 1
-                      ? t("tv.seasonsOne", { count: tv.number_of_seasons })
-                      : t("tv.seasonsOther", { count: tv.number_of_seasons })}
-                    {tv.number_of_episodes
-                      ? ` · ${t("tv.episodesShort", { count: tv.number_of_episodes })}`
-                      : ""}
-                  </span>
-                )}
-              {runtimeStr && (
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="size-3.5" />
-                  {runtimeStr}
-                </span>
-              )}
+          {creators.length > 0 && (
+            <div className="text-sm">
+              <span className="text-muted-foreground">
+                {creators.length === 1
+                  ? t("tv.creatorOne")
+                  : t("tv.creatorMany")}
+              </span>
+              <span className="font-medium">
+                {creators.map((c) => c.name).join(", ")}
+              </span>
             </div>
+          )}
 
-            {tv.genres && tv.genres.length > 0 && (
-              <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mt-3">
-                {tv.genres.map((g) => (
-                  <span
-                    key={g.id}
-                    className={`inline-block px-2.5 py-0.5 text-xs rounded-full border ${genreBadgeClass(g.id)}`}
-                  >
-                    {g.name}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {tv.overview && (
-              <p className="mt-4 text-sm sm:text-base leading-relaxed text-foreground/90">
-                {tv.overview}
-              </p>
-            )}
-
-            {creators.length > 0 && (
-              <div className="mt-4 text-sm">
-                <span className="text-muted-foreground">
-                  {creators.length === 1
-                    ? t("tv.creatorOne")
-                    : t("tv.creatorMany")}
-                </span>
-                <span className="font-medium">
-                  {creators.map((c) => c.name).join(", ")}
-                </span>
-              </div>
-            )}
-
-            {/* Botones de acción: watchlist */}
-            <div className="mt-5 flex flex-wrap gap-2 justify-center md:justify-start">
-              <WatchlistButton
-                isLogged={isLogged}
-                initiallyInList={initiallyInWatchlist}
-                item={{
-                  tmdb_id: tv.id,
-                  media_type: "tv",
-                  title: tv.name,
-                  year,
-                  poster_path: tv.poster_path ?? null,
-                }}
-              />
-              <ShareButton
-                title={tv.name}
-                text={tv.overview?.slice(0, 100) ?? undefined}
-              />
-              <CompareButton currentId={tv.id} currentMediaType="tv" />
-            </div>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <WatchlistButton
+              isLogged={isLogged}
+              initiallyInList={initiallyInWatchlist}
+              item={{
+                tmdb_id: tv.id,
+                media_type: "tv",
+                title: tv.name,
+                year,
+                poster_path: tv.poster_path ?? null,
+              }}
+            />
+            <ShareButton
+              title={tv.name}
+              text={tv.overview?.slice(0, 100) ?? undefined}
+            />
+            <CompareButton currentId={tv.id} currentMediaType="tv" />
           </div>
         </section>
 

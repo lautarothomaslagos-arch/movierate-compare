@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getMovieDetails } from "@/lib/tmdb";
 import {
   findRtScore,
@@ -181,7 +183,12 @@ async function writeCache(ratings: RatingsResponse): Promise<void> {
 // Si Supabase está caído en lectura/escritura, igual sirve el resultado del
 // fetch en vivo — el cache es optimización, no requisito.
 // =============================================================================
-export async function getRatings(tmdbId: number): Promise<RatingsResponse> {
+// React.cache dedupea llamadas dentro del mismo request. Si el Billboard
+// y la sección Ratings (más abajo en la página) piden los mismos ratings,
+// se hace UN solo fetch.
+export const getRatings = cache(_getRatings);
+
+async function _getRatings(tmdbId: number): Promise<RatingsResponse> {
   // 1. Intentamos cache primero
   const cached = await readCache(tmdbId);
   if (cached) return cached;
