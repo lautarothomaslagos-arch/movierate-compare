@@ -54,7 +54,7 @@ export default async function MyReviewsPage({ params, searchParams }: Props) {
   if (!user) {
     return (
       <main className="px-4 sm:px-6 py-12 max-w-3xl mx-auto w-full text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+        <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance">
           {t("heading")}
         </h1>
         <Card className="mt-8 p-8 border-dashed">
@@ -97,7 +97,7 @@ export default async function MyReviewsPage({ params, searchParams }: Props) {
   return (
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
       <header className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight inline-flex items-center gap-2">
+        <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance inline-flex items-baseline gap-2">
           <Star className="size-6 sm:size-7 text-amber-400 fill-amber-400" />
           {t("heading")}
         </h1>
@@ -153,7 +153,7 @@ export default async function MyReviewsPage({ params, searchParams }: Props) {
       {allReviews.length === 0 ? (
         <Card className="p-8 sm:p-12 border-dashed text-center">
           <Star className="size-12 text-muted-foreground mx-auto mb-3" />
-          <h2 className="text-lg font-semibold">{t("empty")}</h2>
+          <h2 className="font-serif italic font-normal text-xl sm:text-2xl">{t("empty")}</h2>
           <p className="text-sm text-muted-foreground mt-1">{t("emptyBody")}</p>
         </Card>
       ) : sorted.length === 0 ? (
@@ -292,7 +292,7 @@ function ReviewCard({
           {/* Rating */}
           <div className="inline-flex items-baseline gap-1.5">
             <Star className="size-4 fill-amber-400 text-amber-400 self-center" />
-            <span className="text-xl font-bold tabular-nums">
+            <span className="font-serif italic font-normal text-2xl tabular-nums leading-none text-primary">
               {review.rating.toFixed(1)}
             </span>
             <span className="text-[10px] text-muted-foreground">/10</span>

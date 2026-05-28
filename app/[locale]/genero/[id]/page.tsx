@@ -187,7 +187,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
     return (
       <main className="px-4 sm:px-6 py-16 max-w-2xl mx-auto w-full text-center">
         <PartyPopper className="size-12 text-muted-foreground mx-auto mb-4" />
-        <h1 className="text-xl sm:text-2xl font-bold">
+        <h1 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight tracking-tight text-balance">
           {t("mismatchTitle")}
         </h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
@@ -312,7 +312,7 @@ export default async function GeneroPage({ params, searchParams }: Props) {
       <header className="mb-4 flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">
+            <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance">
               {currentGenre.name}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">

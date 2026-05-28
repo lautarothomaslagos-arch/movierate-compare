@@ -63,9 +63,10 @@ export async function HeroSection() {
           </div>
         )}
 
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight animate-fade-in-up">
+        <h1 className="font-serif italic font-normal text-5xl sm:text-6xl md:text-7xl leading-[0.95] tracking-tight text-balance animate-fade-in-up">
           {t("title")}{" "}
-          <span className="text-muted-foreground">{t("titleSecondary")}</span>
+          <span className="text-muted-foreground not-italic font-sans">{t("titleSecondary")}</span>
+          <span className="text-primary not-italic">.</span>
         </h1>
         <p className="text-muted-foreground text-base sm:text-lg max-w-md mt-3 animate-fade-in-up animate-delay-100">
           {t("tagline")}

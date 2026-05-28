@@ -33,7 +33,7 @@ export default async function RecomendadorPage({ params }: Props) {
   return (
     <main className="px-4 sm:px-6 py-8 max-w-3xl mx-auto w-full">
       <header className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight inline-flex items-center gap-2">
+        <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance inline-flex items-baseline gap-2">
           <Sparkles className="size-6 sm:size-7 text-amber-400" />
           {t("heading")}
         </h1>

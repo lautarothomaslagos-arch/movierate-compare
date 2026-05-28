@@ -30,7 +30,7 @@ export async function RecentlyVisitedSection({ limit = 6 }: { limit?: number }) 
   return (
     <section>
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight inline-flex items-center gap-2">
+        <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight tracking-tight inline-flex items-baseline gap-2">
           <History className="size-5 text-muted-foreground" />
           {t("recentlyVisited")}
         </h2>

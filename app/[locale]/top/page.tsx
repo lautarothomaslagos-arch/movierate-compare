@@ -138,7 +138,7 @@ export default async function TopPage({ params, searchParams }: Props) {
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight inline-flex items-center gap-2">
+          <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance inline-flex items-baseline gap-2">
             <Trophy className="size-6 sm:size-7 text-amber-400" />
             {t("heading")}
           </h1>
@@ -188,12 +188,13 @@ export default async function TopPage({ params, searchParams }: Props) {
                   </div>
                 )}
 
-                {/* Rank badge esquina superior izquierda */}
+                {/* Rank badge esquina superior izquierda — serif italic
+                    para que se vea "número de cartel" */}
                 <div
                   className={cn(
-                    "absolute top-1.5 left-1.5 px-2 py-1 rounded text-xs font-bold shadow",
+                    "absolute top-1.5 left-1.5 px-2 py-0.5 rounded font-serif italic font-normal leading-none text-base sm:text-lg tabular-nums shadow",
                     rank === 1
-                      ? "bg-amber-500 text-black"
+                      ? "bg-primary text-primary-foreground"
                       : rank === 2
                         ? "bg-zinc-300 text-black"
                         : rank === 3
@@ -205,9 +206,9 @@ export default async function TopPage({ params, searchParams }: Props) {
                 </div>
 
                 {/* Rating badge esquina superior derecha */}
-                <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-emerald-500/90 text-white text-[10px] font-bold inline-flex items-center gap-0.5 shadow">
+                <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-emerald-500/90 text-white text-[10px] inline-flex items-center gap-0.5 shadow">
                   <Star className="size-2.5 fill-current" />
-                  <span className="tabular-nums">
+                  <span className="font-serif italic font-normal text-sm tabular-nums leading-none">
                     {m.vote_average.toFixed(1)}
                   </span>
                 </div>

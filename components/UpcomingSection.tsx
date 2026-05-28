@@ -19,8 +19,8 @@ export async function UpcomingSection() {
     <section className="mb-8">
       <div className="flex items-end justify-between mb-3 px-1">
         <div>
-          <h2 className="text-lg sm:text-xl font-semibold inline-flex items-center gap-2">
-            <CalendarClock className="size-5 text-amber-400" />
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight tracking-tight inline-flex items-baseline gap-2">
+            <CalendarClock className="size-5 text-primary self-center" />
             {t("homeHeading")}
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">

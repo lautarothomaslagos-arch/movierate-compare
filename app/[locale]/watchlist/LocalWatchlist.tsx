@@ -29,7 +29,7 @@ export function LocalWatchlist() {
     return (
       <Card className="p-8 text-center border-dashed">
         <Bookmark className="size-10 text-muted-foreground mx-auto mb-3" />
-        <h2 className="font-semibold">{t("empty")}</h2>
+        <h2 className="font-serif italic font-normal text-xl sm:text-2xl">{t("empty")}</h2>
         <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
           {t("emptyBody")}
         </p>

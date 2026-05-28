@@ -24,7 +24,7 @@ export default async function HistorialPage({ params }: Props) {
 
   return (
     <main className="px-4 sm:px-6 py-8 max-w-3xl mx-auto w-full">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6">{t("heading")}</h1>
+      <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance mb-6">{t("heading")}</h1>
       {user ? (
         <DbHistoryList items={await getHistoryFromDb(50)} />
       ) : (

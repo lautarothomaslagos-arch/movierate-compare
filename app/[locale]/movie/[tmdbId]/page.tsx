@@ -293,7 +293,7 @@ export default async function MoviePage({ params }: Props) {
         {/* Elenco */}
         {topCast.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-lg font-semibold mb-3">{t("movie.cast")}</h2>
+            <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.cast")}</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
               {topCast.map((actor) => {
                 const profile = actor.profile_path
@@ -384,7 +384,7 @@ export default async function MoviePage({ params }: Props) {
         {/* Tráiler — embed YouTube. Si TMDB no tiene videos devuelve null
             y la sección no aparece. */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("movie.trailer")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.trailer")}</h2>
           <Suspense fallback={<TrailerSkeleton />}>
             <TrailerSection tmdbId={movie.id} />
           </Suspense>
@@ -392,7 +392,7 @@ export default async function MoviePage({ params }: Props) {
 
         {/* Galería de imágenes — backdrops alternativos */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("movie.gallery")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.gallery")}</h2>
           <Suspense fallback={<ImageGallerySkeleton />}>
             <ImageGallery tmdbId={movie.id} />
           </Suspense>
@@ -400,7 +400,7 @@ export default async function MoviePage({ params }: Props) {
 
         {/* Dónde verla — streaming providers via TMDB (datos JustWatch). */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("movie.whereToWatch")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.whereToWatch")}</h2>
           <Suspense fallback={<WhereToWatchSkeleton />}>
             <WhereToWatch tmdbId={movie.id} />
           </Suspense>
@@ -410,7 +410,7 @@ export default async function MoviePage({ params }: Props) {
             Envuelto en Suspense para streamear: la peli renderiza ya,
             las cards aparecen cuando los scrapers/APIs terminan. */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("movie.ratings")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.ratings")}</h2>
           <Suspense fallback={<RatingsSkeleton />}>
             <RatingsSection tmdbId={movie.id} />
           </Suspense>
@@ -420,7 +420,7 @@ export default async function MoviePage({ params }: Props) {
             queremos invitar a iniciar sesión. La review queda privada por
             RLS — solo el dueño la lee/escribe. */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("reviews.heading")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("reviews.heading")}</h2>
           <ReviewSection
             tmdb_id={movie.id}
             media_type="movie"
@@ -442,7 +442,7 @@ export default async function MoviePage({ params }: Props) {
 
         {/* Producción: estudios, países, presupuesto, recaudación */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">
             {t("production.heading")}
           </h2>
           <ProductionSection
@@ -456,7 +456,7 @@ export default async function MoviePage({ params }: Props) {
 
         {/* Fechas de estreno por país */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">
             {t("releaseDates.heading")}
           </h2>
           <Suspense
@@ -471,7 +471,7 @@ export default async function MoviePage({ params }: Props) {
         {/* Similares — top 12 de TMDB /recommendations.
             Suspense para que la peli se vea sin esperar este fetch. */}
         <section>
-          <h2 className="text-lg font-semibold mb-3">{t("movie.similar")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.similar")}</h2>
           <Suspense fallback={<MovieGridSkeleton />}>
             <RecommendationsSection tmdbId={movie.id} />
           </Suspense>

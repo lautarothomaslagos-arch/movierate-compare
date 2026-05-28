@@ -41,7 +41,7 @@ export default async function GenerosPage({ params, searchParams }: Props) {
     console.error("[/generos] failed:", err);
     return (
       <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6">{t("heading")}</h1>
+        <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance mb-6">{t("heading")}</h1>
         <p className="text-sm text-muted-foreground">{t("loadFailed")}</p>
       </main>
     );
@@ -67,7 +67,7 @@ export default async function GenerosPage({ params, searchParams }: Props) {
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">{t("heading")}</h1>
+          <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance">{t("heading")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <MediaTypeToggle basePath="/generos" active={mediaType} />

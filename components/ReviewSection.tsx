@@ -151,7 +151,7 @@ export function ReviewSection({
               {t("yourRatingLabel")}
             </div>
             <div className="mt-1 inline-flex items-baseline gap-1.5">
-              <span className="text-3xl font-bold tabular-nums">
+              <span className="font-serif italic font-normal text-4xl sm:text-5xl tabular-nums leading-none text-primary">
                 {review.rating.toFixed(1)}
               </span>
               <span className="text-xs text-muted-foreground">/10</span>
@@ -205,9 +205,9 @@ export function ReviewSection({
           <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t("yourRatingLabel")}
           </label>
-          <span className="text-2xl font-bold tabular-nums inline-flex items-baseline gap-1">
+          <span className="font-serif italic font-normal text-3xl tabular-nums leading-none text-primary inline-flex items-baseline gap-1">
             {rating.toFixed(1)}
-            <span className="text-xs text-muted-foreground">/10</span>
+            <span className="font-sans not-italic text-xs text-muted-foreground">/10</span>
           </span>
         </div>
         <input

@@ -29,7 +29,7 @@ export default async function WatchlistPage({ params }: Props) {
   if (!user) {
     return (
       <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6">{t("heading")}</h1>
+        <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance mb-6">{t("heading")}</h1>
         <LocalWatchlist />
       </main>
     );
@@ -40,7 +40,7 @@ export default async function WatchlistPage({ params }: Props) {
   return (
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
       <header className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">{t("heading")}</h1>
+        <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance">{t("heading")}</h1>
         {items.length > 0 && (
           <p className="text-sm text-muted-foreground mt-1">
             {items.length === 1
@@ -53,7 +53,7 @@ export default async function WatchlistPage({ params }: Props) {
       {items.length === 0 ? (
         <Card className="p-8 text-center border-dashed">
           <Bookmark className="size-10 text-muted-foreground mx-auto mb-3" />
-          <h2 className="font-semibold">{t("empty")}</h2>
+          <h2 className="font-serif italic font-normal text-xl sm:text-2xl">{t("empty")}</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
             {t("emptyBody")}
           </p>

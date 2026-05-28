@@ -340,7 +340,7 @@ export default async function SeriePage({ params }: Props) {
         {/* Elenco */}
         {topCast.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-lg font-semibold mb-3">{t("movie.cast")}</h2>
+            <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.cast")}</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
               {topCast.map((actor) => {
                 const profile = actor.profile_path
@@ -399,7 +399,7 @@ export default async function SeriePage({ params }: Props) {
         {/* Temporadas con mejor/peor episodio */}
         {tv.seasons && tv.seasons.filter((s) => s.season_number > 0).length > 0 && (
           <section className="mb-10">
-            <h2 className="text-lg font-semibold mb-3">
+            <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">
               {t("seasons.heading")}
             </h2>
             <Suspense fallback={<SeasonsSkeleton />}>
@@ -410,7 +410,7 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Tráiler */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("movie.trailer")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.trailer")}</h2>
           <Suspense fallback={<TrailerSkeleton />}>
             <TrailerSection tmdbId={tv.id} mediaType="tv" />
           </Suspense>
@@ -437,7 +437,7 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Galería */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("movie.gallery")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.gallery")}</h2>
           <Suspense fallback={<ImageGallerySkeleton />}>
             <ImageGallery tmdbId={tv.id} mediaType="tv" />
           </Suspense>
@@ -445,7 +445,7 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Dónde verla */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("movie.whereToWatch")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.whereToWatch")}</h2>
           <Suspense fallback={<WhereToWatchSkeleton />}>
             <WhereToWatch tmdbId={tv.id} mediaType="tv" />
           </Suspense>
@@ -453,7 +453,7 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Ratings — solo IMDb, RT, Metacritic, TMDB (no Letterboxd/Filmaffinity) */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("movie.ratings")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.ratings")}</h2>
           <Suspense fallback={<TvRatingsSkeleton />}>
             <TvRatingsSection tvId={tv.id} />
           </Suspense>
@@ -464,7 +464,7 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Tu review personal (Fase F.3). RLS asegura privacidad. */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t("reviews.heading")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("reviews.heading")}</h2>
           <ReviewSection
             tmdb_id={tv.id}
             media_type="tv"
@@ -486,7 +486,7 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Producción */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">
             {t("production.heading")}
           </h2>
           <ProductionSection
@@ -499,7 +499,7 @@ export default async function SeriePage({ params }: Props) {
 
         {/* Similares */}
         <section>
-          <h2 className="text-lg font-semibold mb-3">{t("movie.similar")}</h2>
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.similar")}</h2>
           <Suspense fallback={<TvRecommendationsSkeleton />}>
             <TvRecommendationsSection tvId={tv.id} />
           </Suspense>

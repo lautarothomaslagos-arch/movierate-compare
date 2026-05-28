@@ -52,7 +52,7 @@ export default async function Home({ params }: Props) {
         {/* Tendencias del día */}
         <section>
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+            <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight tracking-tight text-balance">
               {t("trendingHeading")}
             </h2>
             <p className="text-xs text-muted-foreground hidden sm:block">
@@ -66,7 +66,7 @@ export default async function Home({ params }: Props) {
 
         {/* Géneros destacados */}
         <section>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-3">
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight tracking-tight text-balance mb-3">
             {t("featuredGenresHeading")}
           </h2>
           <Suspense fallback={<FeaturedGenresSkeleton />}>

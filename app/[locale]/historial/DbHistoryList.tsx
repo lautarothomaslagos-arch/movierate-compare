@@ -32,7 +32,7 @@ export function DbHistoryList({ items }: { items: HistoryItem[] }) {
   if (items.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-8 text-center">
-        <h2 className="font-semibold">{t("empty")}</h2>
+        <h2 className="font-serif italic font-normal text-xl sm:text-2xl">{t("empty")}</h2>
         <p className="text-sm text-muted-foreground mt-1">{t("emptyBody")}</p>
       </div>
     );

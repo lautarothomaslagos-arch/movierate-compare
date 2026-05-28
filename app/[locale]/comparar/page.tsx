@@ -62,7 +62,7 @@ export default async function CompararPage({ params, searchParams }: Props) {
   if (parsedKeys.length < 2) {
     return (
       <main className="px-4 sm:px-6 py-12 max-w-3xl mx-auto w-full text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+        <h1 className="font-serif italic font-normal text-4xl sm:text-5xl leading-[0.95] tracking-tight text-balance">
           {t("heading")}
         </h1>
         <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
@@ -182,7 +182,7 @@ export default async function CompararPage({ params, searchParams }: Props) {
   return (
     <main className="px-4 sm:px-6 py-8 max-w-5xl mx-auto w-full">
       <header className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+        <h1 className="font-serif italic font-normal text-3xl sm:text-4xl leading-[0.95] tracking-tight text-balance">
           {t("heading")}
         </h1>
         {n > 2 && (
@@ -423,10 +423,11 @@ function ScoreCell({
         ) : (
           <span
             className={cn(
-              "tabular-nums font-bold",
-              big ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl",
-              highlight === "winner" && "text-emerald-400",
-              highlight === "loser" && "text-rose-400",
+              "font-serif italic font-normal tabular-nums leading-none",
+              big ? "text-4xl sm:text-5xl" : "text-2xl sm:text-3xl",
+              highlight === null && "text-foreground",
+              highlight === "winner" && "text-primary",
+              highlight === "loser" && "text-muted-foreground",
               highlight === "tie" && "text-amber-400"
             )}
           >

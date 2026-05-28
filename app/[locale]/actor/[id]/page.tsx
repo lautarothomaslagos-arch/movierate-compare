@@ -185,7 +185,7 @@ export default async function ActorPage({ params }: Props) {
           </div>
 
           <div className="flex-1 min-w-0 text-center md:text-left">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            <h1 className="font-serif italic font-normal text-4xl sm:text-5xl leading-[0.95] tracking-tight text-balance">
               {person.name}
             </h1>
             {person.known_for_department && (
@@ -234,7 +234,7 @@ export default async function ActorPage({ params }: Props) {
 
         {/* Filmografía */}
         <section>
-          <h2 className="text-lg font-semibold mb-3">
+          <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">
             {t("person.filmographyHeading")}{" "}
             {filmography.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">
