@@ -158,7 +158,11 @@ export function SearchBar() {
   }
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    // z-40 + isolate crea un stacking context para que el dropdown SI O SÍ
+    // quede arriba de los carruseles que vienen abajo (los posters tienen
+    // transform en hover, generan stacking contexts propios y nos tapaban
+    // el dropdown sino).
+    <div ref={containerRef} className="relative w-full z-40 isolate">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
@@ -179,7 +183,7 @@ export function SearchBar() {
       {open && (
         <div
           className={cn(
-            "absolute z-50 mt-2 w-full rounded-md border bg-popover text-popover-foreground shadow-[var(--shadow-2)] overflow-hidden",
+            "absolute z-[60] mt-2 w-full rounded-md border bg-popover text-popover-foreground shadow-[var(--shadow-2)] overflow-hidden",
             "max-h-[min(80vh,32rem)] overflow-y-auto"
           )}
         >

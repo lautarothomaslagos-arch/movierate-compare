@@ -124,17 +124,25 @@ export function GenreFilters({
       </Button>
 
       {open && (
-        <Card
-          className={cn(
-            "absolute z-50 mt-2 p-4 shadow-[var(--shadow-2)] space-y-4",
-            // Mobile: ocupa ~todo el ancho disponible, anclado a la derecha
-            // del botón. calc(100vw - 2rem) = viewport menos 16px de cada
-            // lado del padding del main. max-w-sm lo limita en mid-mobile.
-            "right-0 w-[calc(100vw-2rem)] max-w-sm",
-            // Desktop: vuelve a 320px fijos
-            "sm:w-80"
-          )}
-        >
+        <>
+          {/* Backdrop oscuro en mobile que cierra al tocar afuera del panel.
+              En desktop no se ve (el panel es popover normal). */}
+          <div
+            aria-hidden
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm sm:hidden"
+          />
+          <Card
+            className={cn(
+              "z-50 p-4 shadow-[var(--shadow-2)] space-y-4",
+              // Mobile: fixed centrado horizontalmente, debajo del header.
+              // Esto garantiza que SIEMPRE cabe, sin importar dónde esté
+              // el botón ni el padding del main.
+              "fixed left-4 right-4 top-24 max-w-md mx-auto",
+              // Desktop: vuelve a popover normal anclado al botón
+              "sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mx-0 sm:mt-2 sm:w-80 sm:max-w-none"
+            )}
+          >
           {/* Año */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -232,7 +240,8 @@ export function GenreFilters({
               </Button>
             )}
           </div>
-        </Card>
+          </Card>
+        </>
       )}
     </div>
   );
