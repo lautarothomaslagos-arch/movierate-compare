@@ -42,7 +42,7 @@ import {
 } from "@/components/WhereToWatch";
 import { Link } from "@/i18n/navigation";
 import { genreBadgeClass } from "@/lib/genre-colors";
-import { SITE_URL, tvSeriesJsonLd } from "@/lib/seo";
+import { buildAlternates, SITE_URL, tvSeriesJsonLd } from "@/lib/seo";
 import { addVisitToDb } from "@/lib/history";
 import { getReview } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/server";
@@ -54,7 +54,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const tvId = parseInt(id, 10);
   if (!Number.isFinite(tvId)) return { title: "MovieRate Compare" };
   try {
@@ -70,6 +70,7 @@ export async function generateMetadata({ params }: Props) {
     return {
       title: fullTitle,
       description,
+      alternates: buildAlternates(locale, `/serie/${tvId}`),
       openGraph: {
         title: fullTitle,
         description,

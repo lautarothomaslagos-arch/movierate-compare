@@ -1,61 +1,150 @@
 import type { MetadataRoute } from "next";
 
+import { DECADE_KEYS } from "@/lib/decades";
 import { SITE_URL } from "@/lib/seo";
-import { getTrending } from "@/lib/tmdb";
+import {
+  discoverTopMovies,
+  discoverTopTv,
+  getGenres,
+  getTvGenres,
+  getTrending,
+} from "@/lib/tmdb";
 
-// Sitemap dinámico:
-// - URLs estáticas: home, /generos (movie + tv), /top (movie + tv), /comparar
-// - URLs dinámicas: top 100 trending de la semana (movies + tv)
+// Sitemap dinámico expandido — Fase H.1.
 //
-// Se regenera con ISR (revalidate diario via tmdbFetch que cachea 1h).
-// Limitamos a 200 entries para no explotar el sitemap (Google sugiere 50k máx).
+// Estrategia para que Google indexe el catálogo:
+// - Estáticas: home + listings (top, generos, comparar, recomendador)
+// - Top pelis + series: páginas 1-10 de cada (~200 entries por tipo)
+// - Géneros movie + tv (todos los catálogos disponibles)
+// - Decade picker para top (cada combinación type × decade)
+// - Trending del día (cobertura de la actualidad)
+//
+// Cada URL se duplica por locale (es + en). Resultado ~1100 entries.
+// Google permite hasta 50k por sitemap; vamos cómodos.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const locales = ["es", "en"];
+  const locales = ["es", "en"] as const;
 
-  const staticEntries: MetadataRoute.Sitemap = [];
+  const entries: MetadataRoute.Sitemap = [];
 
-  // Home + páginas estáticas, una entry por locale
-  const staticPaths = [
-    "/",
-    "/generos",
-    "/generos?type=tv",
-    "/top",
-    "/top?type=tv",
-    "/comparar",
-  ];
-  for (const locale of locales) {
-    for (const path of staticPaths) {
-      staticEntries.push({
-        url: `${SITE_URL}/${locale}${path === "/" ? "" : path}`,
+  function addEntry(
+    path: string,
+    opts: {
+      priority?: number;
+      changeFrequency?: MetadataRoute.Sitemap[number]["changeFrequency"];
+    } = {}
+  ) {
+    for (const locale of locales) {
+      const cleanPath = path === "/" ? "" : path;
+      entries.push({
+        url: `${SITE_URL}/${locale}${cleanPath}`,
         lastModified: now,
-        changeFrequency: "weekly",
-        priority: path === "/" ? 1.0 : 0.7,
+        changeFrequency: opts.changeFrequency ?? "weekly",
+        priority: opts.priority ?? 0.7,
       });
     }
   }
 
-  // Dinámicas: top trending de la semana (movies + tv mezclados)
-  const dynamicEntries: MetadataRoute.Sitemap = [];
+  // ----- Estáticas -----
+  addEntry("/", { priority: 1.0, changeFrequency: "daily" });
+  addEntry("/generos", { priority: 0.8 });
+  addEntry("/generos?type=tv", { priority: 0.8 });
+  addEntry("/top", { priority: 0.9, changeFrequency: "daily" });
+  addEntry("/top?type=tv", { priority: 0.9, changeFrequency: "daily" });
+  addEntry("/comparar", { priority: 0.6 });
+  addEntry("/recomendador", { priority: 0.6 });
+
+  // ----- Decade picker en /top (cada combinación type × decade) -----
+  for (const decade of DECADE_KEYS) {
+    if (decade === "all") continue; // ya cubierto por /top base
+    addEntry(`/top?decade=${decade}`, { priority: 0.7 });
+    addEntry(`/top?type=tv&decade=${decade}`, { priority: 0.7 });
+  }
+
+  // ----- Géneros movie + tv (todos los catálogos) -----
+  try {
+    const [movieGenres, tvGenres] = await Promise.all([
+      getGenres(),
+      getTvGenres(),
+    ]);
+    for (const g of movieGenres.genres) {
+      addEntry(`/genero/${g.id}`, { priority: 0.75 });
+    }
+    for (const g of tvGenres.genres) {
+      addEntry(`/genero/${g.id}?type=tv`, { priority: 0.75 });
+    }
+  } catch (err) {
+    console.warn("[sitemap] genres failed:", err);
+  }
+
+  // ----- Top pelis (páginas 1-10 → ~200 títulos) -----
+  try {
+    const moviePages = await Promise.all(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((p) =>
+        discoverTopMovies(p).catch(() => null)
+      )
+    );
+    for (const page of moviePages) {
+      if (!page) continue;
+      for (const m of page.results) {
+        addEntry(`/movie/${m.id}`, {
+          priority: 0.85,
+          changeFrequency: "monthly",
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("[sitemap] top movies failed:", err);
+  }
+
+  // ----- Top series (páginas 1-10) -----
+  try {
+    const tvPages = await Promise.all(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((p) =>
+        discoverTopTv(p).catch(() => null)
+      )
+    );
+    for (const page of tvPages) {
+      if (!page) continue;
+      for (const t of page.results) {
+        addEntry(`/serie/${t.id}`, {
+          priority: 0.85,
+          changeFrequency: "monthly",
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("[sitemap] top tv failed:", err);
+  }
+
+  // ----- Trending de la semana (cobertura de novedades) -----
   try {
     const trending = await getTrending("week");
     for (const item of trending.results.slice(0, 100)) {
-      if (item.media_type === "movie" || item.media_type === "tv") {
-        const prefix = item.media_type === "tv" ? "serie" : "movie";
-        // Una entry por locale
-        for (const locale of locales) {
-          dynamicEntries.push({
-            url: `${SITE_URL}/${locale}/${prefix}/${item.id}`,
-            lastModified: now,
-            changeFrequency: "weekly",
-            priority: 0.8,
-          });
-        }
+      if (item.media_type === "movie") {
+        addEntry(`/movie/${item.id}`, {
+          priority: 0.9,
+          changeFrequency: "weekly",
+        });
+      } else if (item.media_type === "tv") {
+        addEntry(`/serie/${item.id}`, {
+          priority: 0.9,
+          changeFrequency: "weekly",
+        });
       }
     }
   } catch (err) {
     console.warn("[sitemap] trending failed:", err);
   }
 
-  return [...staticEntries, ...dynamicEntries];
+  // Dedup por URL (el trending puede solapar con top)
+  const seen = new Set<string>();
+  const deduped: MetadataRoute.Sitemap = [];
+  for (const e of entries) {
+    if (seen.has(e.url)) continue;
+    seen.add(e.url);
+    deduped.push(e);
+  }
+
+  return deduped;
 }

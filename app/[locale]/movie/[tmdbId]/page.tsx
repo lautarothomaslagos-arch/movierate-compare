@@ -44,7 +44,7 @@ import {
 } from "@/components/WhereToWatch";
 import { Link } from "@/i18n/navigation";
 import { genreBadgeClass } from "@/lib/genre-colors";
-import { movieJsonLd, SITE_URL } from "@/lib/seo";
+import { buildAlternates, movieJsonLd, SITE_URL } from "@/lib/seo";
 import { addVisitToDb } from "@/lib/history";
 import { getReview } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/server";
@@ -58,7 +58,7 @@ type Props = {
 // Genera metadata dinámica por película — incluye Open Graph y Twitter cards
 // para que al compartir el link en redes/whatsapp se vea poster + título.
 export async function generateMetadata({ params }: Props) {
-  const { tmdbId } = await params;
+  const { tmdbId, locale } = await params;
   const id = parseInt(tmdbId, 10);
   if (!Number.isFinite(id)) return { title: "MovieRate Compare" };
 
@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props) {
     const fullTitle = `${movie.title}${year ? ` (${year})` : ""} — MovieRate Compare`;
     const description =
       movie.overview?.slice(0, 200) ??
-      "Compará ratings de IMDb, Rotten Tomatoes, Metacritic, TMDB, Letterboxd y Filmaffinity en un solo lugar.";
+      "Compará ratings de IMDb, Rotten Tomatoes, Metacritic, TMDB y Letterboxd en un solo lugar.";
     const ogImage = movie.poster_path
       ? `https://image.tmdb.org/t/p/w780${movie.poster_path}`
       : undefined;
@@ -76,6 +76,7 @@ export async function generateMetadata({ params }: Props) {
     return {
       title: fullTitle,
       description,
+      alternates: buildAlternates(locale, `/movie/${id}`),
       openGraph: {
         title: fullTitle,
         description,

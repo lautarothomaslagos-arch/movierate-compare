@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
+import { buildAlternates } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import {
   getPersonDetails,
@@ -20,7 +21,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const personId = parseInt(id, 10);
   if (!Number.isFinite(personId)) return { title: "MovieRate Compare" };
   try {
@@ -30,6 +31,7 @@ export async function generateMetadata({ params }: Props) {
     return {
       title: `${person.name} — MovieRate Compare`,
       description,
+      alternates: buildAlternates(locale, `/actor/${personId}`),
       openGraph: {
         title: person.name,
         description,

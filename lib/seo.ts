@@ -130,3 +130,28 @@ export function tvSeriesJsonLd(input: TvJsonLdInput): Record<string, unknown> {
 // Domain base — Vercel deploy. Si en algún momento cambias dominio,
 // actualizá esto.
 export const SITE_URL = "https://movierate-compare.vercel.app";
+
+// Genera el objeto `alternates` para Metadata API de Next.js — Fase H.1.
+// Sin esto, Google ve /es/movie/123 y /en/movie/123 como "duplicate
+// content" y reparte el page-rank entre los dos.
+//
+// canonical: marca cuál es la versión "principal" (la del locale actual).
+// languages: lista las variantes por idioma (Google las cruza).
+// x-default: fallback para usuarios sin idioma específico.
+//
+// Uso en generateMetadata:
+//   return {
+//     ...otros,
+//     alternates: buildAlternates(locale, `/movie/${id}`),
+//   };
+export function buildAlternates(currentLocale: string, path: string) {
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return {
+    canonical: `${SITE_URL}/${currentLocale}${cleanPath}`,
+    languages: {
+      es: `${SITE_URL}/es${cleanPath}`,
+      en: `${SITE_URL}/en${cleanPath}`,
+      "x-default": `${SITE_URL}/es${cleanPath}`,
+    },
+  };
+}

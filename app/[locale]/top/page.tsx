@@ -7,6 +7,7 @@ import { MediaTypeToggle, type MediaType } from "@/components/MediaTypeToggle";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { decadeToRange, parseDecade, type DecadeKey } from "@/lib/decades";
+import { buildAlternates } from "@/lib/seo";
 import {
   discoverTopMovies,
   discoverTopTv,
@@ -24,17 +25,50 @@ function parseType(value: string | undefined): MediaType {
   return value === "tv" ? "tv" : "movie";
 }
 
+// Decade-aware metadata: genera title + description únicos por
+// combinación type × decade. Esto le da a Google páginas optimizadas
+// para queries como "mejores películas de los 90", "top series 2020",
+// etc. Fase H.1.
+const DECADE_LABELS: Record<DecadeKey, string> = {
+  all: "",
+  "2020s": "de los 2020",
+  "2010s": "de los 2010",
+  "2000s": "de los 2000",
+  "90s": "de los 90",
+  "80s": "de los 80",
+  classics: "clásicas",
+};
+
 export async function generateMetadata({ params, searchParams }: Props) {
-  const { locale: _ } = await params;
-  void _;
-  const { type } = await searchParams;
+  const { locale } = await params;
+  const { type, decade: decadeParam } = await searchParams;
   const mediaType = parseType(type);
+  const decade = parseDecade(decadeParam);
+  const decadeSuffix = decade !== "all" ? ` ${DECADE_LABELS[decade]}` : "";
+  const isMovie = mediaType !== "tv";
+
+  const title = isMovie
+    ? `Las mejores películas${decadeSuffix}`
+    : `Las mejores series${decadeSuffix}`;
+  const description = isMovie
+    ? `Top películas ordenadas por puntaje promedio en IMDb, Rotten Tomatoes, Metacritic, TMDB y Letterboxd${decadeSuffix ? ` ${decadeSuffix}` : ""}. Actualizado a diario.`
+    : `Top series ordenadas por puntaje promedio en IMDb, Rotten Tomatoes, Metacritic y TMDB${decadeSuffix ? ` ${decadeSuffix}` : ""}. Actualizado a diario.`;
+
+  // Path para canonical / alternates: respeta el query string actual
+  const queryParts: string[] = [];
+  if (!isMovie) queryParts.push("type=tv");
+  if (decade !== "all") queryParts.push(`decade=${decade}`);
+  const path = queryParts.length > 0 ? `/top?${queryParts.join("&")}` : "/top";
+
   return {
-    title: `Top ${mediaType === "tv" ? "Series" : "Películas"} — MovieRate Compare`,
-    description:
-      mediaType === "tv"
-        ? "Las mejores series según TMDB ordenadas por puntaje"
-        : "Las mejores películas según TMDB ordenadas por puntaje",
+    title,
+    description,
+    alternates: buildAlternates(locale, path),
+    openGraph: {
+      title: `${title} · MovieRate Compare`,
+      description,
+      type: "website",
+    },
   };
 }
 

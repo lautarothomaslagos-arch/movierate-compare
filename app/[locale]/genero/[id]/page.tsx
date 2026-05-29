@@ -14,6 +14,7 @@ import { GenreSortSelect, type GenreSort } from "@/components/GenreSortSelect";
 import { MediaTypeToggle, type MediaType } from "@/components/MediaTypeToggle";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
+import { buildAlternates } from "@/lib/seo";
 import {
   discoverByGenre,
   discoverTvByGenre,
@@ -84,7 +85,7 @@ function findEquivalentGenre(
 }
 
 export async function generateMetadata({ params, searchParams }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const { type: typeParam } = await searchParams;
   const genreId = parseInt(id, 10);
   if (!Number.isFinite(genreId)) return { title: "MovieRate Compare" };
@@ -95,10 +96,25 @@ export async function generateMetadata({ params, searchParams }: Props) {
       mediaType === "tv" ? await getTvGenres() : await getGenres();
     const genre = data.genres.find((g) => g.id === genreId);
     if (!genre) return { title: "MovieRate Compare" };
-    const noun = mediaType === "tv" ? "Series" : "Películas";
+    const noun = mediaType === "tv" ? "series" : "películas";
+    const Noun = mediaType === "tv" ? "Series" : "Películas";
+    const title = `Las mejores ${noun} de ${genre.name}`;
+    const description = `${Noun} de ${genre.name} ordenadas por popularidad y rating promediado entre IMDb, Rotten Tomatoes, Metacritic, TMDB${mediaType === "tv" ? "" : " y Letterboxd"}.`;
+
+    const path =
+      mediaType === "tv"
+        ? `/genero/${genreId}?type=tv`
+        : `/genero/${genreId}`;
+
     return {
-      title: `${genre.name} (${noun}) — MovieRate Compare`,
-      description: `${noun} del género ${genre.name} ordenadas por popularidad.`,
+      title,
+      description,
+      alternates: buildAlternates(locale, path),
+      openGraph: {
+        title: `${title} · MovieRate Compare`,
+        description,
+        type: "website",
+      },
     };
   } catch {
     return { title: "MovieRate Compare" };

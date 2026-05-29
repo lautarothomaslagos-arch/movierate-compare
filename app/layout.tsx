@@ -27,14 +27,35 @@ const instrumentSerif = Instrument_Serif({
 
 // Metadata global (sobreescrita por cada page con generateMetadata)
 export const metadata: Metadata = {
-  title: "MovieRate Compare",
+  metadataBase: new URL("https://movierate-compare.vercel.app"),
+  title: {
+    default: "MovieRate Compare",
+    template: "%s · MovieRate Compare",
+  },
   description:
-    "Compará ratings de películas y series en IMDb, Rotten Tomatoes, Metacritic, TMDB y Letterboxd.",
+    "Compará ratings de películas y series en IMDb, Rotten Tomatoes, Metacritic, TMDB y Letterboxd. Promediados en una sola búsqueda.",
+  keywords: [
+    "ratings de películas",
+    "comparar películas",
+    "puntajes IMDb",
+    "Rotten Tomatoes",
+    "Metacritic",
+    "recomendador películas",
+    "qué ver esta noche",
+    "ratings de series",
+  ],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "MovieRate",
+  },
+  // Verificación Google Search Console — Fase H.1.
+  // Seteá GOOGLE_SITE_VERIFICATION en Vercel después de registrar el
+  // sitio en search.google.com/search-console (método "HTML tag").
+  // Si la env var no está, Next.js no emite el tag (undefined es OK).
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
   },
 };
 
