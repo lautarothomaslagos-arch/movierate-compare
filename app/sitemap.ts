@@ -2,31 +2,33 @@ import type { MetadataRoute } from "next";
 
 import { DECADE_KEYS } from "@/lib/decades";
 import { SITE_URL } from "@/lib/seo";
-import {
-  discoverTopMovies,
-  discoverTopTv,
-  getGenres,
-  getTvGenres,
-  getTrending,
-} from "@/lib/tmdb";
 
-// Cacheamos el sitemap por 24h. Sin esto, cada request a /sitemap.xml
-// dispara ~13 fetches a TMDB y Vercel mata la función por timeout.
-// Google y otros crawlers reintentan diariamente — 24h es suficiente.
+// Sitemap estático — Fase H.1.
+//
+// Listamos solo URLs "core" (home, listings, decade picker, géneros más
+// populares hardcoded). NO hacemos fetches a TMDB — la primera carga
+// tiene que ser instantánea para que GSC no le tire timeout.
+//
+// Google descubre el resto de pelis/series via los links internos de la
+// app (cast, similares, trending) — lo que técnicamente se llama
+// "discovery via crawl".
+//
+// Cache 24h por las dudas (cambian fechas de lastmod).
 export const revalidate = 86400;
 
-// Sitemap dinámico expandido — Fase H.1.
-//
-// Estrategia para que Google indexe el catálogo:
-// - Estáticas: home + listings (top, generos, comparar, recomendador)
-// - Top pelis + series: páginas 1-10 de cada (~200 entries por tipo)
-// - Géneros movie + tv (todos los catálogos disponibles)
-// - Decade picker para top (cada combinación type × decade)
-// - Trending del día (cobertura de la actualidad)
-//
-// Cada URL se duplica por locale (es + en). Resultado ~1100 entries.
-// Google permite hasta 50k por sitemap; vamos cómodos.
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+// IDs hardcoded de géneros de movies + tv en TMDB. Sin esto tendríamos
+// que llamar a TMDB en cada sitemap. Estos IDs son estables.
+const MOVIE_GENRE_IDS = [
+  28, 12, 16, 35, 80, 99, 18, 10751, 14, 36, 27, 10402, 9648, 10749, 878,
+  10770, 53, 10752, 37,
+];
+
+const TV_GENRE_IDS = [
+  10759, 16, 35, 80, 99, 18, 10751, 10762, 9648, 10763, 10764, 10765, 10766,
+  10767, 10768, 37,
+];
+
+export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const locales = ["es", "en"] as const;
 
@@ -41,9 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ) {
     for (const locale of locales) {
       const cleanPath = path === "/" ? "" : path;
-      // Escapamos & → &amp; para que el XML sea válido cuando hay query
-      // strings (ej. /top?type=tv&decade=80s). Sin esto el parser XML tira
-      // "EntityRef: expecting ';'" en la primera ocurrencia.
+      // Escapar & → &amp; para XML válido (URLs con query strings).
       const rawUrl = `${SITE_URL}/${locale}${cleanPath}`;
       const url = rawUrl.replace(/&/g, "&amp;");
       entries.push({
@@ -66,98 +66,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ----- Decade picker en /top (cada combinación type × decade) -----
   for (const decade of DECADE_KEYS) {
-    if (decade === "all") continue; // ya cubierto por /top base
+    if (decade === "all") continue;
     addEntry(`/top?decade=${decade}`, { priority: 0.7 });
     addEntry(`/top?type=tv&decade=${decade}`, { priority: 0.7 });
   }
 
-  // ----- Géneros movie + tv (todos los catálogos) -----
-  try {
-    const [movieGenres, tvGenres] = await Promise.all([
-      getGenres(),
-      getTvGenres(),
-    ]);
-    for (const g of movieGenres.genres) {
-      addEntry(`/genero/${g.id}`, { priority: 0.75 });
-    }
-    for (const g of tvGenres.genres) {
-      addEntry(`/genero/${g.id}?type=tv`, { priority: 0.75 });
-    }
-  } catch (err) {
-    console.warn("[sitemap] genres failed:", err);
+  // ----- Géneros movie + tv (hardcoded IDs) -----
+  for (const id of MOVIE_GENRE_IDS) {
+    addEntry(`/genero/${id}`, { priority: 0.75 });
+  }
+  for (const id of TV_GENRE_IDS) {
+    addEntry(`/genero/${id}?type=tv`, { priority: 0.75 });
   }
 
-  // ----- Top pelis (páginas 1-5 → ~100 títulos) -----
-  // Bajamos de 10 a 5 páginas: con 100 top movies + 100 top tv ya cubrimos
-  // el catálogo "blue chip" para SEO. El resto se va a indexar a través de
-  // links internos (cast de pelis populares, similares, etc).
-  try {
-    const moviePages = await Promise.all(
-      [1, 2, 3, 4, 5].map((p) =>
-        discoverTopMovies(p).catch(() => null)
-      )
-    );
-    for (const page of moviePages) {
-      if (!page) continue;
-      for (const m of page.results) {
-        addEntry(`/movie/${m.id}`, {
-          priority: 0.85,
-          changeFrequency: "monthly",
-        });
-      }
-    }
-  } catch (err) {
-    console.warn("[sitemap] top movies failed:", err);
-  }
-
-  // ----- Top series (páginas 1-5) -----
-  try {
-    const tvPages = await Promise.all(
-      [1, 2, 3, 4, 5].map((p) =>
-        discoverTopTv(p).catch(() => null)
-      )
-    );
-    for (const page of tvPages) {
-      if (!page) continue;
-      for (const t of page.results) {
-        addEntry(`/serie/${t.id}`, {
-          priority: 0.85,
-          changeFrequency: "monthly",
-        });
-      }
-    }
-  } catch (err) {
-    console.warn("[sitemap] top tv failed:", err);
-  }
-
-  // ----- Trending de la semana (cobertura de novedades) -----
-  try {
-    const trending = await getTrending("week");
-    for (const item of trending.results.slice(0, 100)) {
-      if (item.media_type === "movie") {
-        addEntry(`/movie/${item.id}`, {
-          priority: 0.9,
-          changeFrequency: "weekly",
-        });
-      } else if (item.media_type === "tv") {
-        addEntry(`/serie/${item.id}`, {
-          priority: 0.9,
-          changeFrequency: "weekly",
-        });
-      }
-    }
-  } catch (err) {
-    console.warn("[sitemap] trending failed:", err);
-  }
-
-  // Dedup por URL (el trending puede solapar con top)
-  const seen = new Set<string>();
-  const deduped: MetadataRoute.Sitemap = [];
-  for (const e of entries) {
-    if (seen.has(e.url)) continue;
-    seen.add(e.url);
-    deduped.push(e);
-  }
-
-  return deduped;
+  return entries;
 }
