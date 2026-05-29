@@ -280,6 +280,10 @@
       "dark": "Oscuro"
     }
   },
+  "install": {
+    "label": "Instalar app",
+    "ariaLabel": "Instalar MovieRate como app"
+  },
   "returningHero": {
     "eyebrow": "De vuelta",
     "greeting": "¿Qué función ponemos esta noche",

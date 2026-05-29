@@ -1,17 +1,59 @@
 {
   "name": "MovieRate Compare",
   "short_name": "MovieRate",
-  "description": "Compará ratings de películas y series en IMDb, Rotten Tomatoes, Metacritic, TMDB y Letterboxd.",
+  "description": "Compará ratings de películas y series en IMDb, Rotten Tomatoes, Metacritic, TMDB y Letterboxd. Tu propia opinión, encima de todo.",
+  "lang": "es",
+  "dir": "ltr",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "background_color": "#241d12",
+  "theme_color": "#241d12",
+  "categories": ["entertainment", "lifestyle"],
   "icons": [
     {
       "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar",
+      "short_name": "Buscar",
+      "description": "Buscar películas y series",
+      "url": "/?focus=search",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Mi lista",
+      "short_name": "Mi lista",
+      "description": "Lo que querés ver",
+      "url": "/watchlist",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Top",
+      "short_name": "Top",
+      "description": "Las mejores películas y series",
+      "url": "/top",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Recomendador IA",
+      "short_name": "Recomendador",
+      "description": "Cinco sugerencias personalizadas",
+      "url": "/recomendador",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    }
+  ],
+  "prefer_related_applications": false
 }

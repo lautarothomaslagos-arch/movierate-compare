@@ -2,6 +2,8 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 
+import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -60,7 +62,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  // Coincide con el theme_color del manifest.json (paleta Late Night).
+  themeColor: "#241d12",
   colorScheme: "dark light",
 };
 
@@ -91,6 +94,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://i.ytimg.com" />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        <RegisterServiceWorker />
         {children}
         <Analytics />
       </body>

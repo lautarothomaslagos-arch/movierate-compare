@@ -2,6 +2,7 @@ import { Bookmark, Film, Trophy } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { LoginButton } from "@/components/LoginButton";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { MobileNavMenu } from "@/components/MobileNavMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -76,6 +77,7 @@ export async function Header() {
           <div className="sm:hidden">
             <MobileNavMenu />
           </div>
+          <InstallAppButton />
           <LocaleToggle />
           <ThemeToggle />
           {userInfo ? <UserMenu user={userInfo} /> : <LoginButton />}
