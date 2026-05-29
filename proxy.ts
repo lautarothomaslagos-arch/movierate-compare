@@ -52,11 +52,14 @@ export const config = {
   matcher: [
     /*
      * Aplica a todas las rutas EXCEPTO:
-     * - _next/static  → assets estáticos
-     * - _next/image   → imágenes optimizadas
-     * - favicon.ico
-     * - archivos públicos con extensión común
+     * - _next, _vercel: assets internos de Next/Vercel
+     * - cualquier path con punto (.*\\..*): excluye sitemap.xml, robots.txt,
+     *   manifest.json, sw.js, favicon.ico, imágenes, fonts, etc. Sin esto,
+     *   next-intl los intercepta y redirige a /es/ → 404.
+     * - api y auth NO se excluyen acá (siguen pasando por Supabase para
+     *   refresh de sesión), pero el código interno hace early return antes
+     *   del i18n middleware.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next|_vercel|.*\\..*).*)",
   ],
 };
