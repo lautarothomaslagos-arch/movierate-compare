@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Link, useRouter } from "@/i18n/navigation";
+import { genreBadgeClass } from "@/lib/genre-colors";
 import { getLocalHistory } from "@/lib/history-local";
 import { cn } from "@/lib/utils";
 
@@ -40,14 +41,15 @@ type SuggestionsResponse = {
   trending: SearchResultMedia[];
 };
 
-// Géneros destacados como atajos (hardcoded — mismos que home FeaturedGenres)
+// Géneros destacados como atajos. Sin emojis — el color del badge ya hace
+// el trabajo de diferenciación visual.
 const GENRE_SHORTCUTS = [
-  { id: 28, emoji: "💥", esp: "Acción", eng: "Action" },
-  { id: 35, emoji: "😂", esp: "Comedia", eng: "Comedy" },
-  { id: 27, emoji: "👻", esp: "Terror", eng: "Horror" },
-  { id: 10749, emoji: "💘", esp: "Romance", eng: "Romance" },
-  { id: 878, emoji: "🛸", esp: "Ciencia ficción", eng: "Sci-Fi" },
-  { id: 18, emoji: "🎭", esp: "Drama", eng: "Drama" },
+  { id: 28, esp: "Acción", eng: "Action" },
+  { id: 35, esp: "Comedia", eng: "Comedy" },
+  { id: 27, esp: "Terror", eng: "Horror" },
+  { id: 10749, esp: "Romance", eng: "Romance" },
+  { id: 878, esp: "Ciencia ficción", eng: "Sci-Fi" },
+  { id: 18, esp: "Drama", eng: "Drama" },
 ];
 
 function useDebounced<T>(value: T, ms: number): T {
@@ -311,10 +313,12 @@ function EmptyState({
               href={`/genero/${g.id}`}
               prefetch={false}
               onClick={onCloseDropdown}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-secondary/60 hover:bg-accent hover:text-accent-foreground transition-colors"
+              className={cn(
+                "inline-block px-2.5 py-1 rounded-full text-xs border transition-colors",
+                genreBadgeClass(g.id)
+              )}
             >
-              <span>{g.emoji}</span>
-              <span>{g.esp}</span>
+              {g.esp}
             </Link>
           ))}
         </div>

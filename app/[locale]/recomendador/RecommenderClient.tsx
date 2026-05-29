@@ -1,6 +1,20 @@
 "use client";
 
-import { Film, Loader2, Sparkles, Tv, Wand2 } from "lucide-react";
+import {
+  Brain,
+  Clapperboard,
+  Coffee,
+  Film,
+  Flame,
+  Heart,
+  Loader2,
+  Moon,
+  Smile,
+  Sparkles,
+  Tv,
+  Wand2,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { useState } from "react";
@@ -23,18 +37,27 @@ type Recommendation = {
   poster_path: string | null;
 };
 
-const MOOD_PRESETS = [
-  { key: "relaxed", emoji: "😌" },
-  { key: "intense", emoji: "🔥" },
-  { key: "funny", emoji: "😂" },
-  { key: "romantic", emoji: "💘" },
-  { key: "classic", emoji: "🎬" },
-  { key: "weekend", emoji: "🍿" },
-  { key: "smart", emoji: "🧠" },
-  { key: "dark", emoji: "🌑" },
-] as const;
+type MoodKey =
+  | "relaxed"
+  | "intense"
+  | "funny"
+  | "romantic"
+  | "classic"
+  | "weekend"
+  | "smart"
+  | "dark";
 
-type MoodKey = (typeof MOOD_PRESETS)[number]["key"];
+// Sin emojis: iconos Lucide consistentes con el resto de la app.
+const MOOD_PRESETS: Array<{ key: MoodKey; icon: LucideIcon }> = [
+  { key: "relaxed", icon: Coffee },
+  { key: "intense", icon: Flame },
+  { key: "funny", icon: Smile },
+  { key: "romantic", icon: Heart },
+  { key: "classic", icon: Clapperboard },
+  { key: "weekend", icon: Tv },
+  { key: "smart", icon: Brain },
+  { key: "dark", icon: Moon },
+];
 
 export function RecommenderClient({ isLogged }: { isLogged: boolean }) {
   const t = useTranslations("recommender");
@@ -129,23 +152,26 @@ export function RecommenderClient({ isLogged }: { isLogged: boolean }) {
             {t("moodLabel")}
           </label>
           <div className="flex flex-wrap gap-1.5">
-            {MOOD_PRESETS.map((m) => (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => handleMoodClick(m.key)}
-                disabled={loading}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-                  mood === m.key
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
-                )}
-              >
-                <span>{m.emoji}</span>
-                <span>{t(`mood.${m.key}`)}</span>
-              </button>
-            ))}
+            {MOOD_PRESETS.map((m) => {
+              const Icon = m.icon;
+              return (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => handleMoodClick(m.key)}
+                  disabled={loading}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
+                    mood === m.key
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  )}
+                >
+                  <Icon className="size-3.5" />
+                  <span>{t(`mood.${m.key}`)}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 

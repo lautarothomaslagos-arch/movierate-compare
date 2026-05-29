@@ -6,16 +6,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
 import { backdropUrl, discoverByGenre, getGenres } from "@/lib/tmdb";
 
-// Géneros destacados con sus IDs de TMDB (movie genres) + emoji.
+// Géneros destacados con sus IDs de TMDB (movie genres).
 // El nombre viene de TMDB (respeta el locale del request gracias al
 // TMDB_LANG dinámico). Si no hay nombre, caemos al fallback.
 const FEATURED = [
-  { id: 28, fallback: "Acción", emoji: "💥" },
-  { id: 35, fallback: "Comedia", emoji: "😂" },
-  { id: 18, fallback: "Drama", emoji: "🎭" },
-  { id: 27, fallback: "Terror", emoji: "👻" },
-  { id: 10749, fallback: "Romance", emoji: "💘" },
-  { id: 878, fallback: "Ciencia ficción", emoji: "🛸" },
+  { id: 28, fallback: "Acción" },
+  { id: 35, fallback: "Comedia" },
+  { id: 18, fallback: "Drama" },
+  { id: 27, fallback: "Terror" },
+  { id: 10749, fallback: "Romance" },
+  { id: 878, fallback: "Ciencia ficción" },
 ];
 
 export async function FeaturedGenresSection() {
@@ -84,8 +84,7 @@ export async function FeaturedGenresSection() {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             <div className="absolute inset-0 flex items-end justify-between p-3">
-              <h3 className="text-sm sm:text-base font-semibold text-white drop-shadow inline-flex items-center gap-1.5">
-                <span aria-hidden>{g.emoji}</span>
+              <h3 className="font-serif italic font-normal text-lg sm:text-xl text-white drop-shadow tracking-tight">
                 {g.name}
               </h3>
             </div>
