@@ -18,7 +18,9 @@ export async function ReturningHero({ name }: { name: string | null }) {
     : tReturning("greeting");
 
   return (
-    <section className="max-w-5xl mx-auto w-full px-4 sm:px-6 pt-10 sm:pt-14 pb-6">
+    // z-30 + isolate: que el SearchBar y su dropdown queden arriba de los
+    // carruseles siguientes (Próximo en tu lista, Recientes, Trending).
+    <section className="relative z-30 isolate max-w-5xl mx-auto w-full px-4 sm:px-6 pt-10 sm:pt-14 pb-6">
       <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground inline-flex items-center gap-2 mb-2">
         <span className="inline-block size-1.5 rounded-full bg-primary" />
         {tReturning("eyebrow")}

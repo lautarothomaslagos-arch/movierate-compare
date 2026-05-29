@@ -37,7 +37,10 @@ export async function HeroSection() {
     // dropdown absoluto que sobresale debajo del hero y si recortamos acá
     // queda tapado por la sección de Recientes. El backdrop tiene su propio
     // overflow-hidden en su contenedor (que sí lo necesita).
-    <section className="relative border-b border-border/40">
+    // z-30 + isolate fuerzan a TODO el hero a estar arriba del trending y
+    // demás secciones siguientes — necesario para que el dropdown del
+    // SearchBar no quede tapado por los posters.
+    <section className="relative z-30 isolate border-b border-border/40">
       {backdropSrc ? (
         <div className="absolute inset-0 -z-10 overflow-hidden">
           <Image
