@@ -30,12 +30,20 @@ export async function FeaturedGenresSection() {
     // si falla, usamos fallbacks
   }
 
+  // Diversificación: TMDB devuelve la misma peli #1 trending en varios
+  // géneros (ej. Mario Bros = Animación + Comedia + Familia). Filtramos
+  // por candidatos con backdrop y elegimos uno por índice derivado del
+  // genre.id para que cada card tenga imagen distinta.
   const withBackdrops = await Promise.all(
     FEATURED.map(async (g) => {
       try {
         const res = await discoverByGenre(g.id, 1);
-        const first = res.results[0];
-        const backdrop = backdropUrl(first?.backdrop_path, "w780");
+        const candidates = res.results.filter((r) => r.backdrop_path);
+        const chosen =
+          candidates.length > 0
+            ? candidates[g.id % candidates.length] ?? candidates[0]
+            : null;
+        const backdrop = backdropUrl(chosen?.backdrop_path ?? null, "w780");
         return {
           ...g,
           name: genreNameById.get(g.id) ?? g.fallback,

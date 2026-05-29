@@ -47,6 +47,11 @@ export default async function GenerosPage({ params, searchParams }: Props) {
     );
   }
 
+  // Para no repetir la misma imagen entre géneros (TMDB devuelve pelis
+  // que cubren varios géneros como #1, ej: Mario Bros aparece en
+  // Animación, Comedia, Familia, Fantasía…), filtramos items con
+  // backdrop y elegimos uno por índice derivado del id del género.
+  // Eso diversifica las cards sin perder representatividad.
   const withBackdrops = await Promise.all(
     genres.map(async (g) => {
       try {
@@ -54,8 +59,15 @@ export default async function GenerosPage({ params, searchParams }: Props) {
           mediaType === "tv"
             ? await discoverTvByGenre(g.id, 1)
             : await discoverByGenre(g.id, 1);
-        const first = res.results[0];
-        const backdrop = backdropUrl(first?.backdrop_path, "w780");
+        const candidates = res.results.filter((r) => r.backdrop_path);
+        if (candidates.length === 0) {
+          return { ...g, backdrop: null as string | null };
+        }
+        // Índice determinístico distinto por género — usamos el id como
+        // semilla. Así nunca dos géneros caen en la misma posición.
+        const idx = g.id % candidates.length;
+        const chosen = candidates[idx] ?? candidates[0];
+        const backdrop = backdropUrl(chosen.backdrop_path, "w780");
         return { ...g, backdrop };
       } catch {
         return { ...g, backdrop: null as string | null };

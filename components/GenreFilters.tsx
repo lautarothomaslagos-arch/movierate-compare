@@ -124,7 +124,17 @@ export function GenreFilters({
       </Button>
 
       {open && (
-        <Card className="absolute z-50 mt-2 right-0 w-80 p-4 shadow-[var(--shadow-2)] space-y-4">
+        <Card
+          className={cn(
+            "absolute z-50 mt-2 p-4 shadow-[var(--shadow-2)] space-y-4",
+            // Mobile: ocupa ~todo el ancho disponible, anclado a la derecha
+            // del botón. calc(100vw - 2rem) = viewport menos 16px de cada
+            // lado del padding del main. max-w-sm lo limita en mid-mobile.
+            "right-0 w-[calc(100vw-2rem)] max-w-sm",
+            // Desktop: vuelve a 320px fijos
+            "sm:w-80"
+          )}
+        >
           {/* Año */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
