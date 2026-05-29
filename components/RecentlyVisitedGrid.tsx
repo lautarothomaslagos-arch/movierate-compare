@@ -37,7 +37,7 @@ export function RecentlyVisitedGrid({ items }: { items: RecentItem[] }) {
               className="group block"
               prefetch={false}
             >
-              <div className="relative aspect-[2/3] bg-muted rounded-md overflow-hidden ring-1 ring-border transition-all duration-200 group-hover:-translate-y-1 group-hover:ring-2 group-hover:ring-primary/60">
+              <div className="poster-frame relative aspect-[2/3] bg-muted rounded-md overflow-hidden ring-1 ring-border group-hover:ring-primary/60">
                 {item.poster_path ? (
                   <Image
                     src={`https://image.tmdb.org/t/p/w342${item.poster_path}`}

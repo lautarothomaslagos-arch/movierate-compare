@@ -353,7 +353,7 @@ export default async function SeriePage({ params }: Props) {
                     className="text-center group block"
                     prefetch={false}
                   >
-                    <div className="relative aspect-[2/3] bg-muted rounded-md overflow-hidden mb-1.5 ring-1 ring-border transition-all group-hover:-translate-y-0.5 group-hover:ring-2 group-hover:ring-primary/60">
+                    <div className="poster-frame relative aspect-[2/3] bg-muted rounded-md overflow-hidden mb-1.5 ring-1 ring-border group-hover:ring-primary/60">
                       {profile ? (
                         <Image
                           src={profile}

@@ -31,8 +31,14 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <NextIntlClientProvider>
       <Providers>
+        {/* Skip link — A11y (Fase G.3). Primer focusable, oculto hasta
+            recibir foco. Permite saltar el header y llegar directo al
+            contenido principal usando teclado. */}
+        <a href="#main" className="skip-link">
+          {locale === "es" ? "Ir al contenido" : "Skip to content"}
+        </a>
         <Header />
-        {children}
+        <div id="main">{children}</div>
         <Footer />
         <ThemedToaster />
       </Providers>

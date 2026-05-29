@@ -211,7 +211,7 @@ export default async function CompararPage({ params, searchParams }: Props) {
                 {items[0].year ? `${items[0].year}` : "—"}
                 {items[0].mediaType === "tv" ? " · Serie" : " · Peli"}
               </div>
-              <h1 className="font-serif italic font-normal text-2xl sm:text-4xl md:text-5xl leading-[0.95] tracking-tight text-balance mt-1">
+              <h1 className="font-serif italic font-normal text-[clamp(1.5rem,3.5vw+0.5rem,3rem)] leading-[0.95] tracking-tight text-balance mt-1">
                 {items[0].title}
               </h1>
             </div>
@@ -223,7 +223,7 @@ export default async function CompararPage({ params, searchParams }: Props) {
                 {items[1].year ? `${items[1].year}` : "—"}
                 {items[1].mediaType === "tv" ? " · Serie" : " · Peli"}
               </div>
-              <h1 className="font-serif italic font-normal text-2xl sm:text-4xl md:text-5xl leading-[0.95] tracking-tight text-balance mt-1">
+              <h1 className="font-serif italic font-normal text-[clamp(1.5rem,3.5vw+0.5rem,3rem)] leading-[0.95] tracking-tight text-balance mt-1">
                 {items[1].title}
               </h1>
             </div>

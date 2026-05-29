@@ -217,6 +217,8 @@ export function ReviewSection({
           step={0.5}
           value={rating}
           onChange={(e) => setRating(parseFloat(e.target.value))}
+          aria-label={t("yourRatingLabel")}
+          aria-valuetext={`${rating.toFixed(1)} de 10`}
           className="w-full accent-amber-400"
         />
       </div>

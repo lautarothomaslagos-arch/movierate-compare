@@ -261,7 +261,7 @@ export default async function ActorPage({ params }: Props) {
                     className="group block"
                     prefetch={false}
                   >
-                    <div className="relative aspect-[2/3] bg-muted rounded-md overflow-hidden ring-1 ring-border transition-all group-hover:-translate-y-1 group-hover:ring-2 group-hover:ring-primary/60">
+                    <div className="poster-frame relative aspect-[2/3] bg-muted rounded-md overflow-hidden ring-1 ring-border group-hover:ring-primary/60">
                       {poster ? (
                         <Image
                           src={poster}

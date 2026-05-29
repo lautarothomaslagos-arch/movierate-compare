@@ -161,6 +161,80 @@
 .animate-delay-200 { animation-delay: 200ms; opacity: 0; }
 .animate-delay-300 { animation-delay: 300ms; opacity: 0; }
 
+/* Poster hover lift + iris brass — Fase G.3.
+   Aplicar con className="poster-frame" a los wrappers de poster que
+   tienen aspect ratio. Reemplaza el viejo patrón de hover individual
+   (-translate-y-1 + ring-primary/60 + shadow-lg) por una clase única
+   coherente con la paleta Late Night.
+
+   - Hover: leve lift (-2px), sombra más fuerte, ring brass.
+   - ::after: radial gradient brass que aparece desde el centro hacia
+     afuera al hover. Da sensación de "iluminado por el aplauso".
+   - prefers-reduced-motion: desactiva el lift y el gradient. */
+.poster-frame {
+  position: relative;
+  transition: transform 0.22s ease-out, box-shadow 0.22s ease-out,
+    outline-color 0.22s ease-out;
+}
+.poster-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in oklch, var(--color-primary) 18%, transparent),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+  border-radius: inherit;
+}
+.group:hover > .poster-frame,
+.group\/card:hover > .poster-frame,
+.poster-frame:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+.group:hover > .poster-frame::after,
+.group\/card:hover > .poster-frame::after,
+.poster-frame:hover::after {
+  opacity: 1;
+}
+
+/* Accesibilidad — Fase G.3.
+   Focus ring brass + offset visible en dark Y light. Aplicado a TODO
+   elemento focuseable via :focus-visible (solo teclado, no mouse). */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip link: primer focusable de la página, salta directo al main.
+   Oculto hasta que reciba foco (usando :focus-within). */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transform: translateY(-100%);
+  padding: 10px 16px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 0 0 8px 0;
+  transition: transform 0.18s ease-out;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--color-foreground);
+  outline-offset: 2px;
+}
+
 /* Skeleton shimmer warm — Late Night. Reemplaza el placeholder gris uniforme
    por un shimmer ámbar muy sutil que coordina con la paleta.
    Aplicar con className="skeleton-warm" a divs con aspect ratio definido. */
@@ -182,5 +256,14 @@
   .skeleton-warm {
     animation: none;
     opacity: 1;
+  }
+  .poster-frame,
+  .poster-frame::after {
+    transition: none !important;
+  }
+  .group:hover > .poster-frame,
+  .group\/card:hover > .poster-frame,
+  .poster-frame:hover {
+    transform: none !important;
   }
 }

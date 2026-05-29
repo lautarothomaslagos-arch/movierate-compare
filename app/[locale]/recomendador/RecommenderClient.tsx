@@ -174,18 +174,29 @@ export function RecommenderClient({ isLogged }: { isLogged: boolean }) {
         )}
       </Card>
 
+      {/* aria-live region: lectores de pantalla anuncian cambios de
+          estado (loading / resultados / vacío) sin que el user tenga
+          que mover el foco. Polite = no interrumpe la lectura actual. */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {loading
+          ? t("loading")
+          : recommendations.length > 0
+            ? t("resultsHeading", { count: recommendations.length })
+            : ""}
+      </div>
+
       {/* Loading skeleton */}
       {loading && (
-        <div className="space-y-3">
+        <div className="space-y-3" aria-hidden>
           {[0, 1, 2].map((i) => (
-            <Card key={i} className="p-3 sm:p-4 animate-pulse">
+            <Card key={i} className="p-3 sm:p-4">
               <div className="flex gap-3 sm:gap-4">
-                <div className="shrink-0 w-16 sm:w-20 aspect-[2/3] bg-muted rounded-md" />
+                <div className="shrink-0 w-16 sm:w-20 aspect-[2/3] rounded-md skeleton-warm" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-muted rounded w-20" />
-                  <div className="h-5 bg-muted rounded w-2/3" />
-                  <div className="h-3 bg-muted rounded w-full" />
-                  <div className="h-3 bg-muted rounded w-4/5" />
+                  <div className="h-3 w-20 rounded skeleton-warm" />
+                  <div className="h-5 w-2/3 rounded skeleton-warm" />
+                  <div className="h-3 w-full rounded skeleton-warm" />
+                  <div className="h-3 w-4/5 rounded skeleton-warm" />
                 </div>
               </div>
             </Card>
@@ -196,8 +207,8 @@ export function RecommenderClient({ isLogged }: { isLogged: boolean }) {
       {/* Recomendaciones */}
       {!loading && recommendations.length > 0 && (
         <div className="space-y-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground inline-flex items-center gap-1.5">
-            <Sparkles className="size-3.5 text-amber-400" />
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground inline-flex items-center gap-1.5">
+            <Sparkles className="size-3.5 text-primary" />
             {t("resultsHeading", { count: recommendations.length })}
           </div>
           {recommendations.map((rec) => (
