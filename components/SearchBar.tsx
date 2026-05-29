@@ -82,6 +82,23 @@ export function SearchBar() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  // Cerrar el dropdown al scrollear (UX típica mobile). El input del
+  // SearchBar va con el flujo del hero y se va hacia arriba mientras
+  // el header sticky queda fijo — sin esto se ven solapados.
+  useEffect(() => {
+    if (!open) return;
+    let startY = window.scrollY;
+    function onScroll() {
+      // Threshold de 24px para no cerrar por micro-scrolls del teclado
+      // mobile cuando aparece (iOS / Android lo disparan involuntariamente).
+      if (Math.abs(window.scrollY - startY) > 24) {
+        setOpen(false);
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [open]);
+
   // Cargar recientes de localStorage en mount (fallback si no logueado)
   useEffect(() => {
     const items = getLocalHistory()
