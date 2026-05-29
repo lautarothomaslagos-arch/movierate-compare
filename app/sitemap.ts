@@ -10,6 +10,11 @@ import {
   getTrending,
 } from "@/lib/tmdb";
 
+// Cacheamos el sitemap por 24h. Sin esto, cada request a /sitemap.xml
+// dispara ~13 fetches a TMDB y Vercel mata la función por timeout.
+// Google y otros crawlers reintentan diariamente — 24h es suficiente.
+export const revalidate = 86400;
+
 // Sitemap dinámico expandido — Fase H.1.
 //
 // Estrategia para que Google indexe el catálogo:
@@ -77,10 +82,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("[sitemap] genres failed:", err);
   }
 
-  // ----- Top pelis (páginas 1-10 → ~200 títulos) -----
+  // ----- Top pelis (páginas 1-5 → ~100 títulos) -----
+  // Bajamos de 10 a 5 páginas: con 100 top movies + 100 top tv ya cubrimos
+  // el catálogo "blue chip" para SEO. El resto se va a indexar a través de
+  // links internos (cast de pelis populares, similares, etc).
   try {
     const moviePages = await Promise.all(
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((p) =>
+      [1, 2, 3, 4, 5].map((p) =>
         discoverTopMovies(p).catch(() => null)
       )
     );
@@ -97,10 +105,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("[sitemap] top movies failed:", err);
   }
 
-  // ----- Top series (páginas 1-10) -----
+  // ----- Top series (páginas 1-5) -----
   try {
     const tvPages = await Promise.all(
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((p) =>
+      [1, 2, 3, 4, 5].map((p) =>
         discoverTopTv(p).catch(() => null)
       )
     );
