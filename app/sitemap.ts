@@ -41,8 +41,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ) {
     for (const locale of locales) {
       const cleanPath = path === "/" ? "" : path;
+      // Escapamos & → &amp; para que el XML sea válido cuando hay query
+      // strings (ej. /top?type=tv&decade=80s). Sin esto el parser XML tira
+      // "EntityRef: expecting ';'" en la primera ocurrencia.
+      const rawUrl = `${SITE_URL}/${locale}${cleanPath}`;
+      const url = rawUrl.replace(/&/g, "&amp;");
       entries.push({
-        url: `${SITE_URL}/${locale}${cleanPath}`,
+        url,
         lastModified: now,
         changeFrequency: opts.changeFrequency ?? "weekly",
         priority: opts.priority ?? 0.7,
