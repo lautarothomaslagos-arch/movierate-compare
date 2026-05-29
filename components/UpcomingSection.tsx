@@ -28,7 +28,7 @@ export async function UpcomingSection() {
           </p>
         </div>
       </div>
-      <div className="flex gap-3 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 pb-2 scroll-smooth">
+      <div className="scroll-row-x -mx-4 sm:mx-0 px-4 sm:px-0">
         {items.map((it) => (
           <UpcomingCard key={`${it.tmdb_id}-${it.episode.episode_number ?? 0}`} item={it} t={t} />
         ))}

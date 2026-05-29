@@ -161,6 +161,65 @@
 .animate-delay-200 { animation-delay: 200ms; opacity: 0; }
 .animate-delay-300 { animation-delay: 300ms; opacity: 0; }
 
+/* Carrousel horizontal estilizado — Fase G.3.5.
+   Reemplaza el patrón "overflow-x-auto pb-2" que recortaba el hover lift
+   de los posters (porque overflow-x: auto también clipa el eje Y) y
+   mostraba una scrollbar fea del browser.
+
+   Comportamiento:
+   - Scroll horizontal con momentum nativo.
+   - Scrollbar nativa OCULTA (Webkit + Firefox).
+   - Padding vertical para que el hover lift no se recorte.
+   - scroll-snap para parada elegante en posters.
+   - Side fade brass via mask-image: indica que hay más contenido sin
+     mostrar scrollbar.
+
+   Uso: <div className="scroll-row-x">...</div> en lugar de
+   <div className="flex overflow-x-auto pb-2"> */
+.scroll-row-x {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  /* Padding vertical para acomodar el lift de hover sin recortar. */
+  padding-top: 0.5rem;
+  padding-bottom: 0.75rem;
+  /* Snap suave para que los posters paren en su lugar */
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  /* Webkit y Firefox: scrollbar oculta */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  /* Indicación de "hay más" en los bordes: fade brass muy sutil */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 16px,
+    black calc(100% - 16px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 16px,
+    black calc(100% - 16px),
+    transparent 100%
+  );
+}
+.scroll-row-x::-webkit-scrollbar {
+  display: none;
+}
+.scroll-row-x > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .scroll-row-x {
+    scroll-snap-type: x mandatory;
+    gap: 1rem;
+  }
+}
+
 /* Poster hover lift + iris brass — Fase G.3.
    Aplicar con className="poster-frame" a los wrappers de poster que
    tienen aspect ratio. Reemplaza el viejo patrón de hover individual

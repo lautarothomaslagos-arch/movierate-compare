@@ -119,17 +119,7 @@ export function MovieGrid({ movies }: { movies: GridMovie[] }) {
 
       <ul
         ref={scrollerRef}
-        className={cn(
-          // snap-proximity (no mandatory) en mobile para no "secuestrar" el
-          // scroll. En desktop mantenemos snap-x normal porque las flechas
-          // ya empujan a posiciones discretas.
-          "flex gap-3 snap-x overflow-x-auto pb-2",
-          "[scroll-snap-type:x_proximity] md:[scroll-snap-type:x_mandatory]",
-          "scroll-smooth -mx-4 sm:mx-0 px-4 sm:px-0"
-        )}
-        style={{
-          scrollbarWidth: "thin",
-        }}
+        className="scroll-row-x -mx-4 sm:mx-0 px-4 sm:px-0"
       >
         {movies.map((m) => (
           <li

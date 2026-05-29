@@ -30,14 +30,7 @@ export async function ImageGallery({
   if (backdrops.length === 0) return null;
 
   return (
-    <ul
-      className={cn(
-        "flex gap-3 overflow-x-auto pb-2",
-        "[scroll-snap-type:x_proximity] md:[scroll-snap-type:x_mandatory]",
-        "scroll-smooth -mx-4 sm:mx-0 px-4 sm:px-0"
-      )}
-      style={{ scrollbarWidth: "thin" }}
-    >
+    <ul className="scroll-row-x -mx-4 sm:mx-0 px-4 sm:px-0">
       {backdrops.map((b, i) => {
         const src = backdropUrl(b.file_path, "w780");
         if (!src) return null;

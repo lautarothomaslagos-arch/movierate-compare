@@ -17,7 +17,7 @@ export function DecadeFilter({
 }) {
   return (
     <div
-      className="-mx-1 overflow-x-auto"
+      className="-mx-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       role="group"
       aria-label="Decade filter"
     >

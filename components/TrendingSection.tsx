@@ -69,16 +69,9 @@ export async function TrendingSection({ limit = 12 }: { limit?: number }) {
           sinopsis serif italic al costado (en desktop). En mobile apilado. */}
       <FeaturedCard item={featured} mediaLabels={getMediaLabels(t)} />
 
-      {/* Resto: carrousel horizontal como antes */}
+      {/* Resto: carrousel horizontal estilizado (Fase G.3.5) */}
       {rest.length > 0 && (
-        <ul
-          className={cn(
-            "flex gap-3 overflow-x-auto pb-2",
-            "[scroll-snap-type:x_proximity] md:[scroll-snap-type:x_mandatory]",
-            "scroll-smooth -mx-4 sm:mx-0 px-4 sm:px-0"
-          )}
-          style={{ scrollbarWidth: "thin" }}
-        >
+        <ul className="scroll-row-x -mx-4 sm:mx-0 px-4 sm:px-0">
           {rest.map((it) => (
             <PosterCard key={`${it.media_type}-${it.id}`} item={it} t={t} />
           ))}

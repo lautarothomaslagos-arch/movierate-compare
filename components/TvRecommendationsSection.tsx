@@ -37,14 +37,7 @@ export async function TvRecommendationsSection({ tvId }: { tvId: number }) {
 
   return (
     <div className="relative">
-      <ul
-        className={cn(
-          "flex gap-3 overflow-x-auto pb-2",
-          "[scroll-snap-type:x_proximity] md:[scroll-snap-type:x_mandatory]",
-          "scroll-smooth -mx-4 sm:mx-0 px-4 sm:px-0"
-        )}
-        style={{ scrollbarWidth: "thin" }}
-      >
+      <ul className="scroll-row-x -mx-4 sm:mx-0 px-4 sm:px-0">
         {items.map((t) => (
           <li
             key={t.id}
