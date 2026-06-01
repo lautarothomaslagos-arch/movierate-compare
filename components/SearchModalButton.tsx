@@ -45,13 +45,24 @@ export function SearchModalButton() {
           <Search className="size-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl p-0 gap-0 top-[20%] translate-y-0 max-h-[80vh] flex flex-col">
-        <DialogHeader className="px-4 pt-4 pb-2">
+      {/* Mobile: fullscreen desde arriba para que el teclado virtual no
+          tape los resultados (max-h-[80vh] no servía — el teclado ocupa
+          ~50% inferior). 100dvh = dynamic viewport height, se adapta
+          cuando el teclado abre/cierra en browsers modernos.
+          Desktop (sm+): mantenemos el modal centrado tipo command palette. */}
+      <DialogContent
+        className={
+          "inset-0 w-full max-w-full h-[100dvh] max-h-[100dvh] translate-x-0 translate-y-0 rounded-none border-0 " +
+          "sm:inset-auto sm:top-[20%] sm:left-1/2 sm:-translate-x-1/2 sm:w-auto sm:max-w-2xl sm:h-auto sm:max-h-[80vh] sm:rounded-lg sm:border " +
+          "p-0 gap-0 flex flex-col"
+        }
+      >
+        <DialogHeader className="px-4 pt-4 pb-2 shrink-0">
           <DialogTitle className="font-serif italic font-normal text-xl">
             {t("ariaLabel")}
           </DialogTitle>
         </DialogHeader>
-        <div className="px-4 pb-4 flex-1 min-h-0">
+        <div className="px-4 pb-4 flex-1 min-h-0 overflow-y-auto">
           {/* Reutilizamos el SearchBar; al hacer click en un resultado el
               router navega — el Dialog se queda abierto, así que cerramos
               en el efecto de navegación a través de onOpenChange. */}

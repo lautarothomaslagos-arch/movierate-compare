@@ -3,6 +3,7 @@
 import {
   Bookmark,
   Check,
+  Download,
   Film,
   History,
   Languages,
@@ -25,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { useInstallPrompt } from "@/lib/useInstallPrompt";
 
 // Hamburguesa para mobile. Centraliza navegación + idioma + tema en un solo
 // menú para no atochar el header. En desktop estos controles viven separados
@@ -33,12 +35,14 @@ export function MobileNavMenu() {
   const t = useTranslations("header");
   const tLocale = useTranslations("locale");
   const tTheme = useTranslations("theme");
+  const tInstall = useTranslations("install");
   const router = useRouter();
   const pathname = usePathname();
   const currentLocale = useLocale();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const { canInstall, install } = useInstallPrompt();
 
   // next-themes: evitar hydration mismatch
   useEffect(() => setMounted(true), []);
@@ -142,6 +146,23 @@ export function MobileNavMenu() {
             </>
           )}
         </DropdownMenuItem>
+
+        {/* Instalar app — solo aparece si el browser soporta el prompt
+            (Chrome/Edge/Android) y el user no dijo "después" antes. */}
+        {canInstall && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                // void: no esperamos la promise para que el menú se cierre.
+                void install();
+              }}
+            >
+              <Download />
+              {tInstall("label")}
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
