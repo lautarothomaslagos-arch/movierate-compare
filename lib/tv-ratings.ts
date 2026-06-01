@@ -1,5 +1,6 @@
 import { cache } from "react";
 
+import { getImdbRatingScraped } from "@/lib/imdb-scrape";
 import { getTvDetails } from "@/lib/tmdb";
 import {
   findRtScore,
@@ -216,6 +217,26 @@ async function _getTvRatings(tvId: number): Promise<RatingsResponse> {
     }
   } catch (err) {
     errors.push(`omdb: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  // 2.5) Fallback IMDb scraping. OMDb suele tener delay para series nuevas
+  // (ej. estrenos recientes); IMDb ya tiene rating pero OMDb dice "not found".
+  // Si tenemos imdb_id pero no obtuvimos IMDb de OMDb, scrapeamos JSON-LD.
+  if (result.imdb === null && imdbId) {
+    try {
+      const scraped = await getImdbRatingScraped(imdbId);
+      if (scraped) {
+        result.imdb = {
+          ...rate10(scraped.score10),
+          votes: scraped.votes ?? undefined,
+          url: scraped.url,
+        };
+      }
+    } catch (err) {
+      errors.push(
+        `imdb-scrape: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
   }
 
   // 3) Cache

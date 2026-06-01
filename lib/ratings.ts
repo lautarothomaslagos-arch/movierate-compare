@@ -8,6 +8,7 @@ import {
   parseImdbVotes,
   parseMetascore,
 } from "@/lib/omdb";
+import { getImdbRatingScraped } from "@/lib/imdb-scrape";
 import { getLetterboxdRating } from "@/lib/letterboxd";
 import { createServiceClient } from "@/lib/supabase/server";
 import type {
@@ -284,6 +285,26 @@ async function _getRatings(tmdbId: number): Promise<RatingsResponse> {
     };
   } else if (letterboxdSettled.status === "rejected") {
     errors.push("letterboxd: rejected");
+  }
+
+  // 2.5 Fallback IMDb scraping. OMDb tiene delay para pelis nuevas
+  // (ej. estrenos 2026); IMDb ya tiene rating pero OMDb dice "not found".
+  // Si tenemos imdb_id pero no obtuvimos IMDb de OMDb, scrapeamos.
+  if (result.imdb === null && imdbId) {
+    try {
+      const scraped = await getImdbRatingScraped(imdbId);
+      if (scraped) {
+        result.imdb = {
+          ...rate10(scraped.score10),
+          votes: scraped.votes ?? undefined,
+          url: scraped.url,
+        };
+      }
+    } catch (err) {
+      errors.push(
+        `imdb-scrape: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
   }
 
   // 3. Guardamos en cache (await para asegurar que la próxima request lo vea,
