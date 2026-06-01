@@ -14,13 +14,25 @@
   "icons": [
     {
       "src": "/icon",
-      "sizes": "256x256",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "/icon",
-      "sizes": "256x256",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon1",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon1",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
@@ -37,28 +49,28 @@
       "short_name": "Buscar",
       "description": "Buscar películas y series",
       "url": "/?focus=search",
-      "icons": [{ "src": "/icon", "sizes": "256x256", "type": "image/png" }]
+      "icons": [{ "src": "/icon", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Mi lista",
       "short_name": "Mi lista",
       "description": "Lo que querés ver",
       "url": "/watchlist",
-      "icons": [{ "src": "/icon", "sizes": "256x256", "type": "image/png" }]
+      "icons": [{ "src": "/icon", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Top",
       "short_name": "Top",
       "description": "Las mejores películas y series",
       "url": "/top",
-      "icons": [{ "src": "/icon", "sizes": "256x256", "type": "image/png" }]
+      "icons": [{ "src": "/icon", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Recomendador IA",
       "short_name": "Recomendador",
       "description": "Cinco sugerencias personalizadas",
       "url": "/recomendador",
-      "icons": [{ "src": "/icon", "sizes": "256x256", "type": "image/png" }]
+      "icons": [{ "src": "/icon", "sizes": "192x192", "type": "image/png" }]
     }
   ],
   "prefer_related_applications": false

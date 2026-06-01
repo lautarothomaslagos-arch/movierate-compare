@@ -1,15 +1,12 @@
 import { ImageResponse } from "next/og";
 
-// PWA icon principal — 192×192 PNG.
-// 192×192 es uno de los tamaños obligatorios que pide Chrome para que la
-// app sea "installable" (junto con 512×512 en icon1.tsx).
-//
-// Estética: paleta Late Night. Fondo warm dark con gradiente sutil de
-// marrón profundo a marrón cálido, estrella brass dorada centrada.
-export const size = { width: 192, height: 192 };
+// PWA icon HD — 512×512 PNG.
+// Tamaño obligatorio que pide Chrome para PWA installable, además del
+// 192×192 en icon.tsx. Mismo diseño, escalado al doble largo de cada lado.
+export const size = { width: 512, height: 512 };
 export const contentType = "image/png";
 
-export default function Icon() {
+export default function IconHD() {
   return new ImageResponse(
     (
       <div
@@ -23,29 +20,27 @@ export default function Icon() {
           position: "relative",
         }}
       >
-        {/* Sutil borde brass para dar profundidad */}
         <div
           style={{
             position: "absolute",
-            inset: 8,
-            borderRadius: 24,
-            border: "2px solid rgba(201, 169, 97, 0.15)",
+            inset: 22,
+            borderRadius: 64,
+            border: "5px solid rgba(201, 169, 97, 0.15)",
             display: "flex",
           }}
         />
-        {/* Estrella brass centrada */}
         <div
           style={{
-            fontSize: 130,
+            fontSize: 346,
             color: "#c9a961",
             fontWeight: 900,
             fontFamily: "system-ui, sans-serif",
             lineHeight: 1,
-            textShadow: "0 2px 24px rgba(201, 169, 97, 0.4)",
+            textShadow: "0 6px 64px rgba(201, 169, 97, 0.4)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginTop: -6,
+            marginTop: -16,
           }}
         >
           ★
