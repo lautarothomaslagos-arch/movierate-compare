@@ -1,13 +1,25 @@
-// Fallback de IMDb rating scrapeando JSON-LD de la página oficial.
+// Fallback de IMDb rating cuando OMDb no tiene la peli.
 // =====================================================================
 // OMDb tiene delay de días/semanas para indexar pelis nuevas. Cuando una
 // peli es muy reciente (ej. Backrooms 2026) IMDb ya tiene rating pero
-// OMDb no devuelve nada. Para no perder esa info, scrapeamos JSON-LD
-// directamente de la página de IMDb.
+// OMDb no devuelve nada.
 //
-// JSON-LD: bloque `<script type="application/ld+json">` en el HTML con
-// schema.org/Movie. Incluye aggregateRating.ratingValue y ratingCount.
-// Es estable porque IMDb lo usa para Google rich snippets.
+// IMPORTANTE: scrapear imdb.com directamente NO funciona — IMDb está
+// detrás de AWS WAF y devuelve un challenge de JavaScript en vez del
+// HTML real. Por eso usamos api.imdbapi.dev, un mirror público gratuito
+// que devuelve los datos en JSON directo.
+//
+// API docs: https://api.imdbapi.dev/  (no requiere API key)
+// Estructura de respuesta:
+//   {
+//     id: "tt26657236",
+//     primaryTitle: "Backrooms",
+//     rating: { aggregateRating: 7.1, voteCount: 24625 },
+//     ...
+//   }
+//
+// Si api.imdbapi.dev se cae, devolvemos null y la peli queda sin rating
+// de IMDb hasta que OMDb la indexe. No es crítico.
 
 type ImdbScrapeResult = {
   score10: number;
@@ -15,13 +27,17 @@ type ImdbScrapeResult = {
   url: string;
 };
 
-// User-Agent realista para no ser tratado como bot agresivo.
-const UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
-
 // Cache 24h por imdb id — los ratings cambian lentamente y queremos
-// minimizar carga a IMDb.
+// minimizar carga a la API mirror.
 const REVALIDATE_SECONDS = 24 * 60 * 60;
+
+type ImdbApiDevResponse = {
+  id?: string;
+  rating?: {
+    aggregateRating?: number;
+    voteCount?: number;
+  };
+};
 
 export async function getImdbRatingScraped(
   imdbId: string
@@ -29,82 +45,43 @@ export async function getImdbRatingScraped(
   // Sanitize: imdbId tiene que matchear "tt" + dígitos
   if (!/^tt\d+$/.test(imdbId)) return null;
 
-  const url = `https://www.imdb.com/title/${imdbId}/`;
+  const apiUrl = `https://api.imdbapi.dev/titles/${imdbId}`;
+  // URL pública para el link del usuario (no la API mirror, que es solo data).
+  const publicUrl = `https://www.imdb.com/title/${imdbId}/`;
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(apiUrl, {
       headers: {
-        "User-Agent": UA,
-        "Accept-Language": "en-US,en;q=0.9",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        Accept: "application/json",
       },
       next: { revalidate: REVALIDATE_SECONDS },
     });
 
     if (!res.ok) {
+      // 404 = peli no existe en IMDb todavía; 5xx = API caída.
+      // En ambos casos devolvemos null y seguimos.
       return null;
     }
 
-    const html = await res.text();
+    const data = (await res.json()) as ImdbApiDevResponse;
 
-    // Extraer todos los bloques JSON-LD. IMDb a veces tiene varios.
-    const ldRegex =
-      /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-    let match: RegExpExecArray | null;
+    const score = data.rating?.aggregateRating;
+    const votes = data.rating?.voteCount;
 
-    while ((match = ldRegex.exec(html)) !== null) {
-      const json = match[1].trim();
-      try {
-        const parsed = JSON.parse(json) as unknown;
-        const result = extractRating(parsed, url);
-        if (result) return result;
-      } catch {
-        // ignoramos JSON inválido y seguimos con el siguiente
-      }
+    if (typeof score !== "number" || !Number.isFinite(score) || score <= 0) {
+      return null;
     }
 
-    return null;
+    return {
+      score10: score,
+      votes:
+        typeof votes === "number" && Number.isFinite(votes) && votes > 0
+          ? votes
+          : null,
+      url: publicUrl,
+    };
   } catch (err) {
-    console.warn("[imdb-scrape] failed for", imdbId, err);
+    console.warn("[imdb-fallback] failed for", imdbId, err);
     return null;
   }
-}
-
-// Busca aggregateRating en el JSON-LD recursivamente. El root puede ser un
-// Movie, TVSeries o un @graph array.
-function extractRating(
-  parsed: unknown,
-  url: string
-): ImdbScrapeResult | null {
-  if (!parsed || typeof parsed !== "object") return null;
-
-  // Caso 1: objeto único con aggregateRating directo
-  const obj = parsed as Record<string, unknown>;
-  if (
-    "aggregateRating" in obj &&
-    obj.aggregateRating &&
-    typeof obj.aggregateRating === "object"
-  ) {
-    const ag = obj.aggregateRating as Record<string, unknown>;
-    const score = Number(ag.ratingValue);
-    const votes = Number(ag.ratingCount);
-    if (Number.isFinite(score) && score > 0) {
-      return {
-        score10: score,
-        votes: Number.isFinite(votes) && votes > 0 ? votes : null,
-        url,
-      };
-    }
-  }
-
-  // Caso 2: @graph array (estructura de IMDb cuando hay múltiples entities)
-  if ("@graph" in obj && Array.isArray(obj["@graph"])) {
-    for (const item of obj["@graph"]) {
-      const inner = extractRating(item, url);
-      if (inner) return inner;
-    }
-  }
-
-  return null;
 }
