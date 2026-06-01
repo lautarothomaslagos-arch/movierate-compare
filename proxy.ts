@@ -53,13 +53,18 @@ export const config = {
     /*
      * Aplica a todas las rutas EXCEPTO:
      * - _next, _vercel: assets internos de Next/Vercel
+     * - icon, icon1, icon2…: PNGs generados por app/icon*.tsx (PWA icons +
+     *   favicon). Estos NO tienen extensión en la URL, así que la regla
+     *   de "path con punto" no los excluye — había que listarlos a mano.
+     *   Sin esto, /icon se redirigía a /es/icon → 404 → Chrome no podía
+     *   leer los íconos del manifest → PWA no instalable.
+     * - apple-icon: 180×180 para iOS, mismo problema.
      * - cualquier path con punto (.*\\..*): excluye sitemap.xml, robots.txt,
-     *   manifest.json, sw.js, favicon.ico, imágenes, fonts, etc. Sin esto,
-     *   next-intl los intercepta y redirige a /es/ → 404.
+     *   manifest.json, sw.js, favicon.ico, imágenes, fonts, etc.
      * - api y auth NO se excluyen acá (siguen pasando por Supabase para
      *   refresh de sesión), pero el código interno hace early return antes
      *   del i18n middleware.
      */
-    "/((?!_next|_vercel|.*\\..*).*)",
+    "/((?!_next|_vercel|icon|apple-icon|.*\\..*).*)",
   ],
 };
