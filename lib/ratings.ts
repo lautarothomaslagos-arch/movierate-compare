@@ -9,6 +9,8 @@ import {
   parseMetascore,
 } from "@/lib/omdb";
 import { getImdbRatingScraped } from "@/lib/imdb-scrape";
+import { getRtScoreScraped } from "@/lib/rt-scrape";
+import { getMetacriticScoreScraped } from "@/lib/metacritic-scrape";
 import { getLetterboxdRating } from "@/lib/letterboxd";
 import { createServiceClient } from "@/lib/supabase/server";
 import type {
@@ -226,6 +228,7 @@ async function _getRatings(tmdbId: number): Promise<RatingsResponse> {
       ? getOmdbByImdbId(imdbId)
       : Promise.reject(new Error("tmdb-no-imdb-id")),
     getLetterboxdRating(
+      tmdbId,
       tmdbDetails.original_title ?? tmdbDetails.title,
       tmdbDetails.title
     ),
@@ -287,24 +290,65 @@ async function _getRatings(tmdbId: number): Promise<RatingsResponse> {
     errors.push("letterboxd: rejected");
   }
 
-  // 2.5 Fallback IMDb scraping. OMDb tiene delay para pelis nuevas
-  // (ej. estrenos 2026); IMDb ya tiene rating pero OMDb dice "not found".
-  // Si tenemos imdb_id pero no obtuvimos IMDb de OMDb, scrapeamos.
-  if (result.imdb === null && imdbId) {
-    try {
-      const scraped = await getImdbRatingScraped(imdbId);
-      if (scraped) {
-        result.imdb = {
-          ...rate10(scraped.score10),
-          votes: scraped.votes ?? undefined,
-          url: scraped.url,
-        };
-      }
-    } catch (err) {
-      errors.push(
-        `imdb-scrape: ${err instanceof Error ? err.message : String(err)}`
-      );
-    }
+  // 2.5 Fallbacks paralelos cuando OMDb no devolvió alguna fuente. OMDb
+  // tiene delay de días/semanas para pelis nuevas (ej. estrenos 2026);
+  // en esos casos pegamos directo a cada plataforma como respaldo.
+  //   - IMDb  → api.imdbapi.dev (mirror, IMDb directo está detrás de WAF)
+  //   - RT    → scrape rottentomatoes.com/m/{slug}
+  //   - Meta  → scrape metacritic.com/movie/{slug}/
+  // Los disparamos con Promise.allSettled para que un fallo no rompa a los otros.
+  const slugSource =
+    tmdbDetails.original_title ?? tmdbDetails.title ?? "";
+  const rtSlug = slugSource ? slugForRottenTomatoes(slugSource) : "";
+  const metaSlug = slugSource ? slugForMetacritic(slugSource) : "";
+
+  const [imdbFallback, rtFallback, metaFallback] = await Promise.allSettled([
+    result.imdb === null && imdbId
+      ? getImdbRatingScraped(imdbId)
+      : Promise.resolve(null),
+    result.rt === null && rtSlug
+      ? getRtScoreScraped(rtSlug, "m")
+      : Promise.resolve(null),
+    result.metacritic === null && metaSlug
+      ? getMetacriticScoreScraped(metaSlug, "movie")
+      : Promise.resolve(null),
+  ]);
+
+  if (imdbFallback.status === "fulfilled" && imdbFallback.value) {
+    const scraped = imdbFallback.value;
+    result.imdb = {
+      ...rate10(scraped.score10),
+      votes: scraped.votes ?? undefined,
+      url: scraped.url,
+    };
+  } else if (imdbFallback.status === "rejected") {
+    errors.push(
+      `imdb-scrape: ${imdbFallback.reason instanceof Error ? imdbFallback.reason.message : String(imdbFallback.reason)}`
+    );
+  }
+
+  if (rtFallback.status === "fulfilled" && rtFallback.value) {
+    const scraped = rtFallback.value;
+    result.rt = {
+      ...rate100(scraped.score100),
+      url: scraped.url,
+    };
+  } else if (rtFallback.status === "rejected") {
+    errors.push(
+      `rt-scrape: ${rtFallback.reason instanceof Error ? rtFallback.reason.message : String(rtFallback.reason)}`
+    );
+  }
+
+  if (metaFallback.status === "fulfilled" && metaFallback.value) {
+    const scraped = metaFallback.value;
+    result.metacritic = {
+      ...rate100(scraped.score100),
+      url: scraped.url,
+    };
+  } else if (metaFallback.status === "rejected") {
+    errors.push(
+      `metacritic-scrape: ${metaFallback.reason instanceof Error ? metaFallback.reason.message : String(metaFallback.reason)}`
+    );
   }
 
   // 3. Guardamos en cache (await para asegurar que la próxima request lo vea,

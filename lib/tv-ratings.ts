@@ -1,6 +1,8 @@
 import { cache } from "react";
 
 import { getImdbRatingScraped } from "@/lib/imdb-scrape";
+import { getRtScoreScraped } from "@/lib/rt-scrape";
+import { getMetacriticScoreScraped } from "@/lib/metacritic-scrape";
 import { getTvDetails } from "@/lib/tmdb";
 import {
   findRtScore,
@@ -219,24 +221,60 @@ async function _getTvRatings(tvId: number): Promise<RatingsResponse> {
     errors.push(`omdb: ${err instanceof Error ? err.message : String(err)}`);
   }
 
-  // 2.5) Fallback IMDb scraping. OMDb suele tener delay para series nuevas
-  // (ej. estrenos recientes); IMDb ya tiene rating pero OMDb dice "not found".
-  // Si tenemos imdb_id pero no obtuvimos IMDb de OMDb, scrapeamos JSON-LD.
-  if (result.imdb === null && imdbId) {
-    try {
-      const scraped = await getImdbRatingScraped(imdbId);
-      if (scraped) {
-        result.imdb = {
-          ...rate10(scraped.score10),
-          votes: scraped.votes ?? undefined,
-          url: scraped.url,
-        };
-      }
-    } catch (err) {
-      errors.push(
-        `imdb-scrape: ${err instanceof Error ? err.message : String(err)}`
-      );
-    }
+  // 2.5) Fallbacks paralelos cuando OMDb no devolvió alguna fuente. Ver
+  // comentario equivalente en lib/ratings.ts. Letterboxd no se incluye porque
+  // no indexa series.
+  const slugSource = tvDetails.original_name ?? tvDetails.name ?? "";
+  const rtSlug = slugSource ? slugifyUnderscore(slugSource) : "";
+  const metaSlug = slugSource ? slugifyDash(slugSource) : "";
+
+  const [imdbFallback, rtFallback, metaFallback] = await Promise.allSettled([
+    result.imdb === null && imdbId
+      ? getImdbRatingScraped(imdbId)
+      : Promise.resolve(null),
+    result.rt === null && rtSlug
+      ? getRtScoreScraped(rtSlug, "tv")
+      : Promise.resolve(null),
+    result.metacritic === null && metaSlug
+      ? getMetacriticScoreScraped(metaSlug, "tv")
+      : Promise.resolve(null),
+  ]);
+
+  if (imdbFallback.status === "fulfilled" && imdbFallback.value) {
+    const scraped = imdbFallback.value;
+    result.imdb = {
+      ...rate10(scraped.score10),
+      votes: scraped.votes ?? undefined,
+      url: scraped.url,
+    };
+  } else if (imdbFallback.status === "rejected") {
+    errors.push(
+      `imdb-scrape: ${imdbFallback.reason instanceof Error ? imdbFallback.reason.message : String(imdbFallback.reason)}`
+    );
+  }
+
+  if (rtFallback.status === "fulfilled" && rtFallback.value) {
+    const scraped = rtFallback.value;
+    result.rt = {
+      ...rate100(scraped.score100),
+      url: scraped.url,
+    };
+  } else if (rtFallback.status === "rejected") {
+    errors.push(
+      `rt-scrape: ${rtFallback.reason instanceof Error ? rtFallback.reason.message : String(rtFallback.reason)}`
+    );
+  }
+
+  if (metaFallback.status === "fulfilled" && metaFallback.value) {
+    const scraped = metaFallback.value;
+    result.metacritic = {
+      ...rate100(scraped.score100),
+      url: scraped.url,
+    };
+  } else if (metaFallback.status === "rejected") {
+    errors.push(
+      `metacritic-scrape: ${metaFallback.reason instanceof Error ? metaFallback.reason.message : String(metaFallback.reason)}`
+    );
   }
 
   // 3) Cache

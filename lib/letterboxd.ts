@@ -21,28 +21,40 @@ function buildSlug(title: string): string {
     .replace(/^-|-$/g, "");
 }
 
+// Estrategia preferida: pegarle a /tmdb/{id}/ que Letterboxd resuelve y
+// redirige al slug correcto. Esto arregla el bug donde el slug del título
+// coincidía con OTRA peli distinta (ej. "backrooms" en Letterboxd era una
+// corta de 2014, no la peli de Kane Parsons de 2026).
+//
+// Si el redirect por TMDB id falla (peli muy nueva sin entry todavía,
+// o Letterboxd cambia el endpoint), caemos al método anterior basado en
+// slug del original_title.
 export async function getLetterboxdRating(
+  tmdbId: number | null | undefined,
   originalTitle: string,
   fallbackTitle?: string
 ): Promise<LetterboxdResult> {
-  // Intentamos primero con original_title (Letterboxd usa títulos en inglés
-  // típicamente). Si falla, probamos con title si difiere.
+  // 1) TMDB id resolver (más confiable)
+  if (typeof tmdbId === "number" && Number.isFinite(tmdbId) && tmdbId > 0) {
+    const result = await tryScrape(`https://letterboxd.com/tmdb/${tmdbId}/`);
+    if (result) return result;
+  }
+
+  // 2) Fallback por slug del original_title
   const candidates = new Set<string>();
   candidates.add(buildSlug(originalTitle));
   if (fallbackTitle && fallbackTitle !== originalTitle) {
     candidates.add(buildSlug(fallbackTitle));
   }
-
   for (const slug of candidates) {
     if (!slug) continue;
-    const result = await tryScrape(slug);
+    const result = await tryScrape(`https://letterboxd.com/film/${slug}/`);
     if (result) return result;
   }
   return null;
 }
 
-async function tryScrape(slug: string): Promise<LetterboxdResult> {
-  const url = `https://letterboxd.com/film/${slug}/`;
+async function tryScrape(url: string): Promise<LetterboxdResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -55,18 +67,19 @@ async function tryScrape(slug: string): Promise<LetterboxdResult> {
         "Accept-Language": "en-US,en;q=0.9",
       },
       signal: controller.signal,
+      redirect: "follow",
       next: { revalidate: 60 * 60 * 24 * 7 }, // 7 días — pero igual lo gobierna Supabase
     });
 
-    if (!res.ok) {
-      return null;
-    }
+    if (!res.ok) return null;
 
+    // res.url es la URL final después del redirect (ej. /tmdb/X/ → /film/slug/).
+    // La usamos como link canónico para el frontend.
+    const finalUrl = res.url || url;
     const html = await res.text();
     const score = extractScore(html);
     if (score === null) return null;
-
-    return { score10: score, url };
+    return { score10: score, url: finalUrl };
   } catch {
     // timeout, abort, network error → null
     return null;
