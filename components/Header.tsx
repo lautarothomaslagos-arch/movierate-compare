@@ -5,6 +5,7 @@ import { LoginButton } from "@/components/LoginButton";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { MobileNavMenu } from "@/components/MobileNavMenu";
+import { SearchModalButton } from "@/components/SearchModalButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu, type UserInfo } from "@/components/UserMenu";
 import { Link } from "@/i18n/navigation";
@@ -73,13 +74,19 @@ export async function Header() {
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Mobile: hamburguesa con Géneros / Mi lista / Historial */}
+          {/* Botón de búsqueda — siempre visible. Atajo Cmd/Ctrl+K. */}
+          <SearchModalButton />
+          {/* Mobile: hamburguesa con navegación + idioma + tema integrados */}
           <div className="sm:hidden">
             <MobileNavMenu />
           </div>
-          <InstallAppButton />
-          <LocaleToggle />
-          <ThemeToggle />
+          {/* Desktop only: idioma, tema, install button visibles directos */}
+          <div className="hidden sm:flex items-center gap-1">
+            <InstallAppButton />
+            <LocaleToggle />
+            <ThemeToggle />
+          </div>
+          {/* Avatar / login button: en ambos breakpoints */}
           {userInfo ? <UserMenu user={userInfo} /> : <LoginButton />}
         </div>
       </div>

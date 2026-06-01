@@ -61,7 +61,7 @@ function useDebounced<T>(value: T, ms: number): T {
   return debounced;
 }
 
-export function SearchBar() {
+export function SearchBar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [localRecent, setLocalRecent] = useState<SearchResultMedia[]>([]);
@@ -169,6 +169,9 @@ export function SearchBar() {
   function selectItem(id: number, mediaType: "movie" | "tv" | "person") {
     setOpen(false);
     setQuery("");
+    // Avisar al padre (ej. SearchModalButton) que estamos navegando,
+    // así puede cerrar el modal antes del push.
+    onNavigate?.();
     if (mediaType === "person") {
       router.push(`/actor/${id}`);
       return;
@@ -212,7 +215,10 @@ export function SearchBar() {
               recent={recentMerged}
               trending={suggestionsData?.trending ?? []}
               onSelect={selectItem}
-              onCloseDropdown={() => setOpen(false)}
+              onCloseDropdown={() => {
+                setOpen(false);
+                onNavigate?.();
+              }}
               t={t}
             />
           )}
