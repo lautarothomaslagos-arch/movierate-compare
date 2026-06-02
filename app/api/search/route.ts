@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { extractTitleFromNaturalQuery } from "@/lib/ai-search-extract";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { stripStopwords } from "@/lib/search-stopwords";
 import { searchMulti } from "@/lib/tmdb";
 
 // Normaliza un query para que sea más tolerante a typos comunes:
@@ -8,8 +10,6 @@ import { searchMulti } from "@/lib/tmdb";
 // - lowercase
 // - trim
 // - colapsa espacios múltiples
-// Devolvemos el normalizado para enviar a TMDB pero conservamos el original
-// para mostrar al user si hay sugerencia.
 function normalizeQuery(input: string): string {
   return input
     .normalize("NFD")
@@ -35,7 +35,6 @@ function buildFallbackVariants(query: string): string[] {
   if (query.length > 5) {
     out.push(query.slice(0, Math.min(query.length, query.length - 2)));
   }
-  // Dedup
   return Array.from(new Set(out)).filter((v) => v.length >= 2);
 }
 
@@ -95,13 +94,81 @@ async function tmdbSearch(query: string): Promise<SearchItem[]> {
     .slice(0, 10);
 }
 
+// Estrategia de búsqueda en cascada. Cada paso intenta encontrar resultados;
+// si encuentra, retorna. Si no, pasa al próximo.
+//
+// Orden:
+//   1. Query original normalizado (1-4 palabras → directo a TMDB)
+//   2. Stopwords stripped si tiene 3+ palabras
+//   3. Variantes de typo (sin última palabra, sin último char, prefix)
+//   4. IA extractor si tiene 5+ palabras (queries descriptivos en lenguaje natural)
+//
+// Devuelve { results, usedQuery, source } donde source indica qué etapa lo
+// resolvió (para mostrar didYouMean apropiado al user).
+async function smartSearch(originalNormalized: string): Promise<{
+  results: SearchItem[];
+  usedQuery: string;
+  source: "direct" | "stripped" | "variant" | "ai";
+}> {
+  // 1. Direct
+  const direct = await tmdbSearch(originalNormalized);
+  if (direct.length > 0) {
+    return { results: direct, usedQuery: originalNormalized, source: "direct" };
+  }
+
+  // 2. Stopwords stripped (solo si vale la pena)
+  const stripped = stripStopwords(originalNormalized);
+  if (stripped !== originalNormalized && stripped.length >= 2) {
+    const r = await tmdbSearch(stripped);
+    if (r.length > 0) {
+      return { results: r, usedQuery: stripped, source: "stripped" };
+    }
+  }
+
+  // 3. Variantes de typo
+  const variants = buildFallbackVariants(originalNormalized);
+  for (const v of variants) {
+    const r = await tmdbSearch(v);
+    if (r.length > 0) {
+      return { results: r, usedQuery: v, source: "variant" };
+    }
+  }
+
+  // 4. IA extractor — solo si el query parece descriptivo (5+ palabras).
+  // Es la opción más cara, va al final.
+  const wordCount = originalNormalized.split(/\s+/).filter(Boolean).length;
+  if (wordCount >= 5) {
+    try {
+      const ai = await extractTitleFromNaturalQuery(originalNormalized);
+      if (ai) {
+        // Probar primary
+        const r1 = await tmdbSearch(ai.primary.toLowerCase());
+        if (r1.length > 0) {
+          return { results: r1, usedQuery: ai.primary, source: "ai" };
+        }
+        // Probar alternativas
+        for (const alt of ai.alternatives) {
+          const r2 = await tmdbSearch(alt.toLowerCase());
+          if (r2.length > 0) {
+            return { results: r2, usedQuery: alt, source: "ai" };
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[search] ai extract threw:", err);
+    }
+  }
+
+  return { results: [], usedQuery: originalNormalized, source: "direct" };
+}
+
 // GET /api/search?q=batman
 // Devuelve { results, query, didYouMean }:
-// - results: array de pelis/series (max 8)
+// - results: array de pelis/series/personas (max 10)
 // - query: el query efectivo usado (puede ser distinto al original)
 // - didYouMean: el query usado SI fue distinto al original, sino null
 export async function GET(request: NextRequest) {
-  // Rate limit por IP: 60 req/min en search (es la API más usada)
+  // Rate limit por IP: 60 req/min en search
   const ip = getClientIp(request.headers);
   const rl = rateLimit(`search:${ip}`, { limit: 60, windowMs: 60_000 });
   if (!rl.ok) {
@@ -123,26 +190,12 @@ export async function GET(request: NextRequest) {
   const normalized = normalizeQuery(original);
 
   try {
-    // Intento 1: query normalizado
-    let results = await tmdbSearch(normalized);
-    let usedQuery = normalized;
+    const { results, usedQuery, source } = await smartSearch(normalized);
 
-    // Intento 2: si vacío, fallback con variantes
-    if (results.length === 0) {
-      const variants = buildFallbackVariants(normalized);
-      for (const variant of variants) {
-        const fallback = await tmdbSearch(variant);
-        if (fallback.length > 0) {
-          results = fallback;
-          usedQuery = variant;
-          break;
-        }
-      }
-    }
-
-    // Si el usedQuery es distinto al original normalizado, sugerimos
+    // didYouMean solo si llegamos al resultado por una vía que NO fue
+    // "direct" — así le decimos al user "buscamos X en lugar de Y".
     const didYouMean =
-      results.length > 0 && usedQuery !== normalized ? usedQuery : null;
+      results.length > 0 && source !== "direct" ? usedQuery : null;
 
     return NextResponse.json({
       results,

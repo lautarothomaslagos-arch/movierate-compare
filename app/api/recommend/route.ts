@@ -11,12 +11,85 @@ import { getWatchlistFromDb } from "@/lib/watchlist";
 // POST /api/recommend
 // Body: { query?: string, mood?: string, locale?: "es" | "en" }
 // Requiere auth. Rate limit: 10 req/24h por user_id.
-// Devuelve { recommendations: [{ tmdb_id, title, year, why, media_type, poster_path }] }
+// Devuelve { recommendations: [{ tmdb_id, title, year, lede, body, media_type, poster_path }] }
+//
+// v2: el enriquecimiento con TMDB es mucho más tolerante. Antes si una rec
+// fallaba al matchear, se descartaba entera y el user veía 1 o 2 cosas o
+// nada. Ahora probamos varias estrategias por rec y solo en último caso
+// la devolvemos sin tmdb_id (la UI la muestra como link al search).
 
 type EnrichedRecommendation = Recommendation & {
   tmdb_id: number | null;
   poster_path: string | null;
 };
+
+// Intenta resolver una rec a un item de TMDB con múltiples estrategias
+// en cascada. Cada falla baja al siguiente intento.
+async function enrichRecommendation(
+  rec: Recommendation
+): Promise<EnrichedRecommendation> {
+  type SearchResult = Awaited<ReturnType<typeof searchMulti>>["results"][number];
+
+  function pickFromResults(
+    results: SearchResult[],
+    preferredType: "movie" | "tv" | null
+  ): { id: number; media_type: "movie" | "tv"; poster_path: string | null } | null {
+    // 1) Match por media_type preferido
+    if (preferredType) {
+      const m = results.find((r) => r.media_type === preferredType);
+      if (m && (m.media_type === "movie" || m.media_type === "tv")) {
+        return {
+          id: m.id,
+          media_type: m.media_type,
+          poster_path: m.poster_path ?? null,
+        };
+      }
+    }
+    // 2) Cualquier match de movie/tv (acepta el otro media_type si la IA se confundió)
+    const any = results.find(
+      (r) => r.media_type === "movie" || r.media_type === "tv"
+    );
+    if (any && (any.media_type === "movie" || any.media_type === "tv")) {
+      return {
+        id: any.id,
+        media_type: any.media_type,
+        poster_path: any.poster_path ?? null,
+      };
+    }
+    return null;
+  }
+
+  const queries: string[] = [];
+  // Estrategia A: title + year (más preciso)
+  if (rec.year) queries.push(`${rec.title} ${rec.year}`);
+  // Estrategia B: solo title (por si el año está mal)
+  queries.push(rec.title);
+  // Estrategia C: title sin caracteres especiales (por si tiene ":" o "—")
+  const cleanTitle = rec.title.replace(/[:\-—–·]/g, " ").replace(/\s+/g, " ").trim();
+  if (cleanTitle !== rec.title) queries.push(cleanTitle);
+
+  for (const q of queries) {
+    try {
+      const sr = await searchMulti(q);
+      const pick = pickFromResults(sr.results, rec.media_type);
+      if (pick) {
+        return {
+          ...rec,
+          media_type: pick.media_type,
+          tmdb_id: pick.id,
+          poster_path: pick.poster_path,
+        };
+      }
+    } catch (err) {
+      console.warn("[recommend:enrich] search threw for", q, err);
+      // Seguimos a la próxima estrategia
+    }
+  }
+
+  // No matcheó nada → devolvemos sin tmdb_id (la UI puede mostrar
+  // como link al search en lugar de descartar).
+  return { ...rec, tmdb_id: null, poster_path: null };
+}
 
 export async function POST(request: NextRequest) {
   // Auth check
@@ -70,7 +143,6 @@ export async function POST(request: NextRequest) {
       getMyReviews(100),
     ]);
 
-    // Top 5 por rating desc (loved)
     const sortedByRating = [...reviews].sort((a, b) => b.rating - a.rating);
     const loved = sortedByRating
       .filter((r) => r.rating >= 7)
@@ -80,7 +152,6 @@ export async function POST(request: NextRequest) {
         year: r.year,
         rating: r.rating,
       }));
-    // Bottom 5 por rating asc (disliked)
     const disliked = [...reviews]
       .sort((a, b) => a.rating - b.rating)
       .filter((r) => r.rating < 5)
@@ -109,72 +180,60 @@ export async function POST(request: NextRequest) {
     const recs = await recommend(recommenderInput, locale);
 
     if (recs.length === 0) {
+      console.warn(
+        "[recommend] empty recs for user",
+        user.id.slice(0, 8),
+        "query:",
+        query,
+        "mood:",
+        mood
+      );
       return NextResponse.json(
         {
           error: "no_results",
           message:
-            "No pudimos generar recomendaciones esta vez. Probá de nuevo o cambiá la consulta.",
+            "No pudimos generar recomendaciones esta vez. Probá con otra consulta o cambiá el mood.",
           recommendations: [],
         },
         { status: 200 }
       );
     }
 
-    // Enriquecer con tmdb_id y poster_path via /search/multi
-    const enriched: EnrichedRecommendation[] = await Promise.all(
-      recs.map(async (rec) => {
-        try {
-          // Si tenemos año, lo agregamos al query para mejor matching
-          const q = rec.year ? `${rec.title} ${rec.year}` : rec.title;
-          const sr = await searchMulti(q);
-          // Buscamos el primer resultado del media_type esperado
-          const match = sr.results.find(
-            (r) => r.media_type === rec.media_type
-          );
-          if (match) {
-            if (match.media_type === "movie") {
-              return {
-                ...rec,
-                tmdb_id: match.id,
-                poster_path: match.poster_path ?? null,
-              };
-            }
-            if (match.media_type === "tv") {
-              return {
-                ...rec,
-                tmdb_id: match.id,
-                poster_path: match.poster_path ?? null,
-              };
-            }
-          }
-          // Fallback: cualquier match (puede que el media_type haya cambiado)
-          const anyMatch = sr.results.find(
-            (r) => r.media_type === "movie" || r.media_type === "tv"
-          );
-          if (anyMatch && (anyMatch.media_type === "movie" || anyMatch.media_type === "tv")) {
-            return {
-              ...rec,
-              media_type: anyMatch.media_type,
-              tmdb_id: anyMatch.id,
-              poster_path: anyMatch.poster_path ?? null,
-            };
-          }
-          return { ...rec, tmdb_id: null, poster_path: null };
-        } catch (err) {
-          console.warn("[recommend] enrich failed for", rec.title, err);
-          return { ...rec, tmdb_id: null, poster_path: null };
-        }
-      })
+    // Enriquecer con tmdb_id y poster_path (tolerante a fallos).
+    const enriched = await Promise.all(recs.map((rec) => enrichRecommendation(rec)));
+
+    // Stats para debug
+    const withTmdb = enriched.filter((r) => r.tmdb_id !== null).length;
+    console.log(
+      `[recommend] enriched ${withTmdb}/${enriched.length} with TMDB ids`
     );
 
-    // Filtrar las que no tienen tmdb_id (no se encontraron en TMDB)
-    const valid = enriched.filter((r) => r.tmdb_id !== null);
+    // Si ninguna matcheó TMDB, devolvemos no_results para que la UI sea clara
+    if (withTmdb === 0) {
+      return NextResponse.json(
+        {
+          error: "no_results",
+          message:
+            "Las recomendaciones no se pudieron verificar. Probá con otra consulta.",
+          recommendations: [],
+        },
+        { status: 200 }
+      );
+    }
 
-    return NextResponse.json({ recommendations: valid });
+    // Devolvemos TODAS las recs (incluso las sin tmdb_id) — la UI decide
+    // cómo renderizarlas (las sin id van como link al search general).
+    return NextResponse.json({ recommendations: enriched });
   } catch (err) {
     console.error("[recommend] failed:", err);
     return NextResponse.json(
-      { error: "internal", message: "Error generando recomendaciones." },
+      {
+        error: "internal",
+        message:
+          err instanceof Error
+            ? `Error generando recomendaciones: ${err.message}`
+            : "Error generando recomendaciones.",
+      },
       { status: 500 }
     );
   }
