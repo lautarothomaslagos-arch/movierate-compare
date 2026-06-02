@@ -1,10 +1,14 @@
 import { ImageResponse } from "next/og";
 
-// PWA icon HD — 512×512 PNG.
-// Tamaño obligatorio que pide Chrome para PWA installable, además del
-// 192×192 en icon.tsx. Mismo diseño, escalado al doble largo de cada lado.
+// PWA icon HD — 512×512 PNG. Mismo sistema "Estrella-nota" que /icon.
 export const size = { width: 512, height: 512 };
 export const contentType = "image/png";
+
+const BRASS = "#e0b870";
+const CREAM = "#f3e7c8";
+const STAR_PATH =
+  "M50 10 L40.60 37.06 L11.96 37.64 L34.78 54.94 L26.49 82.36 L50 66 L73.51 82.36 L65.22 54.94 L88.04 37.64 L59.41 37.06 Z";
+const FILL_Y = 28.81;
 
 export default function IconHD() {
   return new ImageResponse(
@@ -13,40 +17,33 @@ export default function IconHD() {
         style={{
           width: "100%",
           height: "100%",
-          background: "linear-gradient(135deg, #1a1208 0%, #3d2f1c 100%)",
+          background: "#0a0804",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          position: "relative",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: 22,
-            borderRadius: 64,
-            border: "5px solid rgba(201, 169, 97, 0.15)",
-            display: "flex",
-          }}
-        />
-        <div
-          style={{
-            fontSize: 346,
-            color: "#c9a961",
-            fontWeight: 900,
-            fontFamily: "system-ui, sans-serif",
-            lineHeight: 1,
-            textShadow: "0 6px 64px rgba(201, 169, 97, 0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: -16,
-          }}
-        >
-          ★
-        </div>
+        <svg width={420} height={420} viewBox="0 0 100 100" fill="none">
+          <defs>
+            <clipPath id="star-clip">
+              <path d={STAR_PATH} />
+            </clipPath>
+          </defs>
+          <path d={STAR_PATH} fill={CREAM} fillOpacity={0.16} />
+          <g clipPath="url(#star-clip)">
+            <rect x={0} y={FILL_Y} width={100} height={100} fill={BRASS} />
+          </g>
+          <path
+            d={STAR_PATH}
+            fill="none"
+            stroke={CREAM}
+            strokeWidth={2.4}
+            strokeLinejoin="round"
+            strokeOpacity={0.85}
+          />
+        </svg>
       </div>
     ),
-    { ...size }
+    size
   );
 }
