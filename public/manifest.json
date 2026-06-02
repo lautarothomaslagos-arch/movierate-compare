@@ -64,13 +64,6 @@
       "description": "Las mejores películas y series",
       "url": "/top",
       "icons": [{ "src": "/icon", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Recomendador IA",
-      "short_name": "Recomendador",
-      "description": "Cinco sugerencias personalizadas",
-      "url": "/recomendador",
-      "icons": [{ "src": "/icon", "sizes": "192x192", "type": "image/png" }]
     }
   ],
   "prefer_related_applications": false

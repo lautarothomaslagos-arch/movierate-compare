@@ -62,7 +62,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   addEntry("/top", { priority: 0.9, changeFrequency: "daily" });
   addEntry("/top?type=tv", { priority: 0.9, changeFrequency: "daily" });
   addEntry("/comparar", { priority: 0.6 });
-  addEntry("/recomendador", { priority: 0.6 });
+  // /recomendador temporalmente fuera del sitemap mientras no esté
+  // operativo (cupo de Google Gemini agotado). Re-incluir cuando se
+  // habilite billing.
+  // addEntry("/recomendador", { priority: 0.6 });
 
   // ----- Decade picker en /top (cada combinación type × decade) -----
   for (const decade of DECADE_KEYS) {

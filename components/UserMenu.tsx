@@ -102,12 +102,16 @@ export function UserMenu({ user }: { user: UserInfo }) {
             {tReviews("heading")}
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
+        {/* Recomendador IA — temporalmente oculto del menú mientras
+            no tengamos billing en Google Gemini (cupo free agotado en
+            20 reqs/día). El código y la página siguen existiendo para
+            poder reactivar fácil cuando habilitemos pago. */}
+        {/* <DropdownMenuItem asChild>
           <Link href="/recomendador">
             <Sparkles />
             {tRec("heading")}
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={handleLogout}>
           <LogOut />

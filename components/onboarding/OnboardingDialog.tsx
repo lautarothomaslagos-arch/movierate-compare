@@ -42,12 +42,14 @@ const STEPS: Step[] = [
     title: "Lupa siempre a mano.",
     body: "Tocá la lupa arriba a la derecha (o usá Cmd+K en compu) para encontrar pelis, series o actores desde cualquier página.",
   },
-  {
-    icon: <Sparkles className="size-12 text-primary" />,
-    eyebrow: "Recomendador",
-    title: "¿No sabés qué ver?",
-    body: "Contale a la IA tu mood, qué tenés ganas de sentir, qué te gustó la última vez. Te tira 5 opciones pensadas, no genéricas.",
-  },
+  // Recomendador IA temporalmente oculto del onboarding mientras
+  // no tengamos billing en Google Gemini.
+  // {
+  //   icon: <Sparkles className="size-12 text-primary" />,
+  //   eyebrow: "Recomendador",
+  //   title: "¿No sabés qué ver?",
+  //   body: "Contale a la IA tu mood, qué tenés ganas de sentir, qué te gustó la última vez. Te tira 5 opciones pensadas, no genéricas.",
+  // },
   {
     icon: <Bookmark className="size-12 text-primary" />,
     eyebrow: "Tu lista",
