@@ -481,7 +481,19 @@ export default async function MoviePage({ params }: Props) {
       </main>
 
       {/* Barra inferior fija en mobile con atajos rápidos a las acciones. */}
-      <MobileActionBar isLogged={isLogged} />
+      <MobileActionBar
+        isLogged={isLogged}
+        item={{
+          tmdb_id: movie.id,
+          media_type: "movie",
+          title: movie.title,
+          year,
+          poster_path: movie.poster_path ?? null,
+        }}
+        initiallyInList={initiallyInWatchlist}
+        shareTitle={movie.title}
+        shareText={movie.overview?.slice(0, 100) ?? undefined}
+      />
     </div>
   );
 }

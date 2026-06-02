@@ -1,23 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
-// Cuenta animada de 0 hasta `value` con easeOutCubic en rAF. Usado para el
-// weighted average del Billboard — el número grande aparece "subiendo".
+// Cuenta animada de 0 hasta `value` con easeOutCubic. Es CRÍTICO que termine
+// siempre en el valor exacto — es el número más importante de la página.
 //
-// Implementación cuidada (lecciones aprendidas):
-// 1. Un solo useEffect: combinamos la detección de reduced-motion adentro
-//    del mismo efecto que arranca la animación. Antes había DOS efectos y
-//    el de detección disparaba un re-render que interrumpía la animación.
-// 2. Forzamos setCurrent(value) explícito al terminar — si por flotantes
-//    `value * eased` no es exactamente igual a value, quedaba ligeramente
-//    off del número final.
-// 3. Flag `cancelled` además del cancelAnimationFrame — defensivo contra
-//    callbacks ya programados que la cancelación no alcanza.
-// 4. Validamos que `value` sea finito (NaN/Infinity → no animamos).
+// Implementación: DOM directo via ref, NO state de React. Por qué:
+//   - El estado de React + rAF + Suspense streaming + hydration generaban
+//     re-renders en momentos imprevistos que dejaban el número "saltando"
+//     y sin terminar en el final.
+//   - Manipulando textContent directo el animation loop corre por afuera
+//     del ciclo de React → cero race conditions con re-renders del parent.
+//   - El cleanup SIEMPRE setea el valor final como red de seguridad, incluso
+//     si React desmonta el componente a mitad de animación.
+//
+// SSR: el span renderiza el valor final ya formateado para que el HTML
+// inicial sea correcto (y no haya hydration mismatch).
 
 interface AnimatedNumberProps {
-  /** Valor final al que animar. */
   value: number;
   /** Duración en ms. Default 800. */
   duration?: number;
@@ -30,51 +30,64 @@ export function AnimatedNumber({
   duration = 800,
   decimals = 1,
 }: AnimatedNumberProps) {
-  // Init con el valor final → en SSR el HTML ya tiene el número correcto.
-  const [current, setCurrent] = useState(value);
+  const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    // Guard contra valores inválidos
+    const el = ref.current;
+    if (!el) return;
+
+    // Defensiva: NaN/Infinity → mostramos el valor como string, sin animar.
     if (!Number.isFinite(value)) {
-      setCurrent(value);
+      el.textContent = String(value);
       return;
     }
 
-    // Respect reduced motion (chequeo inline, no en otro effect → no race)
+    // Respeta prefers-reduced-motion → directo al final.
     if (
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
-      setCurrent(value);
+      el.textContent = value.toFixed(decimals);
       return;
     }
 
     let raf = 0;
     let cancelled = false;
     const start = performance.now();
-
-    setCurrent(0);
+    const finalText = value.toFixed(decimals);
 
     function tick(now: number) {
-      if (cancelled) return;
+      if (cancelled || !el) return;
       const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);
       if (t < 1) {
-        setCurrent(value * eased);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = (value * eased).toFixed(decimals);
         raf = requestAnimationFrame(tick);
       } else {
-        // Final exacto: nada de "value * 0.9999"
-        setCurrent(value);
+        // Final exacto, no value * 0.99999
+        el.textContent = finalText;
       }
     }
 
+    el.textContent = (0).toFixed(decimals);
     raf = requestAnimationFrame(tick);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      // RED DE SEGURIDAD: si React desmonta a mitad de animación
+      // (por ejemplo si el padre re-monta), igual quedamos en el valor final.
+      if (el && Number.isFinite(value)) {
+        el.textContent = finalText;
+      }
     };
-  }, [value, duration]);
+  }, [value, duration, decimals]);
 
-  return <>{current.toFixed(decimals)}</>;
+  // SSR / primer paint: el HTML ya tiene el valor final formateado.
+  // useEffect luego lo "rewindea" a 0 y anima hasta acá.
+  return (
+    <span ref={ref}>
+      {Number.isFinite(value) ? value.toFixed(decimals) : String(value)}
+    </span>
+  );
 }

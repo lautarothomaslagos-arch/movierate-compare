@@ -509,7 +509,19 @@ export default async function SeriePage({ params }: Props) {
       </main>
 
       {/* Barra inferior fija en mobile con atajos a las acciones. */}
-      <MobileActionBar isLogged={isLogged} />
+      <MobileActionBar
+        isLogged={isLogged}
+        item={{
+          tmdb_id: tv.id,
+          media_type: "tv",
+          title: tv.name,
+          year,
+          poster_path: tv.poster_path ?? null,
+        }}
+        initiallyInList={initiallyInWatchlist}
+        shareTitle={tv.name}
+        shareText={tv.overview?.slice(0, 100) ?? undefined}
+      />
     </div>
   );
 }
