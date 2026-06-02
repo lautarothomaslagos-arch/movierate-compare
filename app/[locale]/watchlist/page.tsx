@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 
 import { LocalWatchlist } from "@/app/[locale]/watchlist/LocalWatchlist";
+import { BrandStar } from "@/components/BrandStar";
 import { Card } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -52,7 +53,10 @@ export default async function WatchlistPage({ params }: Props) {
 
       {items.length === 0 ? (
         <Card className="p-8 text-center border-dashed">
-          <Bookmark className="size-10 text-muted-foreground mx-auto mb-3" />
+          {/* Estrella casi vacía → "lista por llenar" */}
+          <div className="text-foreground/70 w-fit mx-auto mb-3">
+            <BrandStar size={56} fillPct={0.12} />
+          </div>
           <h2 className="font-serif italic font-normal text-xl sm:text-2xl">{t("empty")}</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
             {t("emptyBody")}

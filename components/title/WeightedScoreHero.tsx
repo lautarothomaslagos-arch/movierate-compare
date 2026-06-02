@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { computeWeightedAverage } from "@/components/RatingsAverage";
 import { getRatings } from "@/lib/ratings";
 import { getTvRatings } from "@/lib/tv-ratings";
@@ -68,7 +69,12 @@ export async function WeightedScoreHero({
             "text-[clamp(3.5rem,7vw+0.5rem,6rem)] leading-[0.85]"
           )}
         >
-          {avg.score10.toFixed(1)}
+          {/* Counter-up: el número grande sube de 0 al promedio al cargar.
+              Da énfasis al "veredicto" sin ser distractor. Respeta
+              prefers-reduced-motion vía AnimatedNumber. */}
+          <span className="tabular-nums">
+            <AnimatedNumber value={avg.score10} duration={900} decimals={1} />
+          </span>
           <span className="font-mono not-italic text-xs text-muted-foreground ml-1 tracking-normal">
             /10
           </span>

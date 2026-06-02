@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Star, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import {
   deleteReviewAction,
   upsertReviewAction,
 } from "@/app/actions/reviews";
+import { BrandStar } from "@/components/BrandStar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -103,8 +104,9 @@ export function ReviewSection({
     return (
       <Card className="p-4 sm:p-5 border-dashed">
         <div className="flex items-start gap-3">
-          <div className="shrink-0 rounded-full bg-primary/10 p-2">
-            <Star className="size-5 text-primary" />
+          <div className="shrink-0 rounded-full bg-primary/10 p-2 text-foreground">
+            {/* Estrella casi vacía → "tu nota está por ponerse" */}
+            <BrandStar size={22} fillPct={0.1} />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold">{t("loginCtaTitle")}</h3>
@@ -150,12 +152,19 @@ export function ReviewSection({
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t("yourRatingLabel")}
             </div>
-            <div className="mt-1 inline-flex items-baseline gap-1.5">
-              <span className="font-serif italic font-normal text-4xl sm:text-5xl tabular-nums leading-none text-primary">
-                {review.rating.toFixed(1)}
+            {/* Review guardada: estrella firmada con la nota final del user.
+                Reemplaza el lucide Star anterior por el isotipo de marca. */}
+            <div className="mt-1 inline-flex items-center gap-2">
+              <BrandStar
+                size={40}
+                fillPct={Math.max(0, Math.min(1, review.rating / 10))}
+              />
+              <span className="inline-flex items-baseline gap-1.5">
+                <span className="font-serif italic font-normal text-4xl sm:text-5xl tabular-nums leading-none text-primary">
+                  {review.rating.toFixed(1)}
+                </span>
+                <span className="text-xs text-muted-foreground">/10</span>
               </span>
-              <span className="text-xs text-muted-foreground">/10</span>
-              <Star className="size-5 fill-amber-400 text-amber-400 ml-1" />
             </div>
           </div>
           <div className="flex gap-1.5 shrink-0">
@@ -201,13 +210,21 @@ export function ReviewSection({
   return (
     <Card className="p-4 sm:p-5 space-y-4">
       <div>
-        <div className="flex items-baseline justify-between mb-1.5">
+        <div className="flex items-center justify-between mb-1.5 gap-3">
           <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t("yourRatingLabel")}
           </label>
-          <span className="font-serif italic font-normal text-3xl tabular-nums leading-none text-primary inline-flex items-baseline gap-1">
-            {rating.toFixed(1)}
-            <span className="font-sans not-italic text-xs text-muted-foreground">/10</span>
+          {/* Signoff: la estrella de marca se llena en vivo con tu nota
+              mientras movés el slider. Es tu "firma" del rating. */}
+          <span className="inline-flex items-center gap-2 leading-none text-foreground">
+            <BrandStar
+              size={28}
+              fillPct={Math.max(0, Math.min(1, rating / 10))}
+            />
+            <span className="font-serif italic font-normal text-3xl tabular-nums text-primary inline-flex items-baseline gap-1">
+              {rating.toFixed(1)}
+              <span className="font-sans not-italic text-xs text-muted-foreground">/10</span>
+            </span>
           </span>
         </div>
         <input
