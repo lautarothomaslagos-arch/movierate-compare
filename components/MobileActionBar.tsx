@@ -11,6 +11,10 @@ import {
 } from "@/app/actions/watchlist";
 import { BrandStar } from "@/components/BrandStar";
 import {
+  dispatchWatchlistChange,
+  subscribeToWatchlistChange,
+} from "@/lib/watchlist-events";
+import {
   addToLocalWatchlist,
   isInLocalWatchlist,
   removeFromLocalWatchlist,
@@ -63,6 +67,29 @@ export function MobileActionBar({
     }
   }, [isLogged, item.tmdb_id, item.media_type]);
 
+  // Sync con WatchlistButton (arriba en la página): si toggleas allá,
+  // este botón actualiza su estado.
+  useEffect(() => {
+    return subscribeToWatchlistChange((detail) => {
+      if (
+        detail.tmdb_id === item.tmdb_id &&
+        detail.media_type === item.media_type
+      ) {
+        setInList(detail.inList);
+      }
+    });
+  }, [item.tmdb_id, item.media_type]);
+
+  // Helper: actualizo + disparo evento para sincronizar las otras instancias.
+  function commit(newValue: boolean) {
+    setInList(newValue);
+    dispatchWatchlistChange({
+      tmdb_id: item.tmdb_id,
+      media_type: item.media_type,
+      inList: newValue,
+    });
+  }
+
   function scrollToReview() {
     const el = document.getElementById("review-section");
     if (!el) return;
@@ -78,7 +105,7 @@ export function MobileActionBar({
             toast.error(tWatchlist("removeError"));
             return;
           }
-          setInList(false);
+          commit(false);
           toast.success(tWatchlist("removed"));
         } else {
           const r = await addToWatchlist(item);
@@ -86,18 +113,18 @@ export function MobileActionBar({
             toast.error(tWatchlist("addError"));
             return;
           }
-          setInList(true);
+          commit(true);
           toast.success(tWatchlist("added"));
         }
       });
     } else {
       if (inList) {
         removeFromLocalWatchlist(item.tmdb_id, item.media_type);
-        setInList(false);
+        commit(false);
         toast.success(tWatchlist("removed"));
       } else {
         addToLocalWatchlist(item);
-        setInList(true);
+        commit(true);
         toast.success(tWatchlist("added"));
       }
     }

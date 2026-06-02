@@ -35,10 +35,10 @@
     "myHistory": "Mi historial",
     "userMenu": "Menú de usuario",
     "sessionClosed": "Sesión cerrada",
-    "signInError": "No se pudo iniciar sesión: {error}",
-    "signOutError": "No se pudo cerrar sesión: {error}",
-    "unexpectedError": "Error inesperado en el login.",
-    "callbackFailed": "No se pudo completar el inicio de sesión. Probá de nuevo."
+    "signInError": "No pudimos iniciar tu sesión con Google ({error}). Probá de nuevo en un minuto.",
+    "signOutError": "No pudimos cerrar tu sesión ({error}). Probá refrescar la página.",
+    "unexpectedError": "Algo se cortó en el login. Probá refrescar y volver a intentar.",
+    "callbackFailed": "No pudimos terminar de loguearte con Google. Volvé a intentar."
   },
   "theme": {
     "toLight": "Cambiar a modo claro",
@@ -174,8 +174,8 @@
   },
   "share": {
     "share": "Pasar a alguien",
-    "copied": "Link copiado",
-    "failed": "No se pudo compartir"
+    "copied": "Link copiado al portapapeles",
+    "failed": "No se pudo compartir. Probá copiar el link a mano."
   },
   "production": {
     "heading": "Producción",
@@ -311,8 +311,8 @@
     "cancelBtn": "Cancelar",
     "saved": "Nota guardada. Te va a esperar.",
     "deleted": "Nota borrada",
-    "saveError": "No se pudo guardar.",
-    "deleteError": "No se pudo eliminar.",
+    "saveError": "No se pudo guardar tu nota. Revisá tu conexión y probá de nuevo.",
+    "deleteError": "No se pudo borrar la nota. Probá refrescar la página.",
     "deleteConfirm": "¿Borrar tu review? No se puede deshacer.",
     "editAria": "Editar review",
     "deleteAria": "Eliminar review",
@@ -343,8 +343,8 @@
     "inList": "Anotada",
     "added": "Anotada en tu lista",
     "removed": "Sacada de la lista",
-    "addError": "No se pudo agregar.",
-    "removeError": "No se pudo quitar.",
+    "addError": "No se pudo agregar a tu lista. Probá de nuevo en un toque.",
+    "removeError": "No se pudo quitar de tu lista. Probá refrescar.",
     "empty": "Tu lista espera",
     "emptyBody": "Empezá por algo que te debas hace rato.",
     "countOne": "{count} título",
@@ -367,8 +367,8 @@
     "clearAll": "Limpiar todo",
     "clearConfirm": "¿Borrar todo el historial? No se puede deshacer.",
     "cleared": "Historial limpiado.",
-    "deleteError": "No se pudo eliminar.",
-    "clearError": "No se pudo limpiar el historial.",
+    "deleteError": "No se pudo borrar este ítem del historial. Probá refrescar.",
+    "clearError": "No se pudo limpiar el historial. Probá refrescar la página.",
     "deleteAriaLabel": "Eliminar {title} del historial"
   },
   "ratings": {

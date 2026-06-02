@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { HistoryFilters } from "@/app/[locale]/historial/HistoryFilters";
+import { BrandStar } from "@/components/BrandStar";
 import { Button } from "@/components/ui/button";
 import {
   clearLocalHistory,
@@ -49,6 +50,10 @@ export function LocalHistoryList() {
   if (items.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-8 text-center">
+        {/* Estrella casi vacía → "historial por empezar" */}
+        <div className="text-foreground/70 w-fit mx-auto mb-3">
+          <BrandStar size={56} fillPct={0.12} />
+        </div>
         <h2 className="font-serif italic font-normal text-xl sm:text-2xl">{t("empty")}</h2>
         <p className="text-sm text-muted-foreground mt-1">{t("emptyBody")}</p>
         <p className="text-xs text-muted-foreground mt-3">

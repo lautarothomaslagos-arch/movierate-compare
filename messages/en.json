@@ -35,10 +35,10 @@
     "myHistory": "My history",
     "userMenu": "User menu",
     "sessionClosed": "Signed out",
-    "signInError": "Sign in failed: {error}",
-    "signOutError": "Sign out failed: {error}",
-    "unexpectedError": "Unexpected error during sign in.",
-    "callbackFailed": "Sign in could not be completed. Try again."
+    "signInError": "Couldn't sign you in with Google ({error}). Try again in a minute.",
+    "signOutError": "Couldn't sign you out ({error}). Try refreshing the page.",
+    "unexpectedError": "Something broke during sign in. Refresh and try again.",
+    "callbackFailed": "Couldn't finish signing you in with Google. Give it another try."
   },
   "theme": {
     "toLight": "Switch to light mode",
@@ -174,8 +174,8 @@
   },
   "share": {
     "share": "Pass it on",
-    "copied": "Link copied",
-    "failed": "Could not share"
+    "copied": "Link copied to clipboard",
+    "failed": "Couldn't share. Try copying the link by hand."
   },
   "production": {
     "heading": "Production",
@@ -311,8 +311,8 @@
     "cancelBtn": "Cancel",
     "saved": "Note saved. It'll wait for you.",
     "deleted": "Note deleted",
-    "saveError": "Could not save.",
-    "deleteError": "Could not delete.",
+    "saveError": "Couldn't save your note. Check your connection and try again.",
+    "deleteError": "Couldn't delete the note. Try refreshing the page.",
     "deleteConfirm": "Delete your review? This can't be undone.",
     "editAria": "Edit review",
     "deleteAria": "Delete review",
@@ -343,8 +343,8 @@
     "inList": "On the list",
     "added": "Added to your list",
     "removed": "Off the list",
-    "addError": "Could not add.",
-    "removeError": "Could not remove.",
+    "addError": "Couldn't add to your list. Try again in a moment.",
+    "removeError": "Couldn't remove from your list. Try refreshing.",
     "empty": "Your list is waiting",
     "emptyBody": "Start with something you've owed yourself for a while.",
     "countOne": "{count} title",
@@ -367,8 +367,8 @@
     "clearAll": "Clear all",
     "clearConfirm": "Clear all history? This can't be undone.",
     "cleared": "History cleared.",
-    "deleteError": "Could not delete.",
-    "clearError": "Could not clear history.",
+    "deleteError": "Couldn't delete this item from history. Try refreshing.",
+    "clearError": "Couldn't clear your history. Try refreshing the page.",
     "deleteAriaLabel": "Remove {title} from history"
   },
   "ratings": {

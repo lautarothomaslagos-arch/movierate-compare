@@ -11,6 +11,10 @@ import {
 } from "@/app/actions/watchlist";
 import { Button } from "@/components/ui/button";
 import {
+  dispatchWatchlistChange,
+  subscribeToWatchlistChange,
+} from "@/lib/watchlist-events";
+import {
   addToLocalWatchlist,
   isInLocalWatchlist,
   removeFromLocalWatchlist,
@@ -45,6 +49,31 @@ export function WatchlistButton({
     }
   }, [isLogged, item.tmdb_id, item.media_type]);
 
+  // Sincronización entre múltiples instancias del botón en la misma página
+  // (ej. WatchlistButton arriba + MobileActionBar abajo). Escuchamos eventos
+  // y nos actualizamos si coincide el item.
+  useEffect(() => {
+    return subscribeToWatchlistChange((detail) => {
+      if (
+        detail.tmdb_id === item.tmdb_id &&
+        detail.media_type === item.media_type
+      ) {
+        setInList(detail.inList);
+      }
+    });
+  }, [item.tmdb_id, item.media_type]);
+
+  // Helper: actualizo estado local + disparo evento global para que
+  // las otras instancias del botón en la misma página se sincronicen.
+  function commit(newValue: boolean) {
+    setInList(newValue);
+    dispatchWatchlistChange({
+      tmdb_id: item.tmdb_id,
+      media_type: item.media_type,
+      inList: newValue,
+    });
+  }
+
   function handleClick() {
     if (isLogged) {
       startTransition(async () => {
@@ -54,7 +83,7 @@ export function WatchlistButton({
             toast.error(t("removeError"));
             return;
           }
-          setInList(false);
+          commit(false);
           toast.success(t("removed"));
         } else {
           const r = await addToWatchlist(item);
@@ -62,7 +91,7 @@ export function WatchlistButton({
             toast.error(t("addError"));
             return;
           }
-          setInList(true);
+          commit(true);
           toast.success(t("added"));
         }
       });
@@ -70,11 +99,11 @@ export function WatchlistButton({
       // Anónimo: localStorage
       if (inList) {
         removeFromLocalWatchlist(item.tmdb_id, item.media_type);
-        setInList(false);
+        commit(false);
         toast.success(t("removed"));
       } else {
         addToLocalWatchlist(item);
-        setInList(true);
+        commit(true);
         toast.success(t("added"));
       }
     }
