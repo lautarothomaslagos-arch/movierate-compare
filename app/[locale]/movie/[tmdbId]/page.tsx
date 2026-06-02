@@ -28,6 +28,7 @@ import {
   RatingsSkeleton,
 } from "@/components/RatingsSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
+import { MobileActionBar } from "@/components/MobileActionBar";
 import { ReviewSection } from "@/components/ReviewSection";
 import { ShareButton } from "@/components/ShareButton";
 import { CompareButton } from "@/components/CompareButton";
@@ -271,7 +272,7 @@ export default async function MoviePage({ params }: Props) {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div id="actions" className="flex flex-wrap gap-2 pt-1 scroll-mt-20">
             <WatchlistButton
               isLogged={isLogged}
               initiallyInList={initiallyInWatchlist}
@@ -420,7 +421,7 @@ export default async function MoviePage({ params }: Props) {
         {/* Tu review personal (Fase F.3). Solo se ve si hay sesión o si
             queremos invitar a iniciar sesión. La review queda privada por
             RLS — solo el dueño la lee/escribe. */}
-        <section className="mb-10">
+        <section id="review-section" className="mb-10 scroll-mt-20">
           <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("reviews.heading")}</h2>
           <ReviewSection
             tmdb_id={movie.id}
@@ -471,13 +472,16 @@ export default async function MoviePage({ params }: Props) {
 
         {/* Similares — top 12 de TMDB /recommendations.
             Suspense para que la peli se vea sin esperar este fetch. */}
-        <section>
+        <section className="pb-20 sm:pb-0">
           <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.similar")}</h2>
           <Suspense fallback={<MovieGridSkeleton />}>
             <RecommendationsSection tmdbId={movie.id} />
           </Suspense>
         </section>
       </main>
+
+      {/* Barra inferior fija en mobile con atajos rápidos a las acciones. */}
+      <MobileActionBar isLogged={isLogged} />
     </div>
   );
 }
