@@ -521,6 +521,14 @@ export default async function SeriePage({ params }: Props) {
         initiallyInList={initiallyInWatchlist}
         shareTitle={tv.name}
         shareText={tv.overview?.slice(0, 100) ?? undefined}
+        initialReview={
+          initialReview
+            ? {
+                rating: initialReview.rating,
+                notes: initialReview.notes,
+              }
+            : null
+        }
       />
     </div>
   );

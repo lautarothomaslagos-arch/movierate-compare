@@ -7,6 +7,7 @@ import {
   FeaturedGenresSkeleton,
 } from "@/components/FeaturedGenresSection";
 import { HeroSection, HeroSectionSkeleton } from "@/components/HeroSection";
+import { OnboardingMount } from "@/components/onboarding/OnboardingMount";
 import { RecentlyVisitedSection } from "@/components/RecentlyVisitedSection";
 import { ReturningHero } from "@/components/ReturningHero";
 import {
@@ -44,6 +45,9 @@ export default async function Home({ params }: Props) {
       <Suspense fallback={null}>
         <AuthErrorToast />
       </Suspense>
+
+      {/* Tour de bienvenida (solo primera visita, persistido en localStorage) */}
+      <OnboardingMount />
 
       {/* Hero condicional */}
       {user ? (

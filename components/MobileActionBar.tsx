@@ -10,6 +10,7 @@ import {
   removeFromWatchlist,
 } from "@/app/actions/watchlist";
 import { BrandStar } from "@/components/BrandStar";
+import { MobileReviewSheet } from "@/components/MobileReviewSheet";
 import {
   dispatchWatchlistChange,
   subscribeToWatchlistChange,
@@ -46,6 +47,8 @@ interface MobileActionBarProps {
   initiallyInList: boolean;
   shareTitle: string;
   shareText?: string;
+  /** Review existente del user. null = no calificó todavía. */
+  initialReview?: { rating: number; notes: string | null } | null;
 }
 
 export function MobileActionBar({
@@ -54,11 +57,14 @@ export function MobileActionBar({
   initiallyInList,
   shareTitle,
   shareText,
+  initialReview = null,
 }: MobileActionBarProps) {
   const tWatchlist = useTranslations("watchlist");
   const tShare = useTranslations("share");
   const [inList, setInList] = useState(initiallyInList);
   const [isPending, startTransition] = useTransition();
+  // State del bottom sheet de Mi nota (lazy: solo se monta cuando abrís)
+  const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
 
   // Anónimo: el server no sabe qué hay en localStorage, chequeamos en mount
   useEffect(() => {
@@ -90,10 +96,10 @@ export function MobileActionBar({
     });
   }
 
-  function scrollToReview() {
-    const el = document.getElementById("review-section");
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  function openReviewSheet() {
+    // En vez de scrollear al ReviewSection, abrimos el bottom sheet
+    // con el form encima. Sin perder el contexto de la página.
+    setReviewSheetOpen(true);
   }
 
   function toggleWatchlist() {
@@ -172,11 +178,21 @@ export function MobileActionBar({
     >
       <div className="grid grid-cols-3 gap-1 px-3">
         <ActionButton
-          onClick={scrollToReview}
-          label={isLogged ? "Mi nota" : "Calificar"}
+          onClick={openReviewSheet}
+          label={initialReview ? "Mi nota" : "Calificar"}
+          highlighted={!!initialReview}
           icon={
-            <span className="text-foreground">
-              <BrandStar size={18} fillPct={isLogged ? 0.74 : 0.12} />
+            <span className={initialReview ? "text-primary" : "text-foreground"}>
+              <BrandStar
+                size={18}
+                fillPct={
+                  initialReview
+                    ? Math.max(0, Math.min(1, initialReview.rating / 10))
+                    : isLogged
+                      ? 0.74
+                      : 0.12
+                }
+              />
             </span>
           }
         />
@@ -199,6 +215,20 @@ export function MobileActionBar({
           icon={<Share2 className="size-[18px]" />}
         />
       </div>
+
+      {/* Bottom sheet de Mi nota — solo se monta cuando se abre (lazy via
+          el componente Dialog de Radix con open={false}). */}
+      <MobileReviewSheet
+        open={reviewSheetOpen}
+        onOpenChange={setReviewSheetOpen}
+        isLogged={isLogged}
+        tmdb_id={item.tmdb_id}
+        media_type={item.media_type}
+        title={item.title}
+        year={item.year}
+        poster_path={item.poster_path}
+        initialReview={initialReview}
+      />
     </div>
   );
 }

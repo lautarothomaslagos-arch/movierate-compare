@@ -493,6 +493,14 @@ export default async function MoviePage({ params }: Props) {
         initiallyInList={initiallyInWatchlist}
         shareTitle={movie.title}
         shareText={movie.overview?.slice(0, 100) ?? undefined}
+        initialReview={
+          initialReview
+            ? {
+                rating: initialReview.rating,
+                notes: initialReview.notes,
+              }
+            : null
+        }
       />
     </div>
   );
