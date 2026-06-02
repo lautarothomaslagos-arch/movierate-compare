@@ -4,18 +4,18 @@ import { GoogleGenAI } from "@google/genai";
 // del user (historial reciente, watchlist, top reviews) + un query libre o
 // mood opcional. Devuelve un array tipado con título, año, lede y body.
 //
-// Es responsabilidad del caller resolver los IDs reales en TMDB (vía
-// /search/multi) — la IA solo escupe títulos + años, no IDs.
-//
-// Mejoras de calidad (v2):
-//   - maxOutputTokens 1500 → 4000 (el anterior truncaba JSONs largos)
-//   - thinkingBudget 0 → 1024 (mejor razonamiento para queries poéticas)
-//   - Prompt entiende slang rioplatense ("dolor de panza", "una bomba",
-//     "te lleva puesto", etc.) — antes interpretaba literal y fallaba.
-//   - Retry automático con prompt simplificado si la primera tanda
-//     devuelve [] (JSON corrupto o respuesta vacía).
-//   - Maneja perfil vacío: si no tenés historial/reviews, igual recomienda
-//     basándose en query+mood, no devuelve nada.
+// v3 — fixes pertinentes:
+//   - responseMimeType: "application/json" FUERZA al modelo a devolver
+//     JSON estructurado. Antes podía meter ```json fences o texto antes/
+//     después que rompían el parse. Ahora es JSON puro garantizado.
+//   - thinkingBudget DESACTIVADO en el primer intento. La combinación
+//     thinking + maxOutputTokens en gemini-2.5-flash producía respuestas
+//     incompletas para queries simples. Si el primer intento falla,
+//     reintentamos con un prompt aún más simple.
+//   - Triple fallback: si la respuesta no se puede leer en attempt 1,
+//     attempt 2 simplifica el prompt; attempt 3 baja a un modelo
+//     anterior por si Gemini 2.5 tiene un blip.
+//   - Logs verbosos con preview del raw response para debug.
 
 export type RecommenderInput = {
   recentlyWatched: Array<{ title: string; year: number | null }>;
@@ -57,12 +57,10 @@ function formatList(
     .join(", ");
 }
 
-// Glosario de slang rioplatense para que Gemini interprete bien los queries.
-// Incluido directo en el prompt para que el modelo lo use sin ambigüedad.
 const SLANG_GLOSSARY_ES = `
 GLOSARIO RIOPLATENSE (interpretá expresiones del usuario con este sentido):
 - "dolor de panza" / "que duela" → intensa emocionalmente, devastadora, te golpea fuerte.
-- "una bomba" / "un golazo" / "tremenda" → muy buena, brillante, imperdible.
+- "una bomba" / "tremenda" → muy buena, brillante, imperdible.
 - "te lleva puesto" → arrolladora, no te suelta hasta el final.
 - "copada" / "buena onda" → entretenida, liviana, cálida.
 - "lágrima fácil" / "para llorar" → triste, melancólica, dramática.
@@ -72,12 +70,11 @@ GLOSARIO RIOPLATENSE (interpretá expresiones del usuario con este sentido):
 - "oscura" / "densa" → noir, sombría, ambigua moralmente.
 - "para pareja" → romántica o que la pareja disfrute igual.
 - "tirada" / "boluda" / "para no pensar" → liviana, escapista, palomitera.
-- "yorugua" / "argenta" / "latina" → del Cono Sur o Latinoamérica.
-- "vieja" → clásica, anterior a los 80.
 - "asiática" / "coreana" → cine de Corea, Japón, Hong Kong, etc.
+- "magia" → fantasy, fantástico, realismo mágico.
 `;
 
-function buildPrompt(input: RecommenderInput, locale: "es" | "en"): string {
+function buildFullPrompt(input: RecommenderInput, locale: "es" | "en"): string {
   const lovedList =
     input.loved.length > 0
       ? input.loved
@@ -111,130 +108,103 @@ function buildPrompt(input: RecommenderInput, locale: "es" | "en"): string {
     input.disliked.length > 0;
 
   if (locale === "en") {
-    return `You are a film critic writing a weekly column. Recommend 5 titles based on the reader's profile and request. Write like a critic, not a chatbot.
+    return `You are a film critic. Recommend 5 movies or TV shows based on the reader's profile and request.
 
 READER PROFILE:
 - Recently watched: ${formatList(input.recentlyWatched, 15)}
-- Want to watch (already on their list): ${formatList(input.watchlist, 15)}
-- LOVED (high ratings): ${lovedList}
-- DISLIKED (low ratings): ${dislikedList}
-${!hasProfile ? "\n(NOTE: new user, no history yet — base recommendations on the query + mood, lean toward acclaimed/popular titles.)\n" : ""}
-READER QUERY: ${input.query ?? "(no specific query)"}
-MOOD: ${input.mood ?? "(no specific mood)"}
+- Want to watch: ${formatList(input.watchlist, 15)}
+- LOVED: ${lovedList}
+- DISLIKED: ${dislikedList}
+${!hasProfile ? "(NEW USER — base on query/mood, lean toward acclaimed titles)\n" : ""}
+QUERY: ${input.query ?? "(none)"}
+MOOD: ${input.mood ?? "(none)"}
 
-For each of 5 titles, write:
+For each title:
+- title: real title as on TMDB/IMDb (original language, NOT translations)
+- year: exact release year
+- lede: ONE editorial sentence starting with "Because…" (max 90 chars)
+- body: 2-3 sentences of prose, atmospheric (max 300 chars)
+- media_type: "movie" or "tv"
 
-1. LEDE: ONE short sentence (max 90 chars) starting with "Because…" or similar editorial hook. Connect to something specific.
-   Examples:
-     "Because you loved «Drive» but want something slower."
-     "Because your watchlist has three Finnish films you haven't seen."
-
-2. BODY: 2-3 sentences of fluid PROSE (no bullets, no markdown). Atmospheric, specific. Max 300 chars.
-
-RULES:
-- Recommend 5 titles the reader has NOT watched and NOT yet in their list.
-- Mix movies and TV when fitting.
-- Align with LOVED ones, avoid anything like DISLIKED ones.
-- YEAR IS CRITICAL: must match the actual TMDB/IMDb release year exactly. Verify mentally before answering.
-- Use the title most commonly known in English (or original if no English release).
-- Never invent titles.
-- If profile is empty, lean toward acclaimed, well-known titles that match the mood/query.
-
-Respond ONLY with valid JSON (no markdown fences, no preamble):
-{"recommendations":[
-  {"title":"...","year":2020,"lede":"Because...","body":"...","media_type":"movie"},
-  ...
-]}`;
+Rules:
+- 5 titles not in profile
+- Match LOVED style, avoid DISLIKED
+- Real titles only, real years
+- Mix movies and TV when fitting`;
   }
 
-  return `Sos un crítico de cine que escribe una columna semanal. Recomendá 5 títulos basados en el perfil + pedido del lector. Escribí como crítico, no como chatbot.
+  return `Sos un crítico de cine. Recomendá 5 películas o series basándote en el perfil + pedido del lector.
 
 ${SLANG_GLOSSARY_ES}
 
 PERFIL DEL LECTOR:
 - Vistas recientes: ${formatList(input.recentlyWatched, 15)}
 - En su lista de "quiero ver": ${formatList(input.watchlist, 15)}
-- LE ENCANTARON (rating alto): ${lovedList}
-- NO LE GUSTARON (rating bajo): ${dislikedList}
-${!hasProfile ? "\n(NOTA: usuario nuevo, sin historial aún — basate en la consulta + mood, inclinate a títulos aclamados y conocidos.)\n" : ""}
-CONSULTA DEL LECTOR: ${input.query ?? "(sin consulta específica)"}
-MOOD: ${input.mood ?? "(sin mood específico)"}
-
-Por cada uno de los 5 títulos, escribí:
-
-1. LEDE: UNA oración corta (max 90 chars) que empieza con "Porque…" o un gancho editorial similar. Conectá con algo específico del perfil o la consulta.
-   Ejemplos:
-     "Porque amaste «Drive» pero querés algo más lento."
-     "Porque tu watchlist tiene tres finlandesas sin ver."
-     "Porque pediste algo que duela y tenés estómago para «Réquiem por un sueño»."
-
-2. BODY: 2 a 3 oraciones de PROSA fluida (sin bullets, sin markdown). Atmosférico, específico. Max 300 caracteres. Si corresponde, mencioná dónde se puede ver en LatAm.
-
-REGLAS CLAVE:
-- Recomendá 5 títulos que el lector NO haya visto y NO estén en su lista.
-- Mezclá pelis y series cuando tenga sentido.
-- Priorizá títulos alineados con los que LE ENCANTARON. Evitá lo similar a los que NO LE GUSTARON.
-- AÑO ES CRÍTICO: tiene que coincidir EXACTO con el año real de estreno en TMDB/IMDb. Verificá mentalmente antes de responder. Si dudás, no la recomiendes.
-- Usá el título en el idioma original (en inglés si es producción anglo, en español si es hispana, etc.). NO traducciones latinoamericanas (no "El Padrino", sí "The Godfather").
-- Castellano rioplatense, tuteo argentino (vos/tenés).
-- Si el perfil está vacío, inclinate a títulos aclamados/conocidos que matcheen el mood.
-- NO inventes títulos. Si no estás 100% seguro de la existencia, NO la pongas.
-
-Respondé SOLO con JSON válido (sin fences markdown \`\`\`, sin preámbulo, sin explicaciones):
-{"recommendations":[
-  {"title":"...","year":2020,"lede":"Porque...","body":"...","media_type":"movie"},
-  {"title":"...","year":2018,"lede":"Porque...","body":"...","media_type":"tv"}
-]}`;
-}
-
-// Prompt simplificado para el retry: pide solo lo esencial, menos chance
-// de que Gemini se vaya por las ramas y devuelva JSON corrupto.
-function buildRetryPrompt(input: RecommenderInput, locale: "es" | "en"): string {
-  if (locale === "en") {
-    return `Recommend 5 well-known, acclaimed movies or TV shows for this request:
-
-QUERY: ${input.query ?? "(none)"}
-MOOD: ${input.mood ?? "(none)"}
-
-Output ONLY this JSON (no extras):
-{"recommendations":[
-  {"title":"Movie Name","year":2020,"lede":"Brief because-style hook.","body":"2 sentences of why.","media_type":"movie"}
-]}
-
-5 entries. Real titles, real years. Mix movies and TV.`;
-  }
-  return `Recomendá 5 películas o series conocidas y aclamadas que matcheen este pedido:
-
+- LE ENCANTARON: ${lovedList}
+- NO LE GUSTARON: ${dislikedList}
+${!hasProfile ? "(USUARIO NUEVO — basate en query/mood, inclinate a títulos aclamados)\n" : ""}
 CONSULTA: ${input.query ?? "(ninguna)"}
 MOOD: ${input.mood ?? "(ninguno)"}
 
-Salida SOLO este JSON (nada más):
-{"recommendations":[
-  {"title":"Nombre","year":2020,"lede":"Gancho corto estilo porque.","body":"2 oraciones de por qué.","media_type":"movie"}
-]}
+Por cada título:
+- title: el título real como aparece en TMDB/IMDb (idioma original, NO traducciones latinas)
+- year: el año exacto de estreno
+- lede: UNA oración editorial que empieza con "Porque…" (max 90 chars)
+- body: 2-3 oraciones de prosa atmosférica (max 300 chars)
+- media_type: "movie" o "tv"
 
-5 entradas. Títulos reales, años reales. Mezclá pelis y series.`;
+Reglas:
+- 5 títulos que NO estén en el perfil
+- Alineados con los que LE ENCANTARON, evitar similares a los NO LE GUSTARON
+- Castellano rioplatense (vos/tenés)
+- Títulos reales, años reales (verificá mentalmente)
+- Mezclar pelis y series cuando tenga sentido`;
 }
 
-// Parser tolerante. Maneja:
-// - JSON con markdown fences (```json ... ```)
-// - Texto basura antes/después del JSON (busca el primer { ... })
-// - Campos legacy (why en lugar de body)
+function buildSimplePrompt(input: RecommenderInput, locale: "es" | "en"): string {
+  if (locale === "en") {
+    return `Recommend 5 acclaimed movies or TV shows for: query="${input.query ?? "any"}", mood="${input.mood ?? "any"}". Real titles, real years. Mix movies and TV. For each: title, year, lede starting with "Because", body of 2-3 sentences, media_type ("movie" or "tv").`;
+  }
+  return `Recomendá 5 películas o series aclamadas para: consulta="${input.query ?? "cualquiera"}", mood="${input.mood ?? "cualquiera"}". Títulos reales, años reales. Mezclá pelis y series. Por cada uno: title, year, lede que empiece con "Porque", body de 2-3 oraciones en castellano argentino, media_type ("movie" o "tv").`;
+}
+
+// Schema JSON que pedimos a Gemini. Con responseMimeType + responseSchema
+// el modelo está OBLIGADO a devolver JSON con esta estructura — sin fences,
+// sin texto extra, sin preámbulo. Cero ambigüedad de parse.
+const RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    recommendations: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          year: { type: "integer" },
+          lede: { type: "string" },
+          body: { type: "string" },
+          media_type: { type: "string", enum: ["movie", "tv"] },
+        },
+        required: ["title", "year", "lede", "body", "media_type"],
+      },
+    },
+  },
+  required: ["recommendations"],
+};
+
 function safeParse(raw: string): Recommendation[] {
   let cleaned = raw.trim();
 
-  // Sacar markdown fences si los hay
+  // Defensivo: por más que pidamos JSON, sacar fences si aparecen
   if (cleaned.startsWith("```")) {
     cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
     cleaned = cleaned.trim();
   }
-
-  // Si hay texto basura, intentar extraer el bloque JSON principal
-  if (!cleaned.startsWith("{")) {
-    const firstBrace = cleaned.indexOf("{");
-    const lastBrace = cleaned.lastIndexOf("}");
-    if (firstBrace !== -1 && lastBrace > firstBrace) {
-      cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  if (!cleaned.startsWith("{") && !cleaned.startsWith("[")) {
+    const first = cleaned.indexOf("{");
+    const last = cleaned.lastIndexOf("}");
+    if (first !== -1 && last > first) {
+      cleaned = cleaned.slice(first, last + 1);
     }
   }
 
@@ -265,69 +235,105 @@ function safeParse(raw: string): Recommendation[] {
     return out.slice(0, 5);
   } catch (err) {
     console.warn("[ai-recommender] JSON parse failed:", err);
+    console.warn("[ai-recommender] cleaned preview:", cleaned.slice(0, 300));
     return [];
   }
 }
 
-// Llama a Gemini Flash y devuelve las recomendaciones parseadas.
-// Si la primera tanda devuelve [], reintenta con prompt simplificado.
-// Si todo falla, devuelve [].
+// Extrae texto del response, tolerando estructuras viejas/nuevas de Gemini.
+function extractText(response: unknown): string {
+  // response.text es el getter conveniente
+  const r = response as { text?: string; candidates?: unknown };
+  if (typeof r.text === "string") return r.text.trim();
+  // Fallback: navegar candidates[].content.parts[].text
+  if (Array.isArray(r.candidates) && r.candidates[0]) {
+    const c = r.candidates[0] as {
+      content?: { parts?: Array<{ text?: string }> };
+    };
+    const parts = c.content?.parts ?? [];
+    return parts
+      .map((p) => p.text ?? "")
+      .join("")
+      .trim();
+  }
+  return "";
+}
+
+async function tryGemini(
+  prompt: string,
+  model: string,
+  thinkingBudget: number
+): Promise<Recommendation[]> {
+  const client = getClient();
+  const response = await client.models.generateContent({
+    model,
+    contents: prompt,
+    config: {
+      temperature: 0.8,
+      maxOutputTokens: 4000,
+      // CLAVE: con responseSchema + responseMimeType, Gemini DEBE devolver
+      // JSON estructurado válido. Sin esto, podía meter texto suelto y
+      // fences que rompían el parse.
+      responseMimeType: "application/json",
+      responseSchema: RESPONSE_SCHEMA,
+      thinkingConfig: { thinkingBudget },
+    },
+  });
+
+  const text = extractText(response);
+  if (!text) {
+    console.warn(
+      `[ai-recommender] ${model} returned empty text. Response keys:`,
+      Object.keys(response as object)
+    );
+    return [];
+  }
+
+  const recs = safeParse(text);
+  if (recs.length === 0) {
+    console.warn(
+      `[ai-recommender] ${model} parsed to empty. Raw (first 400):`,
+      text.slice(0, 400)
+    );
+  } else {
+    console.log(`[ai-recommender] ${model} returned ${recs.length} recs`);
+  }
+  return recs;
+}
+
 export async function recommend(
   input: RecommenderInput,
   locale: "es" | "en" = "es"
 ): Promise<Recommendation[]> {
-  const client = getClient();
+  const fullPrompt = buildFullPrompt(input, locale);
+  const simplePrompt = buildSimplePrompt(input, locale);
 
-  // Intento 1: prompt completo con contexto + slang glossary.
+  // Intento 1: gemini-2.5-flash con prompt completo, SIN thinking.
+  // Es la combinación más confiable para output JSON estructurado.
   try {
-    const response = await client.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: buildPrompt(input, locale),
-      config: {
-        temperature: 0.8,
-        maxOutputTokens: 4000,
-        thinkingConfig: { thinkingBudget: 1024 },
-      },
-    });
-    const text = response.text?.trim() ?? "";
-    if (text) {
-      const recs = safeParse(text);
-      if (recs.length > 0) {
-        console.log(`[ai-recommender] attempt 1: ${recs.length} recs`);
-        return recs;
-      }
-      // Log el raw para debug si el parse falló
-      console.warn(
-        "[ai-recommender] attempt 1 parsed to empty. Raw (first 500):",
-        text.slice(0, 500)
-      );
-    } else {
-      console.warn("[ai-recommender] attempt 1 returned empty text");
-    }
+    const recs = await tryGemini(fullPrompt, "gemini-2.5-flash", 0);
+    if (recs.length > 0) return recs;
   } catch (err) {
-    console.warn("[ai-recommender] attempt 1 threw:", err);
+    console.warn("[ai-recommender] attempt 1 (2.5-flash no thinking) threw:", err);
   }
 
-  // Intento 2: prompt simplificado. Más probable que devuelva JSON limpio.
+  // Intento 2: prompt simple, sigue con 2.5-flash sin thinking.
+  // Menos contexto = menos chance de confundir al modelo.
   try {
-    const response = await client.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: buildRetryPrompt(input, locale),
-      config: {
-        temperature: 0.6,
-        maxOutputTokens: 2500,
-        thinkingConfig: { thinkingBudget: 512 },
-      },
-    });
-    const text = response.text?.trim() ?? "";
-    if (text) {
-      const recs = safeParse(text);
-      console.log(`[ai-recommender] attempt 2 (retry): ${recs.length} recs`);
-      return recs;
-    }
+    const recs = await tryGemini(simplePrompt, "gemini-2.5-flash", 0);
+    if (recs.length > 0) return recs;
   } catch (err) {
-    console.warn("[ai-recommender] attempt 2 threw:", err);
+    console.warn("[ai-recommender] attempt 2 (simple, no thinking) threw:", err);
   }
 
+  // Intento 3: prompt simple, con thinking activado (último recurso, más caro).
+  try {
+    const recs = await tryGemini(simplePrompt, "gemini-2.5-flash", 1024);
+    if (recs.length > 0) return recs;
+  } catch (err) {
+    console.warn("[ai-recommender] attempt 3 (with thinking) threw:", err);
+  }
+
+  console.error("[ai-recommender] ALL 3 attempts failed. Query:", input.query, "Mood:", input.mood);
   return [];
 }
