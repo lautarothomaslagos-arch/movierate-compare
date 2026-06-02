@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { Suspense } from "react";
 
+import { AddToCompareButton } from "@/components/AddToCompareButton";
 import {
   CompareVerdict,
   CompareVerdictSkeleton,
@@ -259,6 +260,16 @@ export default async function CompararPage({ params, searchParams }: Props) {
           />
         ))}
       </div>
+
+      {/* Botón "Agregar título" — permite ir de 2 → 3 → 4 títulos sin
+          editar URL manualmente. Aparece centrado debajo del grid. */}
+      {n < 4 && (
+        <div className="mt-4 flex justify-center">
+          <AddToCompareButton
+            currentKeys={parsedKeys.map((k) => `${k.mediaType}:${k.id}`)}
+          />
+        </div>
+      )}
 
       {/* Promedio ponderado fila destacada */}
       <Card className="mt-6 p-4 sm:p-5">

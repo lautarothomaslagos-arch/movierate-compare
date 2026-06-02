@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { GitCompare, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -11,6 +11,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+
+// Agrega un título más a la comparación actual (hasta `maxItems`, default 4).
+// La URL ya soporta a, b, c, d como params. Este botón es la UI faltante
+// para que el user pueda llegar de 2 → 3 → 4 sin editar URL a mano.
+//
+// Excluye de los resultados los títulos que ya están en la comparación.
 
 type SearchResult = {
   id: number;
@@ -29,15 +35,19 @@ function useDebounced<T>(value: T, ms: number): T {
   return debounced;
 }
 
-// Botón "Comparar" con un mini-buscador inline. Al seleccionar una peli/serie,
-// navega a /comparar?a=current&b=selected. Excluye el item actual de los resultados.
-export function CompareButton({
-  currentId,
-  currentMediaType,
-}: {
-  currentId: number;
-  currentMediaType: "movie" | "tv";
-}) {
+interface AddToCompareButtonProps {
+  /** Keys actuales en formato "movie:123" o "tv:456". */
+  currentKeys: string[];
+  /** Máximo de items que soporta /comparar. Default 4 (a, b, c, d). */
+  maxItems?: number;
+}
+
+const PARAM_NAMES = ["a", "b", "c", "d"];
+
+export function AddToCompareButton({
+  currentKeys,
+  maxItems = 4,
+}: AddToCompareButtonProps) {
   const t = useTranslations("compare");
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -61,16 +71,16 @@ export function CompareButton({
   }, [open]);
 
   const { data, isFetching } = useQuery({
-    queryKey: ["compareSearch", debouncedQuery],
+    queryKey: ["addToCompareSearch", debouncedQuery, currentKeys.join(",")],
     queryFn: async () => {
       const res = await fetch(
         `/api/search?q=${encodeURIComponent(debouncedQuery)}`
       );
       if (!res.ok) throw new Error("search failed");
       const json = (await res.json()) as { results: SearchResult[] };
-      // Excluimos el item actual de los resultados
+      // Excluimos los que ya están en la comparación
       return json.results.filter(
-        (r) => !(r.id === currentId && r.media_type === currentMediaType)
+        (r) => !currentKeys.includes(`${r.media_type}:${r.id}`)
       );
     },
     enabled: open && debouncedQuery.length >= 2,
@@ -78,38 +88,39 @@ export function CompareButton({
 
   const results = data ?? [];
 
-  function pickSecond(item: SearchResult) {
-    const a = `${currentMediaType}:${currentId}`;
-    const b = `${item.media_type}:${item.id}`;
-    router.push(`/comparar?a=${a}&b=${b}`);
+  function pick(item: SearchResult) {
+    const newKey = `${item.media_type}:${item.id}`;
+    const allKeys = [...currentKeys, newKey].slice(0, maxItems);
+    const qs = allKeys
+      .map((k, i) => `${PARAM_NAMES[i]}=${encodeURIComponent(k)}`)
+      .join("&");
+    router.push(`/comparar?${qs}`);
   }
 
+  // Si ya está lleno, ni renderizamos.
+  if (currentKeys.length >= maxItems) return null;
+
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative inline-block">
       <Button
         variant="outline"
         size="sm"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
+        className="gap-1.5"
       >
-        <GitCompare className="size-4" />
-        {t("compareAction")}
+        <Plus className="size-4" />
+        {t("addTitle")}
       </Button>
 
       {open && (
-        // Anclado a la izquierda del botón en TODOS los breakpoints, y con
-        // un max-width que respeta el viewport (calc(100vw - 1.5rem)) para
-        // que nunca quede cortado en mobile. Antes usábamos left-1/2 +
-        // -translate-x-1/2 en mobile (centrado sobre el botón), pero como
-        // el botón "Comparar con..." está pegado al borde izquierdo, la
-        // mitad del popover quedaba fuera de la pantalla.
         <Card className="absolute z-50 mt-2 left-0 w-[min(20rem,calc(100vw-1.5rem))] p-2 shadow-[var(--shadow-2)]">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
             <Input
               autoFocus
               type="text"
-              placeholder={t("pickSecond")}
+              placeholder={t("pickAnother")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-8 h-9 text-sm"
@@ -134,7 +145,7 @@ export function CompareButton({
               <button
                 key={`${m.media_type}-${m.id}`}
                 type="button"
-                onClick={() => pickSecond(m)}
+                onClick={() => pick(m)}
                 className="w-full flex items-center gap-2 p-1.5 text-left hover:bg-accent hover:text-accent-foreground transition-colors rounded"
               >
                 <div className="relative shrink-0 w-8 h-11 bg-muted rounded-sm overflow-hidden">

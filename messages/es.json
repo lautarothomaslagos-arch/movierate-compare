@@ -236,6 +236,8 @@
     "subtitle": "Pelis y series, lado a lado.",
     "pickFirst": "Elegí una peli o serie",
     "pickSecond": "Elegí con cuál pelea",
+    "pickAnother": "Sumá otro título",
+    "addTitle": "Agregar título",
     "searchPlaceholder": "Buscá…",
     "removeBtn": "Sacar",
     "averageLabel": "Nota promediada",

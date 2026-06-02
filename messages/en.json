@@ -236,6 +236,8 @@
     "subtitle": "Movies and shows, side by side.",
     "pickFirst": "Pick a movie or show",
     "pickSecond": "Pick what fights it",
+    "pickAnother": "Add another title",
+    "addTitle": "Add title",
     "searchPlaceholder": "Search…",
     "removeBtn": "Remove",
     "averageLabel": "Weighted score",
