@@ -472,7 +472,7 @@ export default async function MoviePage({ params }: Props) {
 
         {/* Similares — top 12 de TMDB /recommendations.
             Suspense para que la peli se vea sin esperar este fetch. */}
-        <section className="pb-20 sm:pb-0">
+        <section className="pb-28 sm:pb-0">
           <h2 className="font-serif italic font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{t("movie.similar")}</h2>
           <Suspense fallback={<MovieGridSkeleton />}>
             <RecommendationsSection tmdbId={movie.id} />

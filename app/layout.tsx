@@ -65,6 +65,10 @@ export const viewport: Viewport = {
   // Coincide con el theme_color del manifest.json (paleta Late Night).
   themeColor: "#241d12",
   colorScheme: "dark light",
+  // viewport-fit=cover habilita que env(safe-area-inset-*) devuelva
+  // valores reales en celulares con notch / barra nativa (sin esto,
+  // env() devuelve 0 y la MobileActionBar queda tapada por el sistema).
+  viewportFit: "cover",
 };
 
 // Root layout minimalista. El layout "real" (con providers, header, footer

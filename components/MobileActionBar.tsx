@@ -4,26 +4,21 @@ import { Bookmark, Share2 } from "lucide-react";
 
 import { BrandStar } from "@/components/BrandStar";
 
-// Barra fija inferior en mobile (sm:hidden). En páginas largas de detalle
-// (movie/serie) sirve como "remoto" para saltar rápido a las 3 acciones
-// principales sin scrollear toda la página:
+// Barra fija inferior en mobile (sm:hidden) con atajos a las acciones
+// principales de una página de detalle.
 //
-//   [ Mi nota ]  [ Lista ]  [ Compartir ]
-//
-// Cada botón es un anchor-scroll con behavior smooth a su sección:
-//   - "Mi nota"   → #review-section
-//   - "Lista"     → #actions
-//   - "Compartir" → #actions (los botones reales viven ahí)
-//
-// Por qué scrollToView en vez de duplicar la lógica de los botones:
-//   1. WatchlistButton tiene estado optimistic (inList) — duplicar
-//      requeriría coordinación, fácil de romper.
-//   2. ShareButton llama navigator.share + fallback clipboard — se
-//      podría replicar pero suma código sin mucho beneficio.
-//   3. El anchor-scroll es accesible, predecible, y resalta la sección.
+// Layout (lecciones aprendidas):
+// - left-0 right-0 bottom-0 explícitos (más confiable que inset-x-0 cuando
+//   hay ancestros con stacking contexts).
+// - w-screen para garantizar full viewport sin importar wrappers.
+// - Padding-bottom como inline style con calc(env(safe-area-inset-bottom)
+//   + 1rem). El padding inferior generoso evita el indicador de gestos
+//   de Samsung One UI / barra nav nativa de Android (ese chrome del SO
+//   se mete sobre la app y NO lo cubre `env()` solo).
+// - viewport-fit=cover en app/layout.tsx asegura que env(safe-area-...)
+//   devuelva valores reales.
 
 interface MobileActionBarProps {
-  /** Si false, el botón "Mi nota" queda como CTA de login (mismo scroll). */
   isLogged?: boolean;
 }
 
@@ -37,17 +32,20 @@ export function MobileActionBar({ isLogged = false }: MobileActionBarProps) {
   return (
     <div
       className={
-        // Solo mobile. z-30 sobre carruseles, debajo de modals (z-50).
-        // backdrop-blur + bg semi-transparente para coherencia con Header.
-        // safe-area inset bottom para iOS (notch).
-        "sm:hidden fixed bottom-0 inset-x-0 z-30 " +
-        "border-t border-border/40 bg-background/80 backdrop-blur " +
-        "supports-[backdrop-filter]:bg-background/60 " +
-        "pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 px-3"
+        "sm:hidden fixed left-0 right-0 bottom-0 w-screen z-30 " +
+        "border-t border-border/40 bg-background/95 backdrop-blur"
       }
+      // Inline style: calc() en arbitrary values de Tailwind a veces no
+      // parsea bien la coma de env(). Inline es bulletproof.
+      style={{
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)",
+        paddingTop: "0.5rem",
+        paddingLeft: "env(safe-area-inset-left, 0px)",
+        paddingRight: "env(safe-area-inset-right, 0px)",
+      }}
       aria-label="Acciones rápidas"
     >
-      <div className="mx-auto max-w-md grid grid-cols-3 gap-1">
+      <div className="grid grid-cols-3 gap-1 px-3">
         <ActionButton
           onClick={() => scrollTo("review-section")}
           label={isLogged ? "Mi nota" : "Calificar"}
@@ -83,15 +81,16 @@ function ActionButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={
         "flex flex-col items-center justify-center gap-1 py-2 rounded-lg " +
         "text-muted-foreground hover:text-foreground active:bg-accent " +
-        "transition-colors"
+        "transition-colors min-w-0"
       }
     >
       {icon}
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em]">
+      <span className="font-mono text-[10px] uppercase tracking-[0.14em] whitespace-nowrap">
         {label}
       </span>
     </button>
