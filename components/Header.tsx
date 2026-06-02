@@ -1,6 +1,7 @@
-import { Bookmark, Film, Trophy } from "lucide-react";
+import { Bookmark, Trophy } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { BrandStar } from "@/components/BrandStar";
 import { LoginButton } from "@/components/LoginButton";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { LocaleToggle } from "@/components/LocaleToggle";
@@ -40,12 +41,23 @@ export async function Header() {
         <div className="flex items-center gap-1 sm:gap-4 min-w-0">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 font-semibold text-sm sm:text-base shrink-0"
+            className="inline-flex items-center gap-2 shrink-0"
+            aria-label={`${t("title")} ${t("subtitle")}`}
           >
-            <Film className="size-4 text-primary" />
-            <span>{t("title")}</span>
-            <span className="text-muted-foreground hidden sm:inline">
-              {t("subtitle")}
+            <BrandStar size={22} className="text-foreground" />
+            {/* Lockup oficial: "MovieRate" italic serif + "Compare" sans
+                (muted) + "." en brass. Mobile oculta "Compare" pero mantiene
+                el dot brass para conservar la firma de marca. */}
+            <span className="inline-flex items-baseline gap-1.5 leading-none">
+              <span className="font-serif italic text-base sm:text-lg">
+                {t("title")}
+              </span>
+              <span className="hidden sm:inline text-sm sm:text-base text-muted-foreground">
+                {t("subtitle")}
+              </span>
+              <span className="text-primary -ml-1 text-base sm:text-lg leading-none">
+                .
+              </span>
             </span>
           </Link>
           {/* Links en desktop */}

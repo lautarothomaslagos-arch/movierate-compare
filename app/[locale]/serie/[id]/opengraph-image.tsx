@@ -6,6 +6,14 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const runtime = "nodejs";
 
+// Brand (mismo sistema que /movie/opengraph-image)
+const BRASS = "#e0b870";
+const CREAM = "#f3e7c8";
+const NIGHT = "#0a0804";
+const DIM = "#a89878";
+const STAR_PATH =
+  "M50 10 L40.60 37.06 L11.96 37.64 L34.78 54.94 L26.49 82.36 L50 66 L73.51 82.36 L65.22 54.94 L88.04 37.64 L59.41 37.06 Z";
+
 export default async function TvOgImage({
   params,
 }: {
@@ -23,6 +31,9 @@ export default async function TvOgImage({
 
   const year = getYear(tv.first_air_date);
   const rating = tv.vote_average ?? 0;
+  const fillPct = rating > 0 ? Math.min(1, Math.max(0, rating / 10)) : 0.74;
+  const fillY = 10 + (1 - fillPct) * 72.36;
+
   const poster = tv.poster_path
     ? `https://image.tmdb.org/t/p/w500${tv.poster_path}`
     : null;
@@ -37,7 +48,7 @@ export default async function TvOgImage({
           width: "100%",
           height: "100%",
           display: "flex",
-          background: "#0a0a0a",
+          background: NIGHT,
           position: "relative",
         }}
       >
@@ -54,7 +65,7 @@ export default async function TvOgImage({
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              opacity: 0.3,
+              opacity: 0.28,
               filter: "blur(20px)",
             }}
           />
@@ -64,7 +75,7 @@ export default async function TvOgImage({
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(90deg, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.75) 100%)",
+              "linear-gradient(90deg, rgba(10,8,4,0.96) 0%, rgba(10,8,4,0.72) 100%)",
             display: "flex",
           }}
         />
@@ -93,6 +104,7 @@ export default async function TvOgImage({
                 borderRadius: 16,
                 objectFit: "cover",
                 boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
+                border: "1px solid #2a2218",
               }}
             />
           )}
@@ -103,48 +115,51 @@ export default async function TvOgImage({
               flexDirection: "column",
               flex: 1,
               gap: 20,
-              color: "white",
+              color: CREAM,
             }}
           >
+            {/* Lockup + badge "Serie" */}
             <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-              }}
+              style={{ display: "flex", alignItems: "center", gap: 14 }}
             >
+              <BrandStarSvg size={36} fillY={28.81} />
               <div
                 style={{
                   fontSize: 22,
-                  color: "#a78bfa",
-                  fontWeight: 700,
-                  letterSpacing: "0.05em",
+                  color: DIM,
+                  letterSpacing: "0.18em",
                   textTransform: "uppercase",
+                  display: "flex",
+                  gap: 6,
                 }}
               >
-                MovieRate Compare
+                <span>MovieRate</span>
+                <span style={{ color: BRASS }}>·</span>
+                <span>Compare</span>
               </div>
               <div
                 style={{
-                  fontSize: 18,
-                  background: "rgba(168, 85, 247, 0.25)",
-                  border: "1px solid rgba(168, 85, 247, 0.5)",
-                  padding: "4px 12px",
+                  fontSize: 16,
+                  background: "rgba(224, 184, 112, 0.18)",
+                  border: "1px solid rgba(224, 184, 112, 0.45)",
+                  padding: "4px 14px",
                   borderRadius: 999,
-                  color: "#c084fc",
-                  fontWeight: 700,
+                  color: BRASS,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
                 }}
               >
-                SERIE
+                Serie
               </div>
             </div>
 
             <div
               style={{
-                fontSize: 68,
-                fontWeight: 900,
-                lineHeight: 1.05,
+                fontSize: 72,
+                fontWeight: 700,
+                lineHeight: 1.04,
                 letterSpacing: "-0.02em",
+                color: CREAM,
               }}
             >
               {tv.name}
@@ -153,9 +168,9 @@ export default async function TvOgImage({
             <div
               style={{
                 fontSize: 30,
-                color: "#a3a3a3",
+                color: DIM,
                 display: "flex",
-                gap: 16,
+                gap: 14,
               }}
             >
               {year !== null && <span>{year}</span>}
@@ -175,21 +190,22 @@ export default async function TvOgImage({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 14,
-                  background: "rgba(16, 185, 129, 0.15)",
-                  border: "2px solid rgba(16, 185, 129, 0.4)",
-                  padding: "12px 24px",
-                  borderRadius: 12,
-                  marginTop: 8,
+                  gap: 16,
+                  background: "rgba(224, 184, 112, 0.12)",
+                  border: "2px solid rgba(224, 184, 112, 0.5)",
+                  padding: "14px 26px",
+                  borderRadius: 14,
+                  marginTop: 6,
                   width: "fit-content",
                 }}
               >
-                <span style={{ fontSize: 40 }}>⭐</span>
+                <BrandStarSvg size={56} fillY={fillY} />
                 <span
                   style={{
-                    fontSize: 56,
-                    fontWeight: 900,
-                    color: "#34d399",
+                    fontSize: 60,
+                    fontWeight: 700,
+                    color: BRASS,
+                    fontStyle: "italic",
                   }}
                 >
                   {rating.toFixed(1)}
@@ -197,7 +213,7 @@ export default async function TvOgImage({
                 <span
                   style={{
                     fontSize: 28,
-                    color: "#a3a3a3",
+                    color: DIM,
                     marginLeft: -6,
                   }}
                 >
@@ -213,6 +229,30 @@ export default async function TvOgImage({
   );
 }
 
+function BrandStarSvg({ size, fillY }: { size: number; fillY: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+      <defs>
+        <clipPath id="og-star-clip">
+          <path d={STAR_PATH} />
+        </clipPath>
+      </defs>
+      <path d={STAR_PATH} fill={CREAM} fillOpacity={0.16} />
+      <g clipPath="url(#og-star-clip)">
+        <rect x={0} y={fillY} width={100} height={100} fill={BRASS} />
+      </g>
+      <path
+        d={STAR_PATH}
+        fill="none"
+        stroke={CREAM}
+        strokeWidth={2.4}
+        strokeLinejoin="round"
+        strokeOpacity={0.85}
+      />
+    </svg>
+  );
+}
+
 function DefaultOg() {
   return (
     <div
@@ -220,13 +260,28 @@ function DefaultOg() {
         width: "100%",
         height: "100%",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%)",
-        color: "white",
+        background: NIGHT,
+        gap: 30,
       }}
     >
-      <div style={{ fontSize: 96, fontWeight: 900 }}>MovieRate Compare</div>
+      <BrandStarSvg size={180} fillY={28.81} />
+      <div
+        style={{
+          fontSize: 64,
+          color: CREAM,
+          display: "flex",
+          alignItems: "baseline",
+          gap: 14,
+          fontWeight: 600,
+        }}
+      >
+        <span>MovieRate</span>
+        <span style={{ color: DIM, fontSize: 48 }}>Compare</span>
+        <span style={{ color: BRASS }}>.</span>
+      </div>
     </div>
   );
 }
