@@ -21,6 +21,7 @@
     "subtitle": "Compare",
     "genres": "Géneros",
     "watchlist": "Mi lista",
+    "watched": "Ya las vi",
     "history": "Historial",
     "top": "Top",
     "menu": "Menú"
@@ -349,6 +350,19 @@
     "emptyBody": "Empezá por algo que te debas hace rato.",
     "countOne": "{count} título",
     "countOther": "{count} títulos"
+  },
+  "watched": {
+    "heading": "Ya las vi",
+    "markAsWatched": "Marcar como vista",
+    "watchedLabel": "Vista",
+    "added": "Listo, queda en tu archivo",
+    "removed": "La saqué de tus vistas",
+    "addError": "No se pudo marcar como vista. Probá de nuevo en un toque.",
+    "removeError": "No se pudo sacar. Probá refrescar.",
+    "empty": "Acá va lo que ya viste",
+    "emptyBody": "Marcá como «Vista» las pelis y series que ya cruzaron por tu pantalla.",
+    "countOne": "{count} título visto",
+    "countOther": "{count} títulos vistos"
   },
   "history": {
     "heading": "Mi historial",

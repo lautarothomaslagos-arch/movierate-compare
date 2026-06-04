@@ -21,6 +21,7 @@
     "subtitle": "Compare",
     "genres": "Genres",
     "watchlist": "My list",
+    "watched": "Watched",
     "history": "History",
     "top": "Top",
     "menu": "Menu"
@@ -349,6 +350,19 @@
     "emptyBody": "Start with something you've owed yourself for a while.",
     "countOne": "{count} title",
     "countOther": "{count} titles"
+  },
+  "watched": {
+    "heading": "Watched",
+    "markAsWatched": "Mark as watched",
+    "watchedLabel": "Watched",
+    "added": "Saved to your archive",
+    "removed": "Removed from watched",
+    "addError": "Couldn't mark as watched. Try again in a moment.",
+    "removeError": "Couldn't remove. Try refreshing.",
+    "empty": "What you've watched lives here",
+    "emptyBody": "Mark as Watched whatever you've already seen.",
+    "countOne": "{count} title watched",
+    "countOther": "{count} titles watched"
   },
   "history": {
     "heading": "My history",

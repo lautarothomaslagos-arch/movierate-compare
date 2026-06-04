@@ -2,6 +2,7 @@
 
 import {
   Bookmark,
+  Eye,
   Check,
   Download,
   Film,
@@ -87,6 +88,12 @@ export function MobileNavMenu() {
           <Link href="/watchlist">
             <Bookmark />
             {t("watchlist")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/vistas">
+            <Eye />
+            {t("watched")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

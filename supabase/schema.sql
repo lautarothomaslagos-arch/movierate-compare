@@ -146,3 +146,31 @@ create policy "service role can write cache"
   for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
+
+-- ------------------------------ tabla watched ------------------------------
+-- Lista de "ya las vi" — separada de watchlist (que es "quiero ver").
+-- Cuando alguien marca como vista, el flujo natural es: si está en watchlist,
+-- se mueve automáticamente acá (handled en server action, no en SQL).
+create table if not exists public.watched (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  tmdb_id int not null,
+  media_type text not null default 'movie',
+  title text not null,
+  year int,
+  poster_path text,
+  watched_at timestamptz not null default now(),
+  unique(user_id, tmdb_id, media_type)
+);
+
+create index if not exists watched_user_at_idx
+  on public.watched(user_id, watched_at desc);
+
+alter table public.watched enable row level security;
+
+drop policy if exists "users see own watched" on public.watched;
+create policy "users see own watched"
+  on public.watched
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);

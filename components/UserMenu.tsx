@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, History, LogOut, Sparkles, Star } from "lucide-react";
+import { Bookmark, Eye, History, LogOut, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -38,6 +38,7 @@ export function UserMenu({ user }: { user: UserInfo }) {
   const router = useRouter();
   const t = useTranslations("auth");
   const tWatchlist = useTranslations("watchlist");
+  const tWatched = useTranslations("watched");
   const tReviews = useTranslations("myReviews");
   const tRec = useTranslations("recommender");
 
@@ -88,6 +89,12 @@ export function UserMenu({ user }: { user: UserInfo }) {
           <Link href="/watchlist">
             <Bookmark />
             {tWatchlist("heading")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/vistas">
+            <Eye />
+            {tWatched("heading")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

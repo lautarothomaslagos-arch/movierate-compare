@@ -32,6 +32,7 @@ import { MobileActionBar } from "@/components/MobileActionBar";
 import { ReviewSection } from "@/components/ReviewSection";
 import { ShareButton } from "@/components/ShareButton";
 import { CompareButton } from "@/components/CompareButton";
+import { WatchedButton } from "@/components/WatchedButton";
 import { TrackVisit } from "@/components/TrackVisit";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import {
@@ -51,6 +52,7 @@ import { getReview } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getMovieDetails, getYear } from "@/lib/tmdb";
 import { isInWatchlist } from "@/lib/watchlist";
+import { isWatched } from "@/lib/watched";
 
 type Props = {
   params: Promise<{ tmdbId: string; locale: string }>;
@@ -150,10 +152,15 @@ export default async function MoviePage({ params }: Props) {
     });
   }
 
-  // Chequear si está en watchlist (solo logueado; anónimo lo chequea en cliente)
-  const initiallyInWatchlist = isLogged
-    ? await isInWatchlist(movie.id, "movie")
-    : false;
+  // Chequear si está en watchlist y/o vistas (solo logueado; anónimo
+  // lo chequea en cliente vía localStorage). Paralelizados para no
+  // bloquear el render.
+  const [initiallyInWatchlist, initiallyWatched] = isLogged
+    ? await Promise.all([
+        isInWatchlist(movie.id, "movie"),
+        isWatched(movie.id, "movie"),
+      ])
+    : [false, false];
 
   // Review del user (solo logueado). Si no hay, initialReview === null.
   const initialReview = isLogged ? await getReview(movie.id, "movie") : null;
@@ -276,6 +283,17 @@ export default async function MoviePage({ params }: Props) {
             <WatchlistButton
               isLogged={isLogged}
               initiallyInList={initiallyInWatchlist}
+              item={{
+                tmdb_id: movie.id,
+                media_type: "movie",
+                title: movie.title,
+                year,
+                poster_path: movie.poster_path ?? null,
+              }}
+            />
+            <WatchedButton
+              isLogged={isLogged}
+              initiallyWatched={initiallyWatched}
               item={{
                 tmdb_id: movie.id,
                 media_type: "movie",

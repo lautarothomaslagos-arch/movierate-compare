@@ -23,6 +23,7 @@ import { UpcomingEpisodeBanner } from "@/components/UpcomingEpisodeBanner";
 import { CompareButton } from "@/components/CompareButton";
 import { ShareButton } from "@/components/ShareButton";
 import { TrackVisit } from "@/components/TrackVisit";
+import { WatchedButton } from "@/components/WatchedButton";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import {
   TrailerSection,
@@ -49,6 +50,7 @@ import { getReview } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/server";
 import { backdropUrl, getTvDetails, getYear } from "@/lib/tmdb";
 import { isInWatchlist } from "@/lib/watchlist";
+import { isWatched } from "@/lib/watched";
 
 type Props = {
   params: Promise<{ id: string; locale: string }>;
@@ -182,9 +184,12 @@ export default async function SeriePage({ params }: Props) {
     });
   }
 
-  const initiallyInWatchlist = isLogged
-    ? await isInWatchlist(tv.id, "tv")
-    : false;
+  const [initiallyInWatchlist, initiallyWatched] = isLogged
+    ? await Promise.all([
+        isInWatchlist(tv.id, "tv"),
+        isWatched(tv.id, "tv"),
+      ])
+    : [false, false];
 
   // Review del user (solo logueado). null si no hay aún.
   const initialReview = isLogged ? await getReview(tv.id, "tv") : null;
@@ -323,6 +328,17 @@ export default async function SeriePage({ params }: Props) {
             <WatchlistButton
               isLogged={isLogged}
               initiallyInList={initiallyInWatchlist}
+              item={{
+                tmdb_id: tv.id,
+                media_type: "tv",
+                title: tv.name,
+                year,
+                poster_path: tv.poster_path ?? null,
+              }}
+            />
+            <WatchedButton
+              isLogged={isLogged}
+              initiallyWatched={initiallyWatched}
               item={{
                 tmdb_id: tv.id,
                 media_type: "tv",
