@@ -3,6 +3,10 @@ import { Suspense } from "react";
 
 import { AuthErrorToast } from "@/components/AuthErrorToast";
 import {
+  FeaturedDailySection,
+  FeaturedDailySkeleton,
+} from "@/components/FeaturedDailySection";
+import {
   FeaturedGenresSection,
   FeaturedGenresSkeleton,
 } from "@/components/FeaturedGenresSection";
@@ -67,6 +71,12 @@ export default async function Home({ params }: Props) {
         {/* Recientes — solo si hay historial DB o localStorage */}
         <Suspense fallback={null}>
           <RecentlyVisitedSection limit={6} />
+        </Suspense>
+
+        {/* Peli del día — sección editorial con pick determinístico
+            día/año, sobre el fold para anónimos, hace identidad. */}
+        <Suspense fallback={<FeaturedDailySkeleton />}>
+          <FeaturedDailySection />
         </Suspense>
 
         {/* Tendencias del día */}

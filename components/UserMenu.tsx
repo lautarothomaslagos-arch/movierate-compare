@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Eye, History, LogOut, Sparkles, Star } from "lucide-react";
+import { Bookmark, Eye, History, LogOut, Share2, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -107,6 +107,12 @@ export function UserMenu({ user }: { user: UserInfo }) {
           <Link href="/mis-reviews">
             <Star />
             {tReviews("heading")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/compartir">
+            <Share2 />
+            Compartir
           </Link>
         </DropdownMenuItem>
         {/* Recomendador IA — temporalmente oculto del menú mientras

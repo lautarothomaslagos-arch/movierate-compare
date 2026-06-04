@@ -61,7 +61,9 @@
     "trendingSubtitle": "Lo que más se está viendo en TMDB",
     "trendingFailed": "No se pudieron cargar las tendencias.",
     "featuredGenresHeading": "Géneros para arrancar",
-    "viewAllGenres": "Ver todos los géneros"
+    "viewAllGenres": "Ver todos los géneros",
+    "dailyEyebrow": "Peli del día",
+    "dailyCta": "Verla"
   },
   "search": {
     "placeholder": "Buscá: «Mulholland», «Severance», «Aftersun»…",
@@ -321,6 +323,18 @@
     "loginCtaTitle": "Tu propia escala, tus apuntes",
     "loginCtaBody": "Iniciá sesión y armá tu archivo. Las mejores notas se escriben recién salido del cine.",
     "loginCtaHint": "arriba a la derecha"
+  },
+  "shareNote": {
+    "shareAsImage": "Compartir como imagen",
+    "modalTitle": "Tu nota, lista para postear",
+    "share": "Compartir",
+    "download": "Descargar",
+    "shareTitle": "Mi nota en MovieRate Compare",
+    "shareText": "Le puse {rating}/10 a «{title}»",
+    "shareFailed": "No se pudo compartir. Probá descargar y subirla a mano.",
+    "downloaded": "Imagen descargada",
+    "downloadFailed": "No se pudo descargar. Probá de nuevo.",
+    "previewAlt": "Preview de la imagen de tu nota"
   },
   "myReviews": {
     "heading": "Mis reviews",

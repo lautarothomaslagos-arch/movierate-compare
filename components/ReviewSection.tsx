@@ -10,6 +10,7 @@ import {
   upsertReviewAction,
 } from "@/app/actions/reviews";
 import { BrandStar } from "@/components/BrandStar";
+import { ShareNoteButton } from "@/components/ShareNoteButton";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -199,8 +200,16 @@ export function ReviewSection({
           </div>
         )}
 
-        <div className="text-xs text-muted-foreground pt-1 border-t border-border/40">
-          {t("savedAt", { date: dt.toLocaleDateString() })}
+        <div className="text-xs text-muted-foreground pt-1 border-t border-border/40 flex flex-wrap items-center justify-between gap-2">
+          <span>{t("savedAt", { date: dt.toLocaleDateString() })}</span>
+          {/* Compartir como imagen — genera PNG 1080×1080 con la estrella
+              llenada al rating y el wordmark. Pensado para Instagram. */}
+          <ShareNoteButton
+            tmdb_id={tmdb_id}
+            media_type={media_type}
+            title={title}
+            rating={review.rating}
+          />
         </div>
       </Card>
     );

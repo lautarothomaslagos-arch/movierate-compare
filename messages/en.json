@@ -61,7 +61,9 @@
     "trendingSubtitle": "Top picks on TMDB right now",
     "trendingFailed": "Could not load trending content.",
     "featuredGenresHeading": "Genres to get started",
-    "viewAllGenres": "View all genres"
+    "viewAllGenres": "View all genres",
+    "dailyEyebrow": "Pick of the day",
+    "dailyCta": "Watch it"
   },
   "search": {
     "placeholder": "Try: «Mulholland», «Severance», «Aftersun»…",
@@ -321,6 +323,18 @@
     "loginCtaTitle": "Your own scale, your own notes",
     "loginCtaBody": "Sign in and build your archive. The best notes get written right after the credits roll.",
     "loginCtaHint": "top right"
+  },
+  "shareNote": {
+    "shareAsImage": "Share as image",
+    "modalTitle": "Your rating, ready to post",
+    "share": "Share",
+    "download": "Download",
+    "shareTitle": "My rating on MovieRate Compare",
+    "shareText": "I gave «{title}» a {rating}/10",
+    "shareFailed": "Couldn't share. Try downloading and uploading manually.",
+    "downloaded": "Image downloaded",
+    "downloadFailed": "Couldn't download. Try again.",
+    "previewAlt": "Preview of your rating card"
   },
   "myReviews": {
     "heading": "My reviews",
