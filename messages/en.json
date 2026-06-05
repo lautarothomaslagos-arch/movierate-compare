@@ -293,8 +293,6 @@
     "eyebrow": "Welcome back",
     "greeting": "What's tonight's feature",
     "greetingWithName": "Welcome back, {name}",
-    "greetingShort": "Welcome back",
-    "greetingShortWithName": "Welcome back, {name}",
     "subtitle": "Your list, your history and the app's trivia are waiting. Or search for something new below."
   },
   "upcoming": {
