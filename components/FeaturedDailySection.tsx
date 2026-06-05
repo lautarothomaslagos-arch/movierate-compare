@@ -27,7 +27,15 @@ function dayOfYear(d: Date): number {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
-export async function FeaturedDailySection() {
+// El prop `greeting` permite reusar este componente como hero para usuarios
+// logueados — el saludo personalizado va en el eyebrow ("DE VUELTA, LAUTARO ·
+// PELI DEL DÍA") y el card queda como fold inicial en lugar de aparecer
+// abajo después de "Recientes". Para anónimos se omite y va sin saludo.
+export async function FeaturedDailySection({
+  greeting,
+}: {
+  greeting?: string;
+} = {}) {
   const t = await getTranslations("home");
 
   try {
@@ -109,12 +117,20 @@ export async function FeaturedDailySection() {
           <div className="min-w-0 flex flex-col gap-2 sm:gap-3">
             <p
               className={cn(
-                "inline-flex items-center gap-2",
+                "inline-flex flex-wrap items-center gap-x-2 gap-y-1",
                 "font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-primary"
               )}
             >
               <span className="inline-block size-1.5 rounded-full bg-primary" />
-              {t("dailyEyebrow")}
+              {greeting && (
+                <>
+                  <span className="text-foreground">{greeting}</span>
+                  <span className="opacity-50" aria-hidden="true">
+                    ·
+                  </span>
+                </>
+              )}
+              <span>{t("dailyEyebrow")}</span>
             </p>
 
             <Link href={href} className="block group">

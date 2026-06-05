@@ -293,6 +293,8 @@
     "eyebrow": "De vuelta",
     "greeting": "¿Qué función ponemos esta noche",
     "greetingWithName": "Bienvenido de nuevo, {name}",
+    "greetingShort": "De vuelta",
+    "greetingShortWithName": "De vuelta, {name}",
     "subtitle": "Tu lista, tu historial y la trivia de la app te están esperando. O buscá algo nuevo acá abajo."
   },
   "upcoming": {
